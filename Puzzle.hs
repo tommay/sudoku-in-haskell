@@ -2,12 +2,15 @@ module Puzzle
 ( Puzzle
 , Puzzle.new
 , Puzzle.getSolutions
+, Puzzle.toPuzzleString
 ) where  
 
 import Cells
 import Cell
 import Possible
 import Exclusions
+
+import Data.Char as Char
 
 data Puzzle = Puzzle {
     cells :: Cells
@@ -42,7 +45,7 @@ toDigits :: String -> [Maybe Int]
 toDigits setup =
   [case char of
     '-' -> Nothing
-    _ -> Just (read [char] :: Int)
+    _ -> Just $ Char.digitToInt char
    | char <- setup]
 
 -- Returns a new Puzzle with Digit placed in Cell AtNumber.  The
@@ -101,6 +104,40 @@ doGuesses this collector cellNumber digits =
 getSolutions :: Puzzle -> [Puzzle]
 getSolutions this =
   getCollectedSolutions $ Puzzle.solve this Puzzle.newCollector
+
+-- Returns a raw string of 81 digits and dashes, like the argument to
+-- new.
+--
+toString :: Puzzle -> String
+toString this =
+  Cells.toString $ cells this
+
+-- Returns a string that prints out as a grid of digits.
+--
+toPuzzleString :: Puzzle -> String
+toPuzzleString this =
+  unlines $
+    map (\puzzles ->
+          unlines $
+            map (\row -> unwords $ slices 3 row) $
+              slices 9 puzzles) $
+      slices 27 $ Puzzle.toString this
+
+-- You'd think there would be a function to do this but I can't
+-- find one easily.  It will be good practice to roll my own.
+-- This can be done all kinds of ways, but here I don't use
+-- anything fancy.   Well ok splitAt is fancy.  And I'm building it
+-- non-reversed with ++ instead of :.
+--
+slices :: Int -> [a] -> [[a]]
+slices n list =
+  slices' n list []
+
+slices' :: Int -> [a] -> [[a]] -> [[a]]
+slices' n [] accum = accum
+slices' n list accum =
+  let (slice, rest) = Prelude.splitAt n list
+  in slices' n rest (accum ++ [slice])
 
 ----- This should really go in its own module, but mutually recursive
 ----- modules are a major PITA in ghc.

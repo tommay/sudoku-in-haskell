@@ -7,8 +7,10 @@ module Cell
 , getPlaced
 , isExcludedBy
 , notPossible
+, toChar
 ) where  
 
+import Data.Char as Char
 import Possible
 
 -- A Cell records the state of an individual sudoku square.
@@ -86,3 +88,9 @@ notPossible this digit =
     Placed _ -> this
     NotPlaced possible ->
       this{value = NotPlaced $ Possible.remove possible digit}
+
+toChar :: Cell -> Char
+toChar this =
+  case Cell.getPlaced this of
+    Nothing -> '-'
+    Just digit -> Char.intToDigit digit

@@ -4,6 +4,7 @@ module Cells
 , Cells.update
 , Cells.minByPossibleSize
 , Cells.doExclusions
+, Cells.toString
 ) where
 
 import Cell
@@ -61,3 +62,8 @@ doExclusions this digit exclusionList =
         (\ cell -> Cell.notPossible cell digit))
     this
     exclusionList
+
+toString :: Cells -> String
+toString this =
+  let Cells vector = this
+  in Prelude.map Cell.toChar $ Vector.toList vector
