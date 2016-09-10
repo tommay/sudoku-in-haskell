@@ -1,5 +1,6 @@
 import System.FilePath as FilePath
 import Text.Regex as Regex
+import System.Environment
 
 import Puzzle
 
@@ -8,7 +9,8 @@ import Puzzle
 -- if any.
 --
 main = do
-  setup <- getSetup "/tmp/puzzle.txt"
+  args <- System.Environment.getArgs
+  setup <- getSetup $ head args
   let
     solutions = Puzzle.getSolutions $ Puzzle.new setup
   putStrLn $ "There are " ++ (show $ length solutions) ++ " solutions"
