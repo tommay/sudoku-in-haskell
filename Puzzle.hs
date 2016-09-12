@@ -65,12 +65,10 @@ place this cellNumber digit =
       cells2 = Cells.doExclusions cells1 digit exclusionList
   in this {cells = cells2}
 
--- Try to solve this Puzzle then report back solved or failed to the
--- Collector, and possibly spawn further processes that also report
--- back to the Collector.
+-- Try to solve this Puzzle, returning a list of solved Puzzles.
 --
-solve :: Puzzle -> Collector -> Collector
-solve this collector =
+solve :: Puzzle -> [Puzzle] -> [Puzzle]
+solve this solutions =
   -- We get here either because we're done, we've failed, or
   -- we have to guess and recurse.  We can distinguish by
   -- examining the unplaced cell with the fewest possibilities
@@ -79,31 +77,30 @@ solve this collector =
   in case Cell.getPossible minCell of
        Nothing ->
          -- Solved.  Yield this as a solution.
-         yieldSolution collector this
+         this:solutions
        Just possible ->
          if Possible.size possible == 0
            then
              -- Failed.  No solution to yield.
-             collector
+             solutions
            else
              -- Found an unplaced cell with two or more possibilities.
              -- Guess each possibility and recurse.
-             doGuesses this collector (Cell.getNumber minCell)
+             doGuesses this solutions (Cell.getNumber minCell)
                (Possible.toList possible)
 
 -- For each Digit in the list, use it as a guess for cellNumber
 -- and try to solve the resulting Puzzle.
 --
-doGuesses :: Puzzle -> Collector -> Int -> [Int] -> Collector
-doGuesses this collector cellNumber digits =
+doGuesses :: Puzzle -> [Puzzle] -> Int -> [Int] -> [Puzzle]
+doGuesses this solutions cellNumber digits =
   foldr (\ digit accum ->
           solve (Puzzle.place this cellNumber digit) accum)
-    collector digits
+    solutions digits
 
 getSolutions :: String -> [Puzzle]
 getSolutions setup =
-  let puzzle = Puzzle.new setup
-  in getCollectedSolutions $ Puzzle.solve puzzle Puzzle.newCollector
+  Puzzle.solve (Puzzle.new setup) []
 
 -- Returns a raw string of 81 digits and dashes, like the argument to
 -- new.
@@ -138,19 +135,3 @@ slices' n [] accum = accum
 slices' n list accum =
   let (slice, rest) = Prelude.splitAt n list
   in slices' n rest (accum ++ [slice])
-
------ This should really go in its own module, but mutually recursive
------ modules are a major PITA in ghc.
-
-data Collector = Collector [Puzzle]
-
-newCollector :: Collector
-newCollector =
-  Collector []
-
-yieldSolution :: Collector -> Puzzle -> Collector
-yieldSolution (Collector list) puzzle =
-  Collector $ puzzle : list
-
-getCollectedSolutions :: Collector -> [Puzzle]
-getCollectedSolutions (Collector list) = list
