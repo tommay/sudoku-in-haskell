@@ -1,6 +1,5 @@
 module Puzzle
 ( Puzzle
-, Puzzle.new
 , Puzzle.getSolutions
 , Puzzle.toPuzzleString
 ) where  
@@ -101,9 +100,10 @@ doGuesses this collector cellNumber digits =
           solve (Puzzle.place this cellNumber digit) accum)
     collector digits
 
-getSolutions :: Puzzle -> [Puzzle]
-getSolutions this =
-  getCollectedSolutions $ Puzzle.solve this Puzzle.newCollector
+getSolutions :: String -> [Puzzle]
+getSolutions setup =
+  let puzzle = Puzzle.new setup
+  in getCollectedSolutions $ Puzzle.solve puzzle Puzzle.newCollector
 
 -- Returns a raw string of 81 digits and dashes, like the argument to
 -- new.

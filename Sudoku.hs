@@ -12,9 +12,9 @@ main = do
   args <- System.Environment.getArgs
   setup <- getSetup $ head args
   let
-    solutions = Puzzle.getSolutions $ Puzzle.new setup
-  putStrLn $ "There are " ++ (show $ length solutions) ++ " solutions:\n"
+    solutions = Puzzle.getSolutions setup
   mapM_ putStrLn $ map Puzzle.toPuzzleString solutions
+  putStrLn $ "There are " ++ (show $ length solutions) ++ " solutions."
 
 -- Returns the contents of Filename as an IO String with "#" comments
 -- and whitespace deleted.  The result should be a string of 81 digits
