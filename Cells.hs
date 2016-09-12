@@ -7,9 +7,12 @@ module Cells
 , Cells.toString
 ) where
 
-import Cell
-import Possible
-import Data.Vector as Vector
+import qualified Cell
+import Cell (Cell)
+import qualified Possible
+import Possible (Possible)
+import qualified Data.Vector as Vector
+import Data.Vector (Vector)
 
 -- Cells holds the state of each Cell, as a tuple containing one Cell
 -- for each position on the board, numbered 0 through 80.  This allow
@@ -28,9 +31,9 @@ new = Cells $ Vector.generate 81 Cell.new
 update :: Cells -> Int -> (Cell -> Cell) -> Cells
 update this index func =
   let Cells vector = this
-      elem = vector ! index
+      elem = vector Vector.! index
       newElem = func elem
-      newVector = vector // [(index, newElem)]
+      newVector = vector Vector.// [(index, newElem)]
   in Cells newVector
 
 -- Returns the unplaced Cell with the smallest set of possibilities.
@@ -43,7 +46,7 @@ minByPossibleSize :: Cells -> Cell
 minByPossibleSize this =
   let toSize cell =
         -- Sort placed Cells to the end.
-        case getPossible cell of
+        case Cell.getPossible cell of
           Just possible -> Possible.size possible
           _ -> 10
       Cells vector = this
@@ -54,7 +57,7 @@ minByPossibleSize this =
 
 doExclusions :: Cells -> Int -> [Int] -> Cells
 doExclusions this digit exclusionList =
-  Prelude.foldr
+  foldr
     (\ cellNumber cellsAccum ->
       Cells.update
         cellsAccum
@@ -66,4 +69,4 @@ doExclusions this digit exclusionList =
 toString :: Cells -> String
 toString this =
   let Cells vector = this
-  in Prelude.map Cell.toChar $ Vector.toList vector
+  in map Cell.toChar $ Vector.toList vector

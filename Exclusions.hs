@@ -1,8 +1,9 @@
 module Exclusions
 (Exclusions, new, getListForCell) where
 
-import Data.Vector as Vector
-import Data.List as List
+import qualified Data.Vector as Vector
+import Data.Vector (Vector)
+import qualified Data.List as List
 
 data Exclusions = Exclusions (Vector [Int]) deriving (Show)
 
@@ -33,7 +34,7 @@ createExclusionLists =
       -- Same for squarea.
 
       squares =
-        Prelude.map
+        map
          (\ square ->
            -- Row and Col of upper left corner of square.
            let row = square `div` 3 * 3
@@ -41,15 +42,15 @@ createExclusionLists =
            in [(row + n `div` 3)*9 + (col + n `mod` 3) | n <- [0..8]])
          [0..8]
 
-    in rows Prelude.++ cols Prelude.++ squares
+    in rows ++ cols ++ squares
 
 -- Used during initialization.
 --
 getExclusionListForCell :: [[Int]] -> Int -> [Int]
 getExclusionListForCell exclusionLists cellNumber =
-  let forCell = Prelude.filter (Prelude.elem cellNumber) exclusionLists
-      flattened = Prelude.concat forCell
-      filtered = Prelude.filter (/= cellNumber) flattened
+  let forCell = filter (elem cellNumber) exclusionLists
+      flattened = concat forCell
+      filtered = filter (/= cellNumber) flattened
   in List.nub filtered
 
 -- Used by place.
@@ -57,4 +58,4 @@ getExclusionListForCell exclusionLists cellNumber =
 getListForCell :: Exclusions -> Int -> [Int]
 getListForCell this cellNumber =
   let Exclusions vector = this
-  in vector ! cellNumber
+  in vector Vector.! cellNumber

@@ -1,8 +1,8 @@
-import System.FilePath as FilePath
-import Text.Regex as Regex
-import System.Environment
+import qualified System.FilePath as FilePath
+import qualified Text.Regex as Regex
+import qualified System.Environment
 
-import Puzzle
+import qualified Puzzle
 
 -- This is the main function, called from the sudoku script.
 -- Initializes Puzzle from the given Filename and prints out solutions
@@ -25,6 +25,6 @@ getSetup :: FilePath -> IO String
 getSetup filename = do
   raw <- readFile filename
   let
-    noComments = subRegex (mkRegex "#.*") raw ""
-    setup = subRegex (mkRegex "\\s+") noComments ""
+    noComments = Regex.subRegex (Regex.mkRegex "#.*") raw ""
+    setup = Regex.subRegex (Regex.mkRegex "\\s+") noComments ""
   return setup

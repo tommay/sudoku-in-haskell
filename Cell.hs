@@ -10,8 +10,9 @@ module Cell
 , toChar
 ) where  
 
-import Data.Char as Char
-import Possible
+import qualified Data.Char as Char
+import qualified Possible
+import Possible (Possible)
 
 -- A Cell records the state of an individual sudoku square.
 -- They're not called "squares" because that's used for the squares

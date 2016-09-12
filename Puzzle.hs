@@ -4,12 +4,14 @@ module Puzzle
 , Puzzle.toPuzzleString
 ) where  
 
-import Cells
-import Cell
-import Possible
-import Exclusions
+import qualified Cells
+import Cells (Cells)
+import qualified Cell
+import qualified Possible
+import qualified Exclusions
+import Exclusions (Exclusions)
 
-import Data.Char as Char
+import qualified Data.Char as Char
 
 data Puzzle = Puzzle {
     cells :: Cells
@@ -133,5 +135,5 @@ slices n list =
 slices' :: Int -> [a] -> [[a]] -> [[a]]
 slices' n [] accum = accum
 slices' n list accum =
-  let (slice, rest) = Prelude.splitAt n list
+  let (slice, rest) = splitAt n list
   in slices' n rest (accum ++ [slice])
