@@ -50,20 +50,7 @@ minByPossibleSize this =
           Just possible -> Possible.size possible
           _ -> 10
       Cells vector = this
-  in minBy toSize $ Vector.toList vector
-
-minBy :: (Ord b) => (a -> b) -> [a] -> a
-minBy func list =
-  let enhanced = map (\a -> (func a, a)) list
-      (_, result) = 
-        -- foldl1 is faster than foldr1 here.  The lambda argument order
-        -- doesn't matter, but is fastest with this order.
-        foldl1 (\a@(a', _) b@(b', _) -> 
-          case a' < b' of
-            True -> a
-            False -> b)
-          enhanced
-  in result
+  in Vector.minimumBy (\a b -> compare (toSize a) (toSize b)) vector
 
 -- Update the numbered Cells in ExclusionList to remove Digit from
 -- their Possible lists.
