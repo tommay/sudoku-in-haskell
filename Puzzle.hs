@@ -71,8 +71,8 @@ place this cellNumber digit =
 
 -- Try to solve this Puzzle, returning a list of solved Puzzles.
 --
-solve :: Puzzle -> [IO Puzzle] -> [IO Puzzle]
-solve this solutions =
+solve :: Puzzle -> Random.StdGen -> [Puzzle] -> [Puzzle]
+solve this gen solutions =
   -- We get here either because we're done, we've failed, or
   -- we have to guess and recurse.  We can distinguish by
   -- examining the unplaced cell with the fewest possibilities
@@ -81,7 +81,7 @@ solve this solutions =
   in case Cell.getPossible minCell of
        Nothing ->
          -- Solved.  Yield this as a solution.
-         (return this):solutions
+         this:solutions
        Just possible ->
          if Possible.size possible == 0
            then
@@ -90,29 +90,27 @@ solve this solutions =
            else
              -- Found an unplaced cell with two or more possibilities.
              -- Guess each possibility and recurse.
-             do
---               shuffledList <- spud $ Possible.toList possible
-               let shuffledList = Possible.toList possible
-               doGuesses this solutions (Cell.getNumber minCell) shuffledList
+             let shuffledList = shuffleList gen $ Possible.toList possible
+             in doGuesses this gen solutions (Cell.getNumber minCell) shuffledList
 
-spud :: [a] -> IO [a]
-spud list = do
-  gen <- Random.newStdGen
-  return $ Shuffle.shuffle' list (length list) gen
+shuffleList :: Random.StdGen -> [a] -> [a]
+shuffleList gen list = do
+  Shuffle.shuffle' list (length list) gen
 
 -- For each Digit in the list, use it as a guess for cellNumber
 -- and try to solve the resulting Puzzle.
 --
-doGuesses :: Puzzle -> [IO Puzzle] -> Int -> [Int] -> [IO Puzzle]
-doGuesses this solutions cellNumber digits =
+doGuesses :: Puzzle -> Random.StdGen -> [Puzzle] -> Int -> [Int] -> [Puzzle]
+doGuesses this gen solutions cellNumber digits =
   foldr (\ digit accum ->
-          solve (Puzzle.place this cellNumber digit) accum)
+          let guess = Puzzle.place this cellNumber digit
+          in solve guess gen accum)
     solutions
     digits
 
-getSolutions :: String -> [IO Puzzle]
-getSolutions setup =
-  Puzzle.solve (Puzzle.new setup) []
+getSolutions :: String -> Random.StdGen-> [Puzzle]
+getSolutions setup gen =
+  Puzzle.solve (Puzzle.new setup) gen []
 
 -- Returns a raw string of 81 digits and dashes, like the argument to
 -- new.

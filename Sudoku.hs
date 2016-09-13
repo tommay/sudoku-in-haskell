@@ -1,6 +1,7 @@
 import qualified System.FilePath as FilePath
 import qualified Text.Regex as Regex
 import qualified System.Environment
+import qualified System.Random
 
 import qualified Puzzle
 
@@ -11,9 +12,10 @@ import qualified Puzzle
 main = do
   args <- System.Environment.getArgs
   setup <- getSetup $ head args
-  solutions <- sequence $ Puzzle.getSolutions setup
-  mapM_ putStrLn $ map Puzzle.toPuzzleString solutions
---  putStrLn $ "There are " ++ (show $ length solutions) ++ " solutions."
+  gen <- System.Random.getStdGen
+  let solutions = Puzzle.getSolutions setup gen
+--  mapM_ putStrLn $ map Puzzle.toPuzzleString solutions
+  putStrLn $ "There are " ++ (show $ length solutions) ++ " solutions."
 
 -- Returns the contents of Filename as an IO String with "#" comments
 -- and whitespace deleted.  The result should be a string of 81 digits
