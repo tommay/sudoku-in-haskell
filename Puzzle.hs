@@ -12,6 +12,8 @@ import qualified Exclusions
 import Exclusions (Exclusions)
 
 import qualified Data.Char as Char
+import qualified System.Random as Random
+import qualified System.Random.Shuffle as Shuffle
 
 data Puzzle = Puzzle {
     cells :: Cells
@@ -69,7 +71,7 @@ place this cellNumber digit =
 
 -- Try to solve this Puzzle, returning a list of solved Puzzles.
 --
-solve :: Puzzle -> [Puzzle] -> [Puzzle]
+solve :: Puzzle -> [IO Puzzle] -> [IO Puzzle]
 solve this solutions =
   -- We get here either because we're done, we've failed, or
   -- we have to guess and recurse.  We can distinguish by
@@ -79,7 +81,7 @@ solve this solutions =
   in case Cell.getPossible minCell of
        Nothing ->
          -- Solved.  Yield this as a solution.
-         this:solutions
+         (return this):solutions
        Just possible ->
          if Possible.size possible == 0
            then
@@ -88,19 +90,27 @@ solve this solutions =
            else
              -- Found an unplaced cell with two or more possibilities.
              -- Guess each possibility and recurse.
-             doGuesses this solutions (Cell.getNumber minCell)
-               (Possible.toList possible)
+             do
+--               shuffledList <- spud $ Possible.toList possible
+               let shuffledList = Possible.toList possible
+               doGuesses this solutions (Cell.getNumber minCell) shuffledList
+
+spud :: [a] -> IO [a]
+spud list = do
+  gen <- Random.newStdGen
+  return $ Shuffle.shuffle' list (length list) gen
 
 -- For each Digit in the list, use it as a guess for cellNumber
 -- and try to solve the resulting Puzzle.
 --
-doGuesses :: Puzzle -> [Puzzle] -> Int -> [Int] -> [Puzzle]
+doGuesses :: Puzzle -> [IO Puzzle] -> Int -> [Int] -> [IO Puzzle]
 doGuesses this solutions cellNumber digits =
   foldr (\ digit accum ->
           solve (Puzzle.place this cellNumber digit) accum)
-    solutions digits
+    solutions
+    digits
 
-getSolutions :: String -> [Puzzle]
+getSolutions :: String -> [IO Puzzle]
 getSolutions setup =
   Puzzle.solve (Puzzle.new setup) []
 
