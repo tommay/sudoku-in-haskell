@@ -77,16 +77,16 @@ place this cellNumber digit =
 --
 solutions :: Puzzle -> [Puzzle]
 solutions this =
-  randomSolutions' this Nothing []
+  solutions' this Nothing []
 
 randomSolutions :: Puzzle -> Random.StdGen -> [Puzzle]
 randomSolutions this gen =
-  randomSolutions' this (Just gen) []
+  solutions' this (Just gen) []
 
 -- Try to solve this Puzzle, returning a list of solved Puzzles.
 --
-randomSolutions' :: Puzzle -> Maybe Random.StdGen -> [Puzzle] -> [Puzzle]
-randomSolutions' this maybeGen results =
+solutions' :: Puzzle -> Maybe Random.StdGen -> [Puzzle] -> [Puzzle]
+solutions' this maybeGen results =
   -- We get here either because we're done, we've failed, or
   -- we have to guess and recurse.  We can distinguish by
   -- examining the unplaced cell with the fewest possibilities
@@ -119,7 +119,7 @@ doGuesses :: Puzzle -> Maybe Random.StdGen -> [Puzzle] -> Int -> [Int] -> [Puzzl
 doGuesses this maybeGen results cellNumber digits =
   foldr (\ digit accum ->
           let guess = Puzzle.place this cellNumber digit
-          in randomSolutions' guess maybeGen accum)
+          in solutions' guess maybeGen accum)
     results
     digits
 
