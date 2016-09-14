@@ -6,17 +6,74 @@ import qualified System.Random.Shuffle as Shuffle
 import qualified Puzzle
 import Puzzle (Puzzle)
 
+cellSet = spinnyCellSet
+
 main = do
   gen <- Random.getStdGen
-  putStr $ Puzzle.toPuzzleString $ create gen typicalCellSet
+  putStr $ Puzzle.toPuzzleString $ create gen cellSet
+
+classicCellSet :: Int -> [Int]
+classicCellSet n =
+  List.nub [n, 80 - n]
+
+reflectLeftRight :: Int -> Int
+reflectLeftRight n =
+  let col = n `mod` 9
+  in n - col + 8 - col
+
+leftRightCellSet :: Int -> [Int]
+leftRightCellSet n =
+  List.nub [n, reflectLeftRight n]
+
+reflectUpDown :: Int -> Int
+reflectUpDown n =
+  let rowish = (n `div` 9) * 9
+  in n - rowish + 72 - rowish
+
+leftRightUpDownCellSet :: Int -> [Int]
+leftRightUpDownCellSet n =
+  let leftRight = leftRightCellSet n
+  in List.nub $ leftRight ++ map reflectUpDown leftRight
+
+identicalCellSet :: Int -> [Int]
+identicalCellSet n =
+  let col = n `mod` 3
+      row = (n `div` 9) `mod` 3
+      base = row*9 + col
+  in List.nub $ map (base+) [0, 3, 6, 27, 30, 33, 54, 57, 60]
+
+spinnySets :: [[Int]]
+spinnySets = [
+  [0, 8, 80, 72],
+  [1, 17, 79, 63],
+  [2, 26, 78, 54],
+  [3, 35, 77, 45],
+  [4, 44, 76, 36],
+  [5, 53, 75, 27],
+  [6, 62, 74, 18],
+  [7, 71, 73, 9],
+  [10, 16, 70, 64],
+  [11, 25, 69, 55],
+  [12, 34, 68, 46],
+  [13, 43, 67, 37],
+  [14, 52, 66, 28],
+  [15, 61, 65, 19],
+  [20, 24, 60, 56],
+  [21, 33, 59, 47],
+  [22, 42, 58, 38],
+  [23, 51, 57, 29],
+  [30, 32, 50, 48],
+  [31, 41, 49, 39],
+  [40]]
+
+spinnyCellSet :: Int -> [Int]
+spinnyCellSet n =
+  case List.find (\set -> n `elem` set) spinnySets of
+    Just set -> set
 
 randomSolvedPuzzle :: Random.StdGen -> Puzzle
 randomSolvedPuzzle gen =
   head $ Puzzle.randomSolutions Puzzle.empty gen
-
-typicalCellSet :: Int -> [Int]
-typicalCellSet n =
-  List.nub [n, 80 - n]
 
 cellSets :: (Int -> [Int]) -> [[Int]]
 cellSets func =
