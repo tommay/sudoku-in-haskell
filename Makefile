@@ -1,5 +1,6 @@
 all:
 	ghc -O Sudoku
+	ghc -O Create
 
 clean:
-	rm *.hi *.o Sudoku
+	rm -f *.hi *.o Create Sudoku

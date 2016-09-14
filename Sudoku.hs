@@ -1,7 +1,6 @@
 import qualified System.FilePath as FilePath
 import qualified Text.Regex as Regex
 import qualified System.Environment
-import qualified System.Random
 
 import qualified Puzzle
 
@@ -12,9 +11,8 @@ import qualified Puzzle
 main = do
   args <- System.Environment.getArgs
   setup <- getSetup $ head args
-  gen <- System.Random.getStdGen
-  let solutions = Puzzle.getSolutions setup gen
---  mapM_ putStrLn $ map Puzzle.toPuzzleString solutions
+  let solutions = Puzzle.solutionsFor setup
+  mapM_ putStrLn $ map Puzzle.toPuzzleString solutions
   putStrLn $ "There are " ++ (show $ length solutions) ++ " solutions."
 
 -- Returns the contents of Filename as an IO String with "#" comments

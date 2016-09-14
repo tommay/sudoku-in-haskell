@@ -4,6 +4,7 @@ module Cells
 , Cells.update
 , Cells.minByPossibleSize
 , Cells.doExclusions
+, Cells.getCell
 , Cells.toString
 ) where
 
@@ -25,6 +26,11 @@ data Cells = Cells (Vector Cell) deriving (Show)
 
 new :: Cells
 new = Cells $ Vector.generate 81 Cell.new
+
+getCell :: Cells -> Int -> Cell
+getCell this cellNumber =
+  let Cells vector = this
+  in vector Vector.! cellNumber
 
 -- Returns a new Cells with func applied to the indexth element.
 
