@@ -6,7 +6,7 @@ import qualified System.Random.Shuffle as Shuffle
 import qualified Puzzle
 import Puzzle (Puzzle)
 
-cellSet = spinnyCellSet
+cellSet = doubleDiagonalSet
 
 main = do
   gen <- Random.getStdGen
@@ -66,10 +66,57 @@ spinnySets = [
   [31, 41, 49, 39],
   [40]]
 
+randomCellSet :: Int -> [Int]
+randomCellSet n = [n]
+
 spinnyCellSet :: Int -> [Int]
 spinnyCellSet n =
   case List.find (\set -> n `elem` set) spinnySets of
     Just set -> set
+
+reflectDiagonally :: Int -> Int
+reflectDiagonally n =
+  let (row, col) = rowcol n
+  in col*9 + row
+
+diagonalSet :: Int -> [Int]
+diagonalSet n = 
+  List.nub [n, reflectDiagonally n]
+
+reflectDiagonally' :: Int -> Int
+reflectDiagonally' n =
+  let (row, col) = rowcol n
+      col' = 8 - col
+      row' = 8 - row
+  in col'*9 + row'
+
+diagonal'Set :: Int -> [Int]
+diagonal'Set n = 
+  List.nub [n, reflectDiagonally' n]
+
+doubleDiagonalSet :: Int -> [Int]
+doubleDiagonalSet n =
+  let diagonal = diagonalSet n
+  in List.nub $ diagonal ++ map reflectDiagonally' diagonal
+
+wtf2 :: Int -> Int
+wtf2 n =
+  let (row, col) = rowcol (80 - n)
+  in col*9 + row
+
+wtf2Set :: Int -> [Int]
+wtf2Set n = 
+  List.nub [n, wtf2 n]
+
+wtfSet :: Int -> [Int]
+wtfSet n = 
+  let col = 8 - (n `mod` 9)
+      row = n `div` 9
+  in List.nub [n, col*9 + row]
+
+rowcol :: Int -> (Int, Int)
+rowcol n =
+  (n `div` 9, n `mod` 9)
 
 randomSolvedPuzzle :: Random.StdGen -> Puzzle
 randomSolvedPuzzle gen =
