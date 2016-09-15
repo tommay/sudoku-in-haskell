@@ -152,8 +152,11 @@ create' puzzle cellNumberLists =
       newPuzzle = Puzzle.remove puzzle cellNumbers
   in case hasMultipleSolutions newPuzzle of
        True ->
+         -- Ooops, removed too much.  Recurse with the original
+         -- single-solution puzzle.
          create' puzzle rest
        False ->
+         -- newPuzzle has only one solution, go with it.
          create' newPuzzle rest
 
 hasMultipleSolutions :: Puzzle -> Bool
