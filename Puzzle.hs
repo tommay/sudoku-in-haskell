@@ -75,18 +75,18 @@ place this cellNumber digit =
 
 -- Try to solve this Puzzle, returning a list of solved Puzzles.
 --
-solutions :: Puzzle -> [Puzzle]
+solutions :: Puzzle -> [(Int, Puzzle)]
 solutions this =
-  solutions' this Nothing []
+  solutions' this Nothing 0 []
 
-randomSolutions :: Puzzle -> Random.StdGen -> [Puzzle]
+randomSolutions :: Puzzle -> Random.StdGen -> [(Int, Puzzle)]
 randomSolutions this gen =
-  solutions' this (Just gen) []
+  solutions' this (Just gen) 0 []
 
 -- Try to solve this Puzzle, returning a list of solved Puzzles.
 --
-solutions' :: Puzzle -> Maybe Random.StdGen -> [Puzzle] -> [Puzzle]
-solutions' this maybeGen results =
+solutions' :: Puzzle -> Maybe Random.StdGen -> Int -> [(Int, Puzzle)] -> [(Int, Puzzle)]
+solutions' this maybeGen guesses results =
   -- We get here either because we're done, we've failed, or
   -- we have to guess and recurse.  We can distinguish by
   -- examining the unplaced cell with the fewest possibilities
@@ -95,35 +95,40 @@ solutions' this maybeGen results =
   in case Cell.getPossible minCell of
        Nothing ->
          -- Solved.  Yield this as a solution.
-         this:results
+         (guesses, this):results
        Just possible ->
-         if Possible.size possible == 0
-           then
-             -- Failed.  No solution to yield.
+         case Possible.toList possible of
+           [] ->
+             -- Failed.  No more solutions.
              results
-           else
-             -- Found an unplaced cell with two or more possibilities.
-             -- Guess each possibility and recurse.
-             let possibleDigits = Possible.toList possible
+           possibleDigits@[_] ->
+             -- One possibility.  Recurse without incrementing guesses.
+             let cellNumber = Cell.getNumber minCell
+             in doGuesses this maybeGen
+                  guesses results cellNumber possibleDigits
+           possibleDigits ->
+             -- Multiple possibilities.  Guess each, maybe in a random order,
+             -- and recurse.
+             let cellNumber = Cell.getNumber minCell
                  shuffledList =
                    case maybeGen of
                      Nothing -> possibleDigits
                      Just gen -> shuffle gen possibleDigits
-                 cellNumber = Cell.getNumber minCell
-             in doGuesses this maybeGen results cellNumber shuffledList
+             in doGuesses this maybeGen
+                  (guesses + 1) results cellNumber shuffledList
 
 -- For each Digit in the list, use it as a guess for cellNumber
 -- and try to solve the resulting Puzzle.
 --
-doGuesses :: Puzzle -> Maybe Random.StdGen -> [Puzzle] -> Int -> [Int] -> [Puzzle]
-doGuesses this maybeGen results cellNumber digits =
+doGuesses :: Puzzle -> Maybe Random.StdGen -> Int -> [(Int, Puzzle)] -> Int -> [Int] -> [(Int, Puzzle)]
+doGuesses this maybeGen guesses results cellNumber digits =
   foldr (\ digit accum ->
           let guess = Puzzle.place this cellNumber digit
-          in solutions' guess maybeGen accum)
+          in solutions' guess maybeGen guesses accum)
     results
     digits
 
-solutionsFor :: String -> [Puzzle]
+solutionsFor :: String -> [(Int, Puzzle)]
 solutionsFor setup =
   solutions $ Puzzle.new setup
 

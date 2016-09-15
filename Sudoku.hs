@@ -12,7 +12,11 @@ main = do
   args <- System.Environment.getArgs
   setup <- getSetup $ head args
   let solutions = Puzzle.solutionsFor setup
-  mapM_ putStrLn $ map Puzzle.toPuzzleString solutions
+  mapM_ putStrLn $ map
+    (\ (guesses, puzzle) ->
+      unlines ["Guesses: " ++ (show guesses),
+               Puzzle.toPuzzleString puzzle])
+    solutions
   putStrLn $ "There are " ++ (show $ length solutions) ++ " solutions."
 
 -- Returns the contents of Filename as an IO String with "#" comments

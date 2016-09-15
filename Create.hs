@@ -120,7 +120,8 @@ rowcol n =
 
 randomSolvedPuzzle :: Random.StdGen -> Puzzle
 randomSolvedPuzzle gen =
-  head $ Puzzle.randomSolutions Puzzle.empty gen
+  let (_, puzzle) = head $ Puzzle.randomSolutions Puzzle.empty gen
+  in puzzle
 
 cellSets :: (Int -> [Int]) -> [[Int]]
 cellSets func =
