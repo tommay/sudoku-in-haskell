@@ -8,9 +8,23 @@ import Puzzle (Puzzle)
 
 cellSet = doubleDiagonalSet
 
-main = do
+main = mainOneNoGuessing
+
+mainOne = do
   rnd <- Random.getStdGen
   putStr $ Puzzle.toPuzzleString $ create rnd cellSet
+
+mainOneNoGuessing = do
+  rnd <- Random.getStdGen
+  putStr $ Puzzle.toPuzzleString $ createNoGuessing rnd cellSet
+
+mainStreamNoGuessing = do
+  rnd <- Random.getStdGen
+  mapM_ putStrLn $ map
+    (\ (guesses, puzzle) ->
+      unlines ["Guesses: " ++ (show guesses),
+               Puzzle.toPuzzleString puzzle])
+    $ filter (\ (g, p) -> g == 0) $ create'' rnd cellSet
 
 classicCellSet :: Int -> [Int]
 classicCellSet n =
@@ -135,6 +149,17 @@ uniqueCellSets cellSets =
           Map.empty
           cellSets
   in Map.elems uniqueMap
+
+createNoGuessing :: Random.StdGen -> (Int -> [Int]) -> Puzzle
+createNoGuessing rnd func =
+  head $ take 1 $ map snd $ filter (\ (g, p) -> g == 0) $ create'' rnd func
+
+create'' :: Random.StdGen -> (Int -> [Int]) -> [(Int, Puzzle)]
+create'' rnd func =
+  let (rnd1, rnd2) = Random.split rnd
+      puzzle = create rnd1 func
+      (guesses, _) = head $ Puzzle.solutions puzzle
+  in (guesses, puzzle):(create'' rnd2 func)
 
 create :: Random.StdGen -> (Int -> [Int]) -> Puzzle
 create rnd func =
