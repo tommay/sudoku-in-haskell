@@ -80,8 +80,8 @@ solutions this =
   solutions' this Nothing 0 []
 
 randomSolutions :: Puzzle -> Random.StdGen -> [(Int, Puzzle)]
-randomSolutions this gen =
-  solutions' this (Just gen) 0 []
+randomSolutions this rnd =
+  solutions' this (Just rnd) 0 []
 
 -- Try to solve this Puzzle, returning a list of solved Puzzles.
 --
@@ -113,7 +113,7 @@ solutions' this maybeGen guesses results =
                  shuffledList =
                    case maybeGen of
                      Nothing -> possibleDigits
-                     Just gen -> shuffle gen possibleDigits
+                     Just rnd -> shuffle rnd possibleDigits
              in doGuesses this maybeGen
                   (guesses + 1) results cellNumber shuffledList
 
@@ -149,8 +149,8 @@ getDigit this cellNumber =
   Cell.getPlaced $ Cells.getCell (cells this) cellNumber
 
 shuffle :: Random.StdGen -> [a] -> [a]
-shuffle gen list = do
-  Shuffle.shuffle' list (length list) gen
+shuffle rnd list = do
+  Shuffle.shuffle' list (length list) rnd
 
 -- Returns a raw string of 81 digits and dashes, like the argument to
 -- new.

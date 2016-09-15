@@ -9,8 +9,8 @@ import Puzzle (Puzzle)
 cellSet = doubleDiagonalSet
 
 main = do
-  gen <- Random.getStdGen
-  putStr $ Puzzle.toPuzzleString $ create gen cellSet
+  rnd <- Random.getStdGen
+  putStr $ Puzzle.toPuzzleString $ create rnd cellSet
 
 classicCellSet :: Int -> [Int]
 classicCellSet n =
@@ -119,8 +119,8 @@ rowcol n =
   (n `div` 9, n `mod` 9)
 
 randomSolvedPuzzle :: Random.StdGen -> Puzzle
-randomSolvedPuzzle gen =
-  let (_, puzzle) = head $ Puzzle.randomSolutions Puzzle.empty gen
+randomSolvedPuzzle rnd =
+  let (_, puzzle) = head $ Puzzle.randomSolutions Puzzle.empty rnd
   in puzzle
 
 cellSets :: (Int -> [Int]) -> [[Int]]
@@ -137,9 +137,9 @@ uniqueCellSets cellSets =
   in Map.elems uniqueMap
 
 create :: Random.StdGen -> (Int -> [Int]) -> Puzzle
-create gen func =
-  let puzzle = randomSolvedPuzzle gen
-      sets = shuffle gen $ cellSets func
+create rnd func =
+  let puzzle = randomSolvedPuzzle rnd
+      sets = shuffle rnd $ cellSets func
   in create' puzzle sets
 
 create' :: Puzzle -> [[Int]] -> Puzzle
@@ -164,5 +164,5 @@ hasMultipleSolutions puzzle =
   (length $ take 2 $ Puzzle.solutions puzzle) == 2
 
 shuffle :: Random.StdGen -> [a] -> [a]
-shuffle gen list = do
-  Shuffle.shuffle' list (length list) gen
+shuffle rnd list = do
+  Shuffle.shuffle' list (length list) rnd
