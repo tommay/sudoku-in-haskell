@@ -14,7 +14,7 @@ data Unknown = Unknown {
   col :: Int,
   square :: Int,
   possible :: [Int]
-} deriving (Show)
+} deriving (Show, Eq)
 
 -- Returns a new Unknown at position cellNumber.  Determine the
 -- Unknown's row, column, and square, set all digits possible.
@@ -44,5 +44,5 @@ place this other digit =
 --
 isExcludedBy :: Unknown -> Unknown -> Bool
 isExcludedBy this other =
-  cellNumber this /= cellNumber other &&
+  this /= other &&
     any (\ f -> f this == f other) [row, col, square]
