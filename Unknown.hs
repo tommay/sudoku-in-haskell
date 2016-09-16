@@ -3,7 +3,9 @@ module Unknown
   Unknown,
   Unknown.new,
   Unknown.cellNumber,
+  Unknown.possible,
   Unknown.place,
+  Unknown.minByPossibleSize,
 ) where  
 
 import qualified Data.List as List
@@ -46,3 +48,11 @@ isExcludedBy :: Unknown -> Unknown -> Bool
 isExcludedBy this other =
   this /= other &&
     any (\ f -> f this == f other) [row, col, square]
+
+minByPossibleSize :: [Unknown] -> Unknown
+minByPossibleSize unknowns =
+  foldr1 (\ u min ->
+           if (length $ possible u) < (length $ possible min)
+             then u
+             else min)
+    unknowns

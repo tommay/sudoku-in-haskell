@@ -5,14 +5,14 @@ module Puzzle
 --  Puzzle.remove,
 --  Puzzle.solutions,
 --  Puzzle.randomSolutions,
---  Puzzle.solutionsFor,
---  Puzzle.toPuzzleString,
+  Puzzle.solutionsFor,
+  Puzzle.toPuzzleString,
 ) where  
 
 import qualified Data.Char as Char
 import qualified Data.List as List
--- import qualified System.Random as Random
--- import qualified System.Random.Shuffle as Shuffle
+import qualified System.Random as Random
+import qualified System.Random.Shuffle as Shuffle
 
 import qualified Placed
 import Placed (Placed)
@@ -58,14 +58,67 @@ toDigits setup =
    | char <- setup]
 
 place :: Puzzle -> Unknown -> Int -> Puzzle
-place this unknown digit =
-  let cellNumber = Unknown.cellNumber unknown
+place this unknown' digit =
+  let cellNumber = Unknown.cellNumber unknown'
   in this {
-    placed = (Placed.new cellNumber digit : placed this),
-    unknown = map (\ u -> Unknown.place u unknown digit)
-      $ filter (\ u -> Unknown.cellNumber u /= cellNumber)
-      $ Puzzle.unknown this
+    placed = Placed.new cellNumber digit : placed this,
+    unknown = map (\ u -> Unknown.place u unknown' digit)
+      $ filter (/= unknown')
+      $ unknown this
   }
+
+solutionsFor :: String -> [(Int, Puzzle)]
+solutionsFor setup =
+  solutions $ Puzzle.new setup
+
+-- Try to solve this Puzzle, returning a list of solved Puzzles.
+--
+solutions :: Puzzle -> [(Int, Puzzle)]
+solutions this =
+  solutions' this Nothing 0 []
+
+randomSolutions :: Puzzle -> Random.StdGen -> [(Int, Puzzle)]
+randomSolutions this rnd =
+  solutions' this (Just rnd) 0 []
+
+-- Try to solve this Puzzle, returning a list of solved Puzzles.
+--
+solutions' :: Puzzle -> Maybe Random.StdGen -> Int -> [(Int, Puzzle)] -> [(Int, Puzzle)]
+solutions' this maybeRnd guesses results =
+  case unknown this of
+    [] ->
+      -- No more unknowns, solved!
+      (guesses, this) : results
+    unknownCells ->
+      let minUnknown = Unknown.minByPossibleSize unknownCells
+          possible = Unknown.possible minUnknown
+      in case possible of
+        [] ->
+          -- Failed.  No more solutions.
+          results
+        [_] ->
+          -- One possibility.  Recurse without incrementing guesses.
+          doGuesses this maybeRnd guesses minUnknown possible results
+        _ ->
+          -- Multiple possibilities.  Guess each, maybe in a random order,
+          -- and recurse.
+          let shuffledPossible =
+                case maybeRnd of
+                  Nothing -> possible
+                  Just rnd -> shuffle rnd possible
+          in doGuesses this maybeRnd
+               (guesses + 1) minUnknown shuffledPossible results
+
+-- For each Digit in the list, use it as a guess for unknown
+-- and try to solve the resulting Puzzle.
+--
+doGuesses :: Puzzle -> Maybe Random.StdGen -> Int -> Unknown -> [Int] -> [(Int, Puzzle)] -> [(Int, Puzzle)]
+doGuesses this maybeRnd guesses unknown digits results =
+  foldr (\ digit accum ->
+          let guess = Puzzle.place this unknown digit
+          in solutions' guess maybeRnd guesses accum)
+    results
+    digits
 
 -- We've got placed and unknown and we have to combine them into s single
 -- single lit of characters ordered by originating cellNumber.
@@ -107,3 +160,7 @@ slices' n [] accum = accum
 slices' n list accum =
   let (slice, rest) = splitAt n list
   in slices' n rest (accum ++ [slice])
+
+shuffle :: Random.StdGen -> [a] -> [a]
+shuffle rnd list =
+  Shuffle.shuffle' list (length list) rnd
