@@ -150,7 +150,7 @@ getDigit this cellNumber =
   Cell.getPlaced $ Cells.getCell (cells this) cellNumber
 
 shuffle :: Random.StdGen -> [a] -> [a]
-shuffle rnd list = do
+shuffle rnd list =
   Shuffle.shuffle' list (length list) rnd
 
 -- Returns a raw string of 81 digits and dashes, like the argument to

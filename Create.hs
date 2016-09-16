@@ -189,5 +189,5 @@ hasMultipleSolutions puzzle =
   (length $ take 2 $ Puzzle.solutions puzzle) == 2
 
 shuffle :: Random.StdGen -> [a] -> [a]
-shuffle rnd list = do
+shuffle rnd list =
   Shuffle.shuffle' list (length list) rnd
