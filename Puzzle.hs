@@ -21,9 +21,9 @@ import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
 
 data Puzzle = Puzzle {
-    cells :: Cells
-  , exclusions :: Exclusions
-  } deriving (Show)
+  cells :: Cells,
+  exclusions :: Exclusions
+} deriving (Show)
 
 -- Returns a new Puzzle with empty Cells.
 --

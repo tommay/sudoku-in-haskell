@@ -30,12 +30,12 @@ import Possible (Possible)
 -- - which digit has been placed in this Cell.
 
 data Cell = Cell {
-    number :: Int
-  , row :: Int
-  , col :: Int
-  , square :: Int
-  , value :: Value
-  } deriving (Show)
+  number :: Int,
+  row :: Int,
+  col :: Int,
+  square :: Int,
+  value :: Value
+} deriving (Show)
 
 data Value = Placed Int | NotPlaced Possible deriving (Show)
 
