@@ -1,4 +1,4 @@
-# This puzzle has 1338 solutions.
+# This puzzle has 4809648 solutions.
 
 --- --- --2
 --- --- --5
