@@ -3,7 +3,7 @@ module Unknown
   Unknown,
   Unknown.new,
   Unknown.cellNumber,
-  Unknown.place
+  Unknown.place,
 ) where  
 
 import qualified Data.List as List

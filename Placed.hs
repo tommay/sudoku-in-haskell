@@ -6,9 +6,9 @@ module Placed
 ) where  
 
 data Placed = Placed {
-    cellNumber :: Int,
-    digit :: Int
-  } deriving (Show)
+  cellNumber :: Int,
+  digit :: Int
+} deriving (Show)
 
 new :: Int -> Int -> Placed
 new cellNumber digit =

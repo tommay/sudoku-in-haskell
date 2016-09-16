@@ -20,9 +20,9 @@ import qualified Unknown
 import Unknown (Unknown)
 
 data Puzzle = Puzzle {
-    placed :: [Placed],
-    unknown :: [Unknown]
-  } deriving (Show)
+  placed :: [Placed],
+  unknown :: [Unknown]
+} deriving (Show)
 
 -- Returns a new Puzzle with all Unknown cells.
 --
