@@ -1,13 +1,14 @@
 module Cell
-( Cell
-, Cell.new
-, getNumber
-, getPossible
-, place
-, getPlaced
-, isExcludedBy
-, notPossible
-, toChar
+(
+  Cell,
+  Cell.new,
+  getNumber,
+  getPossible,
+  place,
+  getPlaced,
+  isExcludedBy,
+  notPossible,
+  toChar,
 ) where  
 
 import qualified Data.Char as Char

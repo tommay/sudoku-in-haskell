@@ -1,11 +1,12 @@
 module Puzzle
-( Puzzle
-, Puzzle.empty
-, Puzzle.remove
-, Puzzle.solutions
-, Puzzle.randomSolutions
-, Puzzle.solutionsFor
-, Puzzle.toPuzzleString
+(
+  Puzzle,
+  Puzzle.empty,
+  Puzzle.remove,
+  Puzzle.solutions,
+  Puzzle.randomSolutions,
+  Puzzle.solutionsFor,
+  Puzzle.toPuzzleString,
 ) where  
 
 import qualified Cells

@@ -1,11 +1,12 @@
 -- This all works!
 
 module Possible
-( Possible
-, new
-, remove
-, size
-, toList
+(
+  Possible,
+  new,
+  remove,
+  size,
+  toList,
 ) where
 
 -- An object that maintains the possible digits for a Position.

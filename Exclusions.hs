@@ -1,5 +1,9 @@
 module Exclusions
-(Exclusions, new, getListForCell) where
+(
+  Exclusions,
+  new,
+  getListForCell,
+) where
 
 import qualified Data.Vector as Vector
 import Data.Vector (Vector)

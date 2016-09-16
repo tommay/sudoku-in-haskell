@@ -1,11 +1,12 @@
 module Cells
-( Cells
-, Cells.new  
-, Cells.adjust
-, Cells.minByPossibleSize
-, Cells.doExclusions
-, Cells.getCell
-, Cells.toString
+(
+  Cells,
+  Cells.new,
+  Cells.adjust,
+  Cells.minByPossibleSize,
+  Cells.doExclusions,
+  Cells.getCell,
+  Cells.toString,
 ) where
 
 import qualified Cell
