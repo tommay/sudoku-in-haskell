@@ -6,7 +6,7 @@ import qualified System.Random.Shuffle as Shuffle
 import qualified Puzzle
 import Puzzle (Puzzle)
 
-cellSet = doubleDiagonalSet
+cellSet = spinnyCellSet
 
 main = mainOneNoGuessing
 

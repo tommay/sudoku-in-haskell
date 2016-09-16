@@ -1,7 +1,7 @@
 module Cells
 ( Cells
 , Cells.new  
-, Cells.update
+, Cells.adjust
 , Cells.minByPossibleSize
 , Cells.doExclusions
 , Cells.getCell
@@ -34,8 +34,8 @@ getCell this cellNumber =
 
 -- Returns a new Cells with func applied to the indexth element.
 
-update :: Cells -> Int -> (Cell -> Cell) -> Cells
-update this index func =
+adjust :: Cells -> Int -> (Cell -> Cell) -> Cells
+adjust this index func =
   let Cells vector = this
       elem = vector Vector.! index
       newElem = func elem
@@ -58,14 +58,14 @@ minByPossibleSize this =
       Cells vector = this
   in Vector.minimumBy (\a b -> compare (toSize a) (toSize b)) vector
 
--- Update the numbered Cells in ExclusionList to remove Digit from
+-- Adjust the numbered Cells in ExclusionList to remove Digit from
 -- their Possible lists.
 
 doExclusions :: Cells -> Int -> [Int] -> Cells
 doExclusions this digit exclusionList =
   foldr
     (\ cellNumber cellsAccum ->
-      Cells.update
+      Cells.adjust
         cellsAccum
         cellNumber
         (\ cell -> Cell.notPossible cell digit))

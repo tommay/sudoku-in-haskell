@@ -56,13 +56,13 @@ toDigits setup =
    | char <- setup]
 
 -- Returns a new Puzzle with Digit placed in Cell AtNumber.  The
--- possible sets of all Cells are updated to account for the new
+-- possible sets of all Cells are adjustd to account for the new
 -- placement.
 --
 place :: Puzzle -> Int -> Int -> Puzzle
 place this cellNumber digit =
   let -- Place the Digit.
-      cells1 = Cells.update
+      cells1 = Cells.adjust
                  (cells this)
                  cellNumber
                  (\ cell -> Cell.place cell digit)
