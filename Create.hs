@@ -80,13 +80,13 @@ spinnySets = [
   [31, 41, 49, 39],
   [40]]
 
-randomCellSet :: Int -> [Int]
-randomCellSet n = [n]
-
 spinnyCellSet :: Int -> [Int]
 spinnyCellSet n =
   case List.find (\set -> n `elem` set) spinnySets of
     Just set -> set
+
+randomCellSet :: Int -> [Int]
+randomCellSet n = [n]
 
 reflectDiagonally :: Int -> Int
 reflectDiagonally n =
