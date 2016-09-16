@@ -2,6 +2,7 @@ module Placed
 (
   Placed,
   Placed.new,
+  Placed.cellNumber,
   Placed.digit,
 ) where  
 

@@ -67,12 +67,19 @@ place this unknown digit =
       $ Puzzle.unknown this
   }
 
--- Returns a raw string of 81 digits and dashes, like the argument to
--- new.
---
-toString :: Puzzle -> String
+-- We've got placed and unknown and we have to combine them into s single
+-- single lit of characters ordered by originating cellNumber.
+-- This can be done by building two lists of (cellNumber, char) then
+-- sorting them together and extractin the Chars.
+-- Or maybe we could make a Cell type which would be either Placed or Empty,
+-- and have them all sort together and have a function that would return
+-- their Char.  Maybe.  But for now, this works.
 toString this =
-  map Char.intToDigit $ map Placed.digit $ List.sort $ placed this
+  let p = map (\ x -> (Placed.cellNumber x, Char.intToDigit $ Placed.digit x))
+            $ placed this
+      u = map (\ x -> (Unknown.cellNumber x, '-'))
+            $ unknown this
+  in map snd $ List.sort $ p ++ u
 
 -- Returns a string that prints out as a grid of digits.
 --
