@@ -63,7 +63,7 @@ place this unknown' digit =
   in this {
     placed = Placed.new cellNumber digit : placed this,
     unknown = map (\ u -> Unknown.place u unknown' digit)
-      $ filter (/= unknown')
+      $ filter (\ x -> Unknown.cellNumber x /= cellNumber)
       $ unknown this
   }
 
