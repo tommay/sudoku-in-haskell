@@ -1,10 +1,10 @@
 module Puzzle
 (
   Puzzle,
---  Puzzle.empty,
---  Puzzle.remove,
---  Puzzle.solutions,
---  Puzzle.randomSolutions,
+  Puzzle.empty,
+  Puzzle.remove,
+  Puzzle.solutions,
+  Puzzle.randomSolutions,
   Puzzle.solutionsFor,
   Puzzle.toPuzzleString,
 ) where  
@@ -119,6 +119,17 @@ doGuesses this maybeRnd guesses unknown digits results =
           in solutions' guess maybeRnd guesses accum)
     results
     digits
+
+remove :: Puzzle -> [Int] -> Puzzle
+remove this cellNumbers =
+  let remaining = filter (\p -> not $ Placed.cellNumber p `elem` cellNumbers)
+        $ placed this
+  in foldr (\p accum ->
+             Puzzle.place accum
+               (Unknown.new $ Placed.cellNumber p)
+               (Placed.digit p))
+       Puzzle.empty
+       remaining
 
 -- We've got placed and unknown and we have to combine them into s single
 -- single lit of characters ordered by originating cellNumber.
