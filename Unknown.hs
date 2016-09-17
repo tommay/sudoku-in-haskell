@@ -56,9 +56,13 @@ minByPossibleSize  =
 minBy :: Ord b => (a -> b) -> [a] -> a
 minBy func list =
   let enhanced = map (\ a -> (func a, a)) list
-      (_, result) = foldr1 (\ a@(na, _) b@(nb, _) ->
-        if na < nb
-          then a
-          else b)
-        enhanced
-  in result
+  -- foldl1 is a smidge faster than foldr1.
+  in snd $ foldl1 (\ a@(na, _) b@(nb, _) ->
+       -- The results are of course the same we select a or b when
+       -- na == nb, but testing na <= nb makes things much slower,
+       -- probably because it chooses elements deeper in the list
+       -- which makes for more list manipulation.
+       if na < nb
+         then a
+         else b)
+       enhanced
