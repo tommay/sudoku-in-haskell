@@ -50,9 +50,15 @@ isExcludedBy this other =
     any (\ f -> f this == f other) [row, col, square]
 
 minByPossibleSize :: [Unknown] -> Unknown
-minByPossibleSize unknowns =
-  foldr1 (\ u min ->
-           if (length $ possible u) < (length $ possible min)
-             then u
-             else min)
-    unknowns
+minByPossibleSize  =
+  minBy (length . possible)
+
+minBy :: Ord b => (a -> b) -> [a] -> a
+minBy func list =
+  let enhanced = map (\ a -> (func a, a)) list
+      (_, result) = foldr1 (\ a@(na, _) b@(nb, _) ->
+        if na < nb
+          then a
+          else b)
+        enhanced
+  in result
