@@ -26,16 +26,16 @@ instance Eq Unknown where
 --
 new :: Int -> Unknown
 new cellNumber =
-    let row = cellNumber `div` 9
-        col = cellNumber `mod` 9
-        square = (row `div` 3)*3 + (col `div` 3)
-    in Unknown {
-      cellNumber = cellNumber,
-      row = row,
-      col = col,
-      square = square,
-      possible = [1..9]
-    }
+  let row = cellNumber `div` 9
+      col = cellNumber `mod` 9
+      square = (row `div` 3)*3 + (col `div` 3)
+  in Unknown {
+    cellNumber = cellNumber,
+    row = row,
+    col = col,
+    square = square,
+    possible = [1..9]
+  }
 
 place :: Unknown -> Unknown -> Int -> Unknown
 place this other digit =
