@@ -5,7 +5,7 @@ module Unknown
   Unknown.cellNumber,
   Unknown.possible,
   Unknown.place,
-  Unknown.minByPossibleSize,
+  Unknown.minByNumPossible,
 ) where  
 
 import qualified Data.List as List
@@ -49,8 +49,8 @@ isExcludedBy this other =
   this /= other &&
     any (\ f -> f this == f other) [row, col, square]
 
-minByPossibleSize :: [Unknown] -> Unknown
-minByPossibleSize  =
+minByNumPossible :: [Unknown] -> Unknown
+minByNumPossible  =
   minBy (length . possible)
 
 minBy :: Ord b => (a -> b) -> [a] -> a

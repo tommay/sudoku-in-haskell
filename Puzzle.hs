@@ -90,7 +90,7 @@ solutions' this maybeRnd guesses results =
       -- No more unknowns, solved!
       (guesses, this) : results
     unknownCells ->
-      let minUnknown = Unknown.minByPossibleSize unknownCells
+      let minUnknown = Unknown.minByNumPossible unknownCells
           possible = Unknown.possible minUnknown
       in case possible of
         [] ->
