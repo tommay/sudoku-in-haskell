@@ -16,7 +16,10 @@ data Unknown = Unknown {
   col :: Int,
   square :: Int,
   possible :: [Int]
-} deriving (Show, Eq)
+} deriving (Show)
+
+instance Eq Unknown where
+  this == that = cellNumber this == cellNumber that
 
 -- Returns a new Unknown at position cellNumber.  Determine the
 -- Unknown's row, column, and square, set all digits possible.
@@ -42,7 +45,8 @@ place this other digit =
 
 -- Returns true if this and Other are in the same row, column, or
 -- square, else false.
--- An Unknown does not exclude itself.
+-- An Unknown does not exclude itself.  I'm not sure we actually
+-- have to check for this in practice, but better safe than sorry.
 --
 isExcludedBy :: Unknown -> Unknown -> Bool
 isExcludedBy this other =
