@@ -63,25 +63,25 @@ create rnd func =
   in create' puzzle sets
 
 create' :: Puzzle -> [[Int]] -> Puzzle
-create' puzzle [] =
-  puzzle
 create' puzzle cellNumberLists =
-  -- We know the puzzle we're given has only one solution.
-  -- Remove more stuff from Puzzle and recurse.
-  let (cellNumbers:rest) = cellNumberLists
-      newPuzzle = Puzzle.remove puzzle cellNumbers
-  in case hasMultipleSolutions newPuzzle of
-       True ->
-         -- Ooops, removed too much.  Recurse with the original
-         -- single-solution puzzle.
-         create' puzzle rest
-       False ->
-         -- newPuzzle has only one solution, go with it.
-         create' newPuzzle rest
+  foldr
+    (\ list accum ->
+      -- We know accum has only one solution.
+      -- Remove more stuff an check if that's still true.
+      let newPuzzle = Puzzle.remove accum list
+      in case hasOnlyOneSolution newPuzzle of
+        True ->
+           -- newPuzzle has only one solution, go with it.
+          newPuzzle
+        False ->
+          -- Ooops, removed too much, stick with the original.
+          accum)
+    puzzle
+    cellNumberLists
 
-hasMultipleSolutions :: Puzzle -> Bool
-hasMultipleSolutions puzzle =
-  (length $ take 2 $ Puzzle.solutions puzzle) == 2
+hasOnlyOneSolution :: Puzzle -> Bool
+hasOnlyOneSolution puzzle =
+  (length $ take 2 $ Puzzle.solutions puzzle) == 1
 
 shuffle :: Random.StdGen -> [a] -> [a]
 shuffle rnd list =
