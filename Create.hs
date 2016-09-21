@@ -34,16 +34,11 @@ randomSolvedPuzzle rnd =
 
 cellSets :: (Int -> [Int]) -> [[Int]]
 cellSets func =
-  uniqueCellSets $ map func [0..80]
+  uniqBy minimum $ map func [0..80]
 
-uniqueCellSets :: [[Int]] -> [[Int]]
-uniqueCellSets cellSets =
-  let uniqueMap =
-        foldr
-          (\ cellSet map -> Map.insert (minimum cellSet) cellSet map)
-          Map.empty
-          cellSets
-  in Map.elems uniqueMap
+uniqBy :: Ord b => (a -> b) -> [a] -> [a]
+uniqBy func list =
+  Map.elems $ Map.fromList [(func e, e) | e <- list]
 
 createNoGuessing :: Random.StdGen -> (Int -> [Int]) -> Puzzle
 createNoGuessing rnd func =
