@@ -44,34 +44,19 @@ identicalSquares n =
       base = row*9 + col
   in List.nub $ map (base+) [0, 3, 6, 27, 30, 33, 54, 57, 60]
 
-spinnySets :: [[Int]]
-spinnySets = [
-  [0, 8, 80, 72],
-  [1, 17, 79, 63],
-  [2, 26, 78, 54],
-  [3, 35, 77, 45],
-  [4, 44, 76, 36],
-  [5, 53, 75, 27],
-  [6, 62, 74, 18],
-  [7, 71, 73, 9],
-  [10, 16, 70, 64],
-  [11, 25, 69, 55],
-  [12, 34, 68, 46],
-  [13, 43, 67, 37],
-  [14, 52, 66, 28],
-  [15, 61, 65, 19],
-  [20, 24, 60, 56],
-  [21, 33, 59, 47],
-  [22, 42, 58, 38],
-  [23, 51, 57, 29],
-  [30, 32, 50, 48],
-  [31, 41, 49, 39],
-  [40]]
-
 spinny :: Int -> [Int]
 spinny n =
-  case List.find (\set -> n `elem` set) spinnySets of
-    Just set -> set
+  spinny' n []
+
+spinny' :: Int -> [Int] -> [Int]
+spinny' n result =
+  if n `elem` result
+    then result
+    else
+      let (row, col) = rowcol(n)
+          row' = col
+          col' = 8 - row
+      in spinny' ((row' * 9) + col') (n : result)
 
 random :: Int -> [Int]
 random n = [n]
@@ -115,6 +100,3 @@ wtf2 n =
 rowcol :: Int -> (Int, Int)
 rowcol n =
   (n `div` 9, n `mod` 9)
-
-
-
