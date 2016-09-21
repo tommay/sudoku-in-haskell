@@ -1,5 +1,3 @@
-import qualified Data.List as List
-import qualified Data.Map as Map
 import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
 
@@ -7,17 +5,17 @@ import qualified Layout
 import qualified Puzzle
 import Puzzle (Puzzle)
 
-cellSet = Layout.spinny
+layout = Layout.layout Layout.spinny
 
 main = mainOneNoGuessing
 
 mainOne = do
   rnd <- Random.getStdGen
-  putStr $ Puzzle.toPuzzleString $ create rnd cellSet
+  putStr $ Puzzle.toPuzzleString $ create rnd layout
 
 mainOneNoGuessing = do
   rnd <- Random.getStdGen
-  putStr $ Puzzle.toPuzzleString $ createNoGuessing rnd cellSet
+  putStr $ Puzzle.toPuzzleString $ createNoGuessing rnd layout
 
 mainListNoGuessing = do
   rnd <- Random.getStdGen
@@ -25,37 +23,29 @@ mainListNoGuessing = do
     (\ (guesses, puzzle) ->
       unlines ["Guesses: " ++ (show guesses),
                Puzzle.toPuzzleString puzzle])
-    $ filter (\ (g, p) -> g == 0) $ createList rnd cellSet
+    $ filter (\ (g, p) -> g == 0) $ createList rnd layout
 
 randomSolvedPuzzle :: Random.StdGen -> Puzzle
 randomSolvedPuzzle rnd =
   let (_, puzzle) = head $ Puzzle.randomSolutions Puzzle.empty rnd
   in puzzle
 
-cellSets :: (Int -> [Int]) -> [[Int]]
-cellSets func =
-  uniqBy minimum $ map func [0..80]
+createNoGuessing :: Random.StdGen -> [[Int]] -> Puzzle
+createNoGuessing rnd layout =
+  head $ take 1 $ map snd $ filter (\ (g, p) -> g == 0) $ createList rnd layout
 
-uniqBy :: Ord b => (a -> b) -> [a] -> [a]
-uniqBy func list =
-  Map.elems $ Map.fromList [(func e, e) | e <- list]
-
-createNoGuessing :: Random.StdGen -> (Int -> [Int]) -> Puzzle
-createNoGuessing rnd func =
-  head $ take 1 $ map snd $ filter (\ (g, p) -> g == 0) $ createList rnd func
-
-createList :: Random.StdGen -> (Int -> [Int]) -> [(Int, Puzzle)]
-createList rnd func =
+createList :: Random.StdGen -> [[Int]] -> [(Int, Puzzle)]
+createList rnd layout =
   let (rnd1, rnd2) = Random.split rnd
-      puzzle = create rnd1 func
+      puzzle = create rnd1 layout
       (guesses, _) = head $ Puzzle.solutions puzzle
-  in (guesses, puzzle):(createList rnd2 func)
+  in (guesses, puzzle):(createList rnd2 layout)
 
-create :: Random.StdGen -> (Int -> [Int]) -> Puzzle
-create rnd func =
+create :: Random.StdGen -> [[Int]] -> Puzzle
+create rnd layout =
   let puzzle = randomSolvedPuzzle rnd
-      sets = shuffle rnd $ cellSets func
-  in create' puzzle sets
+      layout' = shuffle rnd layout
+  in create' puzzle layout'
 
 create' :: Puzzle -> [[Int]] -> Puzzle
 create' puzzle cellNumberLists =

@@ -1,5 +1,6 @@
 module Layout
 (
+  layout,
   classic,
   leftRight,
   leftRightUpDown,
@@ -12,11 +13,11 @@ module Layout
   wtf2,
 ) where
 
-import qualified Data.List as List
+import qualified Data.Map as Map
 
 classic :: Int -> [Int]
 classic n =
-  List.nub [n, 80 - n]
+  [n, 80 - n]
 
 reflectLeftRight :: Int -> Int
 reflectLeftRight n =
@@ -25,7 +26,7 @@ reflectLeftRight n =
 
 leftRight :: Int -> [Int]
 leftRight n =
-  List.nub [n, reflectLeftRight n]
+  [n, reflectLeftRight n]
 
 reflectUpDown :: Int -> Int
 reflectUpDown n =
@@ -35,14 +36,14 @@ reflectUpDown n =
 leftRightUpDown :: Int -> [Int]
 leftRightUpDown n =
   let leftRightSets = leftRight n
-  in List.nub $ leftRightSets ++ map reflectUpDown leftRightSets
+  in leftRightSets ++ map reflectUpDown leftRightSets
 
 identicalSquares :: Int -> [Int]
 identicalSquares n =
   let col = n `mod` 3
       row = (n `div` 9) `mod` 3
       base = row*9 + col
-  in List.nub $ map (base+) [0, 3, 6, 27, 30, 33, 54, 57, 60]
+  in map (base +) [0, 3, 6, 27, 30, 33, 54, 57, 60]
 
 spinny :: Int -> [Int]
 spinny n =
@@ -68,7 +69,7 @@ reflectDiagonally n =
 
 diagonal :: Int -> [Int]
 diagonal n = 
-  List.nub [n, reflectDiagonally n]
+  [n, reflectDiagonally n]
 
 reflectDiagonally' :: Int -> Int
 reflectDiagonally' n =
@@ -80,19 +81,30 @@ reflectDiagonally' n =
 doubleDiagonal :: Int -> [Int]
 doubleDiagonal n =
   let diagonalSets = diagonal n
-  in List.nub $ diagonalSets ++ map reflectDiagonally' diagonalSets
+  in diagonalSets ++ map reflectDiagonally' diagonalSets
 
 wtf :: Int -> [Int]
 wtf n = 
   let col = 8 - (n `mod` 9)
       row = n `div` 9
-  in List.nub [n, col*9 + row]
+  in [n, col*9 + row]
 
 wtf2 :: Int -> [Int]
 wtf2 n = 
   let (row, col) = rowcol (80 - n)
-  in List.nub [n, col*9 + row]
+  in [n, col*9 + row]
 
 rowcol :: Int -> (Int, Int)
 rowcol n =
   (n `div` 9, n `mod` 9)
+
+layout :: (Int -> [Int]) -> [[Int]]
+layout func =
+  uniqBy minimum $ map (uniq . func) [0..80]
+
+uniq :: Ord a => [a] -> [a]
+uniq = uniqBy id
+
+uniqBy :: Ord b => (a -> b) -> [a] -> [a]
+uniqBy func list =
+  Map.elems $ Map.fromList [(func e, e) | e <- list]
