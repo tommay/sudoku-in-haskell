@@ -77,10 +77,6 @@ reflectDiagonally' n =
       row' = 8 - row
   in col'*9 + row'
 
-diagonal' :: Int -> [Int]
-diagonal' n = 
-  List.nub [n, reflectDiagonally' n]
-
 doubleDiagonal :: Int -> [Int]
 doubleDiagonal n =
   let diagonalSets = diagonal n
