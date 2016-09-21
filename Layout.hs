@@ -21,7 +21,7 @@ classic n =
 
 reflectLeftRight :: Int -> Int
 reflectLeftRight n =
-  let col = n `mod` 9
+  let (_, col) = rowcol n
   in n - col + 8 - col
 
 leftRight :: Int -> [Int]
@@ -30,7 +30,8 @@ leftRight n =
 
 reflectUpDown :: Int -> Int
 reflectUpDown n =
-  let rowish = (n `div` 9) * 9
+  let (row, _) = rowcol n
+      rowish = row * 9
   in n - rowish + 72 - rowish
 
 leftRightUpDown :: Int -> [Int]
@@ -65,7 +66,9 @@ random n = [n]
 reflectDiagonally :: Int -> Int
 reflectDiagonally n =
   let (row, col) = rowcol n
-  in col*9 + row
+      row' = col
+      col' = row
+  in row' * 9 + col'
 
 diagonal :: Int -> [Int]
 diagonal n = 
@@ -74,9 +77,9 @@ diagonal n =
 reflectDiagonally' :: Int -> Int
 reflectDiagonally' n =
   let (row, col) = rowcol n
-      col' = 8 - col
-      row' = 8 - row
-  in col'*9 + row'
+      row' = 8 - col
+      col' = 8 - row
+  in row' * 9 + col'
 
 doubleDiagonal :: Int -> [Int]
 doubleDiagonal n =
@@ -85,14 +88,17 @@ doubleDiagonal n =
 
 wtf :: Int -> [Int]
 wtf n = 
-  let col = 8 - (n `mod` 9)
-      row = n `div` 9
-  in [n, col*9 + row]
+  let (row, col) = rowcol n
+      row' = 8 - col
+      col' = row
+  in [n, row' * 9 + col']
 
 wtf2 :: Int -> [Int]
 wtf2 n = 
   let (row, col) = rowcol (80 - n)
-  in [n, col*9 + row]
+      row' = col
+      col' = row
+  in [n, row' * 9 + col']
 
 rowcol :: Int -> (Int, Int)
 rowcol n =
