@@ -1,23 +1,35 @@
+import Data.List as List
 import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
+import qualified System.Environment
 
 import qualified Layout
 import qualified Puzzle
 import Puzzle (Puzzle)
 
-layout = Layout.layout Layout.spinny
+dothis = doOneNoGuessing
 
-main = mainOneNoGuessing
+main = do
+  args <- System.Environment.getArgs
+  let style = head args
+      maybeLayout = Layout.getLayout style
+  case maybeLayout of
+     Just layout -> dothis layout
+     Nothing -> showLayouts
 
-mainOne = do
+showLayouts = do
+  putStrLn $
+    "Valid layouts:\n" ++ (List.intercalate " " Layout.getLayoutStrings)
+
+doOne layout = do
   rnd <- Random.getStdGen
   putStr $ Puzzle.toPuzzleString $ create rnd layout
 
-mainOneNoGuessing = do
+doOneNoGuessing layout = do
   rnd <- Random.getStdGen
   putStr $ Puzzle.toPuzzleString $ createNoGuessing rnd layout
 
-mainListNoGuessing = do
+doListNoGuessing layout = do
   rnd <- Random.getStdGen
   mapM_ putStrLn $ map
     (\ (guesses, puzzle) ->

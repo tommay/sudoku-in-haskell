@@ -1,19 +1,25 @@
 module Layout
 (
-  layout,
-  classic,
-  leftRight,
-  leftRightUpDown,
-  identicalSquares,
-  spinny,
-  random,
-  diagonal,
-  doubleDiagonal,
-  wtf,
-  wtf2,
+  getLayout,
+  getLayoutStrings,
 ) where
 
+import qualified Data.Char as Char
 import qualified Data.Map as Map
+
+layouts =
+  [
+    ("classic", classic),
+    ("leftRight", leftRight),
+    ("leftRightUpDown", leftRightUpDown),
+    ("identicalSquares", identicalSquares),
+    ("spinny", spinny),
+    ("random", random),
+    ("diagoal", diagonal),
+    ("doubleDiagonal", doubleDiagonal),
+    ("wtf", wtf),
+    ("wtf2", wtf2)
+  ]
 
 classic :: Int -> [Int]
 classic n =
@@ -100,13 +106,25 @@ wtf2 n =
       col' = row
   in [n, row' * 9 + col']
 
+toLower :: String -> String
+toLower =
+  map Char.toLower
+
+getLayout :: String -> Maybe [[Int]]
+getLayout style =
+  let layoutMap = Map.fromList $ [(toLower name, func) | (name, func) <- layouts]
+      maybeFunc = Map.lookup (toLower style) layoutMap
+  in case maybeFunc of
+       Nothing -> Nothing
+       Just func -> Just $ uniqBy minimum $ map (uniq . func) [0..80]
+
+getLayoutStrings :: [String]
+getLayoutStrings =
+  map fst layouts
+
 rowcol :: Int -> (Int, Int)
 rowcol n =
   (n `div` 9, n `mod` 9)
-
-layout :: (Int -> [Int]) -> [[Int]]
-layout func =
-  uniqBy minimum $ map (uniq . func) [0..80]
 
 uniq :: Ord a => [a] -> [a]
 uniq = uniqBy id
