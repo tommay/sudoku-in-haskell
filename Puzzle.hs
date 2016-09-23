@@ -1,5 +1,4 @@
-module Puzzle
-(
+module Puzzle (
   Puzzle,
   Puzzle.empty,
   Puzzle.remove,
@@ -7,12 +6,17 @@ module Puzzle
   Puzzle.randomSolutions,
   Puzzle.solutionsFor,
   Puzzle.toPuzzleString,
+  Solution (Solution),
+  Puzzle.puzzle,
+  Puzzle.guesses,
+  Guesses
 ) where  
 
 import qualified Data.Char as Char
 import qualified Data.List as List
 import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
+import qualified Debug.Trace
 
 import qualified Placed
 import Placed (Placed)
@@ -22,6 +26,17 @@ import Unknown (Unknown)
 data Puzzle = Puzzle {
   placed :: [Placed],
   unknown :: [Unknown]
+} deriving (Show)
+
+data Guesses = Guesses Int deriving (Show)
+
+instance Enum Guesses where
+  toEnum n = Guesses n
+  fromEnum (Guesses n) = n
+
+data Solution = Solution {
+  guesses :: Guesses,
+  puzzle :: Puzzle
 } deriving (Show)
 
 -- Returns a new Puzzle with all Unknown cells.
@@ -67,31 +82,32 @@ place this unknown' digit =
       $ unknown this
   }
 
-solutionsFor :: String -> [(Int, Puzzle)]
+solutionsFor :: String -> [Solution]
 solutionsFor setup =
   solutions $ Puzzle.new setup
 
 -- Try to solve this Puzzle, returning a list of solved Puzzles.
 --
-solutions :: Puzzle -> [(Int, Puzzle)]
+solutions :: Puzzle -> [Solution]
 solutions this =
-  solutions' this Nothing 0 []
+  solutions' this Nothing (Guesses 0) []
 
-randomSolutions :: Puzzle -> Random.StdGen -> [(Int, Puzzle)]
+randomSolutions :: Puzzle -> Random.StdGen -> [Solution]
 randomSolutions this rnd =
-  solutions' this (Just rnd) 0 []
+  solutions' this (Just rnd) (Guesses 0) []
 
 -- Try to solve this Puzzle, returning a list of solved Puzzles.
 --
-solutions' :: Puzzle -> Maybe Random.StdGen -> Int -> [(Int, Puzzle)] -> [(Int, Puzzle)]
+solutions' :: Puzzle -> Maybe Random.StdGen -> Guesses -> [Solution] -> [Solution]
 solutions' this maybeRnd guesses results =
   case unknown this of
     [] ->
       -- No more unknowns, solved!
-      (guesses, this) : results
+      Solution {guesses = guesses, puzzle = this} : results
     unknownCells ->
-      let minUnknown = Unknown.minByNumPossible unknownCells
-          possible = Unknown.possible minUnknown
+      let minUnknown' = Unknown.minByNumPossible unknownCells
+          minUnknown = Debug.Trace.trace ("minUnknown: " ++ show minUnknown') minUnknown'
+          possible = Unknown.possible minUnknown'
       in case possible of
         [] ->
           -- Failed.  No more solutions.
@@ -107,12 +123,12 @@ solutions' this maybeRnd guesses results =
                   Nothing -> possible
                   Just rnd -> shuffle rnd possible
           in doGuesses this maybeRnd
-               (guesses + 1) minUnknown shuffledPossible results
+               (succ guesses) minUnknown shuffledPossible results
 
 -- For each Digit in the list, use it as a guess for unknown
 -- and try to solve the resulting Puzzle.
 --
-doGuesses :: Puzzle -> Maybe Random.StdGen -> Int -> Unknown -> [Int] -> [(Int, Puzzle)] -> [(Int, Puzzle)]
+doGuesses :: Puzzle -> Maybe Random.StdGen -> Guesses -> Unknown -> [Int] -> [Solution] -> [Solution]
 doGuesses this maybeRnd guesses unknown digits results =
   foldr (\ digit accum ->
           let guess = Puzzle.place this unknown digit

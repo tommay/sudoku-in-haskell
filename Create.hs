@@ -39,8 +39,8 @@ doListNoGuessing layout = do
 
 randomSolvedPuzzle :: Random.StdGen -> Puzzle
 randomSolvedPuzzle rnd =
-  let (_, puzzle) = head $ Puzzle.randomSolutions Puzzle.empty rnd
-  in puzzle
+  let solution = head $ Puzzle.randomSolutions Puzzle.empty rnd
+  in Puzzle.puzzle solution
 
 createNoGuessing :: Random.StdGen -> [[Int]] -> Puzzle
 createNoGuessing rnd layout =
@@ -50,7 +50,8 @@ createList :: Random.StdGen -> [[Int]] -> [(Int, Puzzle)]
 createList rnd layout =
   let (rnd1, rnd2) = Random.split rnd
       puzzle = create rnd1 layout
-      (guesses, _) = head $ Puzzle.solutions puzzle
+      solution = head $ Puzzle.solutions puzzle
+      guesses = Puzzle.guesses solution
   in (guesses, puzzle):(createList rnd2 layout)
 
 create :: Random.StdGen -> [[Int]] -> Puzzle

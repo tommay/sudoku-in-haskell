@@ -3,22 +3,25 @@ import qualified System.FilePath as FilePath
 import qualified Text.Regex as Regex
 import qualified System.Environment
 
-import qualified Puzzle
+import qualified Puzzle 
+import Puzzle (Puzzle, Solution)
 
-countedList :: [a] -> [Either Int a]
+data CountedItem a = Count Int | Item a
+
+countedList :: [a] -> [CountedItem a]
 countedList list =
   countedList' 0 list
 
-countedList' :: Int -> [a] -> [Either Int a]
+countedList' :: Int -> [a] -> [CountedItem a]
 countedList' n [] =
-  [Left n]
+  [Count n]
 countedList' n (head : tail) =
-  (Right head) : countedList' (n + 1) tail
+  (Item head) : countedList' (n + 1) tail
 
-eitherToString :: Either Int (Int, Puzzle.Puzzle) -> String
-eitherToString (Left n) =
+countedItemToString :: CountedItem Solution -> String
+countedItemToString (Count n) =
   "There are " ++ (show n) ++ " solutions."  
-eitherToString (Right (guesses, puzzle)) =
+countedItemToString (Item (Puzzle.Solution guesses puzzle)) =
   unlines ["Guesses: " ++ show guesses,
            Puzzle.toPuzzleString puzzle]
 
@@ -30,7 +33,7 @@ main = do
   args <- System.Environment.getArgs
   setup <- getSetup $ head args
   let solutions = countedList $ Puzzle.solutionsFor setup
-  mapM_ putStrLn $ map eitherToString solutions
+  mapM_ putStrLn $ map countedItemToString solutions
 
 -- Returns the contents of Filename as an IO String with "#" comments
 -- and whitespace deleted.  The result should be a string of 81 digits
