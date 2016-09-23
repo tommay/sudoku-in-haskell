@@ -6,6 +6,9 @@ import qualified System.Environment
 import qualified Layout
 import qualified Puzzle
 import Puzzle (Puzzle)
+import qualified Solution
+import Solution (Solution)
+import qualified Solver
 
 dothis = doOneNoGuessing
 
@@ -39,8 +42,8 @@ doListNoGuessing layout = do
 
 randomSolvedPuzzle :: Random.StdGen -> Puzzle
 randomSolvedPuzzle rnd =
-  let solution = head $ Puzzle.randomSolutions Puzzle.empty rnd
-  in Puzzle.puzzle solution
+  let solution = head $ Solver.randomSolutions Puzzle.empty rnd
+  in Solution.puzzle solution
 
 createNoGuessing :: Random.StdGen -> [[Int]] -> Puzzle
 createNoGuessing rnd layout =
@@ -50,9 +53,9 @@ createList :: Random.StdGen -> [[Int]] -> [(Int, Puzzle)]
 createList rnd layout =
   let (rnd1, rnd2) = Random.split rnd
       puzzle = create rnd1 layout
-      solution = head $ Puzzle.solutions puzzle
-      guesses = Puzzle.guesses solution
-  in (guesses, puzzle):(createList rnd2 layout)
+      solution = head $ Solver.solutions puzzle
+      guessCount = Solution.guessCount solution
+  in (fromEnum guessCount, puzzle):(createList rnd2 layout)
 
 create :: Random.StdGen -> [[Int]] -> Puzzle
 create rnd layout =
@@ -79,7 +82,7 @@ create' puzzle cellNumberLists =
 
 hasOnlyOneSolution :: Puzzle -> Bool
 hasOnlyOneSolution puzzle =
-  (length $ take 2 $ Puzzle.solutions puzzle) == 1
+  (length $ take 2 $ Solver.solutions puzzle) == 1
 
 shuffle :: Random.StdGen -> [a] -> [a]
 shuffle rnd list =

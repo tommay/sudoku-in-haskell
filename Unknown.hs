@@ -5,7 +5,6 @@ module Unknown
   Unknown.cellNumber,
   Unknown.possible,
   Unknown.place,
-  Unknown.minByNumPossible,
 ) where  
 
 import qualified Data.List as List
@@ -52,21 +51,3 @@ isExcludedBy :: Unknown -> Unknown -> Bool
 isExcludedBy this other =
   this /= other &&
     any (\ f -> f this == f other) [row, col, square]
-
-minByNumPossible :: [Unknown] -> Unknown
-minByNumPossible  =
-  minBy (length . possible)
-
-minBy :: Ord b => (a -> b) -> [a] -> a
-minBy func list =
-  let enhanced = map (\ a -> (func a, a)) list
-  -- foldl1 is a smidge faster than foldr1.
-  in snd $ foldl1 (\ a@(na, _) b@(nb, _) ->
-       -- The results are of course the same we select a or b when
-       -- na == nb, but testing na <= nb makes things much slower,
-       -- probably because it chooses elements deeper in the list
-       -- which makes for more list manipulation.
-       if na < nb
-         then a
-         else b)
-       enhanced

@@ -3,8 +3,11 @@ import qualified System.FilePath as FilePath
 import qualified Text.Regex as Regex
 import qualified System.Environment
 
-import qualified Puzzle 
-import Puzzle (Puzzle, Solution)
+import qualified Puzzle
+import Puzzle (Puzzle)
+import qualified Solution
+import Solution (Solution (Solution))
+import qualified Solver
 
 data CountedItem a = Count Int | Item a
 
@@ -21,7 +24,7 @@ countedList' n (head : tail) =
 countedItemToString :: CountedItem Solution -> String
 countedItemToString (Count n) =
   "There are " ++ (show n) ++ " solutions."  
-countedItemToString (Item (Puzzle.Solution guesses puzzle)) =
+countedItemToString (Item (Solution guesses puzzle)) =
   unlines ["Guesses: " ++ show guesses,
            Puzzle.toPuzzleString puzzle]
 
@@ -32,7 +35,7 @@ countedItemToString (Item (Puzzle.Solution guesses puzzle)) =
 main = do
   args <- System.Environment.getArgs
   setup <- getSetup $ head args
-  let solutions = countedList $ Puzzle.solutionsFor setup
+  let solutions = countedList $ Solver.solutions $ Puzzle.fromString setup
   mapM_ putStrLn $ map countedItemToString solutions
 
 -- Returns the contents of Filename as an IO String with "#" comments
