@@ -16,22 +16,25 @@ main = do
   args <- System.Environment.getArgs
   setup <- getSetup $ head args
   let solutions = Solver.solutions $ Puzzle.fromString setup
-  count <- printAndCount solutions
+  count <- processAndCount printSolution solutions
   putStrLn $ "There are " ++ show count ++ " solutions."
 
-printAndCount :: [Solution] -> IO Int
-printAndCount solutions =
-  printAndCount' 0 solutions
+processAndCount :: (a -> IO ()) -> [a] -> IO Int
+processAndCount func list =
+  processAndCount' func 0 list
+  where
+    processAndCount' _ n [] =
+      return n
+    processAndCount' func n (head:tail) = do
+      func head
+      processAndCount' func (n + 1) tail
 
-printAndCount' :: Int -> [Solution] -> IO Int
-printAndCount' n [] =
-  return n
-printAndCount' n (head:tail) = do
-  let Solution guesses puzzle = head
-  putStrLn $ unlines
-    ["Guesses: " ++ show guesses,
-     Puzzle.toPuzzleString puzzle]
-  printAndCount' (n + 1) tail
+printSolution :: Solution -> IO ()
+printSolution solution =
+  let Solution guesses puzzle = solution
+  in putStrLn $ unlines
+       ["Guesses: " ++ show guesses,
+        Puzzle.toPuzzleString puzzle]
 
 -- Returns the contents of Filename as an IO String with "#" comments
 -- and whitespace deleted.  The result should be a string of 81 digits
