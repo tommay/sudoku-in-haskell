@@ -14,11 +14,12 @@ dothis = doOneNoGuessing
 
 main = do
   args <- System.Environment.getArgs
-  let style = head args
-      maybeLayout = Layout.getLayout style
-  case maybeLayout of
-     Just layout -> dothis layout
-     Nothing -> showLayouts
+  case args of
+    [style] ->
+      case Layout.getLayout style of
+        Just layout -> dothis layout
+        Nothing -> showLayouts
+    _ -> showLayouts
 
 showLayouts = do
   putStrLn $
