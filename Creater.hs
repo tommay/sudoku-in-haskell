@@ -26,7 +26,7 @@ create' puzzle cellNumberLists =
       let newPuzzle = Puzzle.remove accum list
       in case hasOnlyOneSolution newPuzzle of
         True ->
-           -- newPuzzle has only one solution, go with it.
+          -- newPuzzle has only one solution, go with it.
           newPuzzle
         False ->
           -- Ooops, removed too much, stick with the original.
