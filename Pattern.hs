@@ -3,6 +3,7 @@ import qualified System.FilePath as FilePath
 import qualified Text.Regex as Regex
 import qualified System.Random as Random
 import qualified System.Environment
+import qualified Debug.Trace
 
 import qualified Puzzle
 import qualified Creater
@@ -13,8 +14,11 @@ main = do
   args <- System.Environment.getArgs
   let file = head args
   layout <- getLayout file
+  let unknownCount = length $ head layout
   rnd <- Random.getStdGen
-  putStrLn $ Puzzle.toPuzzleString $ head $ createListNoGuessing rnd layout
+  putStrLn $ Puzzle.toPuzzleString $ head
+    $ filter (\ p -> (length $ Puzzle.unknown p) == unknownCount)
+    $ createListNoGuessing rnd layout
 
 getLayout :: FilePath -> IO [[Int]]
 getLayout filename = do
