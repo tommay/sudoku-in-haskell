@@ -15,7 +15,7 @@ layouts =
     ("identicalSquares", identicalSquares),
     ("spinny", spinny),
     ("random", random),
-    ("diagoal", diagonal),
+    ("diagonal", diagonal),
     ("doubleDiagonal", doubleDiagonal),
     ("wtf", wtf),
     ("wtf2", wtf2)
