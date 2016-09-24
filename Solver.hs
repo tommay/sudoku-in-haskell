@@ -8,7 +8,7 @@ import Puzzle (Puzzle)
 import qualified Unknown
 import Unknown (Unknown)
 import qualified Solution
-import Solution (Solution (Solution), GuessCount (GuessCount))
+import Solution (Solution)
 
 import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
@@ -17,20 +17,20 @@ import qualified System.Random.Shuffle as Shuffle
 --
 solutions :: Puzzle -> [Solution]
 solutions puzzle =
-  solutions' puzzle Nothing (GuessCount 0) []
+  solutions' puzzle Nothing 0 []
 
 randomSolutions :: Puzzle -> Random.StdGen -> [Solution]
 randomSolutions puzzle rnd =
-  solutions' puzzle (Just rnd) (GuessCount 0) []
+  solutions' puzzle (Just rnd) 0 []
 
 -- Try to solve the given Puzzle, returning a list of solved Puzzles.
 --
-solutions' :: Puzzle -> Maybe Random.StdGen -> GuessCount -> [Solution] -> [Solution]
+solutions' :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Solution]
 solutions' puzzle maybeRnd guessCount results =
   case Puzzle.unknown puzzle of
     [] ->
       -- No more unknowns, solved!
-      Solution guessCount puzzle : results
+      Solution.new guessCount puzzle : results
     unknownCells ->
       let minUnknown = minByNumPossible unknownCells
           possible = Unknown.possible minUnknown
@@ -49,12 +49,12 @@ solutions' puzzle maybeRnd guessCount results =
                   Nothing -> possible
                   Just rnd -> shuffle rnd possible
           in doGuesses puzzle maybeRnd
-               (succ guessCount) minUnknown shuffledPossible results
+               (guessCount + 1) minUnknown shuffledPossible results
 
 -- For each Digit in the list, use it as a guess for unknown
 -- and try to solve the resulting Puzzle.
 --
-doGuesses :: Puzzle -> Maybe Random.StdGen -> GuessCount -> Unknown -> [Int] -> [Solution] -> [Solution]
+doGuesses :: Puzzle -> Maybe Random.StdGen -> Int -> Unknown -> [Int] -> [Solution] -> [Solution]
 doGuesses puzzle maybeRnd guessCount unknown digits results =
   foldr (\ digit accum ->
           let guess = Puzzle.place puzzle unknown digit

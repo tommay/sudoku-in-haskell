@@ -5,7 +5,7 @@ import qualified System.Environment
 import qualified Puzzle
 import Puzzle (Puzzle)
 import qualified Solution
-import Solution (Solution (Solution))
+import Solution (Solution)
 import qualified Solver
 
 -- This is the main function, called from the sudoku script.
@@ -31,10 +31,9 @@ processAndCount func list =
 
 printSolution :: Solution -> IO ()
 printSolution solution =
-  let Solution guesses puzzle = solution
-  in putStrLn $ unlines
-       ["Guesses: " ++ show guesses,
-        Puzzle.toPuzzleString puzzle]
+  putStrLn $ unlines
+    ["Guesses: " ++ (show $ Solution.guessCount solution),
+     Puzzle.toPuzzleString $ Solution.puzzle solution]
 
 -- Returns the contents of Filename as an IO String with "#" comments
 -- and whitespace deleted.  The result should be a string of 81 digits

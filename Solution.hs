@@ -1,7 +1,7 @@
 module Solution
 (
-  Solution (Solution),
-  GuessCount (GuessCount),
+  Solution,
+  new,
   guessCount,
   puzzle,
 ) where
@@ -9,12 +9,10 @@ module Solution
 import Puzzle (Puzzle)
 
 data Solution = Solution {
-  guessCount :: GuessCount,
+  guessCount :: Int,
   puzzle :: Puzzle
 } deriving (Show)
 
-data GuessCount = GuessCount Int deriving (Show)
-
-instance Enum GuessCount where
-  toEnum n = GuessCount n
-  fromEnum (GuessCount n) = n
+new :: Int -> Puzzle -> Solution
+new guessCount puzzle =
+  Solution { guessCount = guessCount, puzzle = puzzle }
