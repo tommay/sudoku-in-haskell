@@ -5,36 +5,16 @@ import qualified System.Random as Random
 import qualified System.Environment
 
 import qualified Puzzle
-import Puzzle (Puzzle)
-import qualified Solution
+import qualified Creater
 import qualified Solver
+import qualified Solution
 
 main = do
   args <- System.Environment.getArgs
   let file = head args
   layout <- getLayout file
   rnd <- Random.getStdGen
-  putStrLn $ Puzzle.toPuzzleString $ create rnd layout
-
-create :: Random.StdGen -> [[Int]] -> Puzzle
-create rnd layout@[cells] =
-  let (rnd1, rnd2) = Random.split rnd
-      randomPuzzle = randomSolvedPuzzle rnd1
-      puzzle = Puzzle.remove randomPuzzle cells
-  in if hasOnlyOneSolution puzzle
-       then puzzle
-       else create rnd2 layout
-
-randomSolvedPuzzle :: Random.StdGen -> Puzzle
-randomSolvedPuzzle rnd =
-  let emptyPuzzle = Puzzle.empty
-      randomSolution = head $ Solver.randomSolutions emptyPuzzle rnd
-      randomPuzzle = Solution.puzzle randomSolution
-  in randomPuzzle
-
-hasOnlyOneSolution :: Puzzle -> Bool
-hasOnlyOneSolution puzzle =
-  (length $ take 2 $ Solver.solutions puzzle) == 1
+  putStrLn $ Puzzle.toPuzzleString $ head $ createListNoGuessing rnd layout
 
 getLayout :: FilePath -> IO [[Int]]
 getLayout filename = do
@@ -60,3 +40,10 @@ toLayout string =
   let zipped = zip [0..] string
       cells =  map fst $ filter (\ (n, char) -> char == '-') zipped
   in [cells]
+
+createListNoGuessing rnd layout =
+  filter
+    (\ puzzle ->
+      let solution = head $ Solver.solutions puzzle
+      in Solution.guessCount solution == 0)
+    $ Creater.createList rnd layout
