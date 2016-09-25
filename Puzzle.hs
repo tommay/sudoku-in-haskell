@@ -1,6 +1,7 @@
 module Puzzle (
   Puzzle,
   Puzzle.unknown,
+  Puzzle.exclusionSets,
   Puzzle.empty,
   Puzzle.fromString,
   Puzzle.place,
@@ -19,7 +20,8 @@ import Unknown (Unknown)
 
 data Puzzle = Puzzle {
   placed :: [Placed],
-  unknown :: [Unknown]
+  unknown :: [Unknown],
+  exclusionSets :: [[Int]]
 } deriving (Show)
 
 -- Returns a new Puzzle with all Unknown cells.
@@ -28,8 +30,31 @@ empty :: Puzzle
 empty =
   Puzzle {
     placed = [],
-    unknown = [Unknown.new n | n <- [0..80]]
+    unknown = [Unknown.new n | n <- [0..80]],
+    exclusionSets = makeExclusionSets
   }
+
+makeExclusionSets :: [[Int]]
+makeExclusionSets =
+ let
+   -- Create an ExclusionSet for each row, containing the cell numbers
+   -- in the row.
+   rows = [[row*9 + col | col <- [0..8]] | row <- [0..8]]
+
+   -- Create an ExclusionSet for each column.
+   cols = [[row*9 + col | row <- [0..8]] | col <- [0..8]]
+
+   -- Create an ExclusionSet for each square.
+   squares = map (\ square ->
+       let
+         -- row and col of upper left corner of square
+         row = square `div` 3 * 3
+         col = square `mod` 3 * 3
+       in
+         [(row + n `div` 3)*9 + (col + n `mod` 3) | n <- [0..8]])
+     [0..8]
+
+    in rows ++ cols ++ squares
 
 -- Returns a new Puzzle with each Cell initialized according to
 -- Setup, which is a string of 81 digits or dashes.
