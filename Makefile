@@ -4,4 +4,4 @@ all:
 	ghc -O2 Pattern
 
 clean:
-	rm -f *.hi *.o Colve Create
+	rm -f *.hi *.o Solve Create Pattern
