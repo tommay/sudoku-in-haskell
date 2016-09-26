@@ -37,7 +37,7 @@ solutions_b puzzle maybeRnd guessCount results =
     then -- Try the heuristic functions.
       let maybeNext = first $
             map (\ f -> f puzzle)
-              [placeOneMissing, placeOneNeeded]
+              [placeOneMissing, placeOneNeeded, placeOneForced]
       in case maybeNext of
         Just nextPuzzle ->
           solutions_a nextPuzzle maybeRnd guessCount results
@@ -65,7 +65,7 @@ solutions_c puzzle maybeRnd guessCount results =
       results
     [_] ->
       -- One possibility.  Recurse without incrementing guessCount.
-      -- This should not happen if we're using the heuristics, but
+      -- This will not happen if we're using the heuristics, but
       -- this case is included in case they're disabled.
       doGuesses puzzle maybeRnd guessCount minUnknown possible results
     _ ->
@@ -134,6 +134,16 @@ placeOneNeededInSet puzzle set =
            [unknown] -> Just $ Puzzle.place puzzle unknown digit
            _ -> Nothing)
        [1..9]
+
+placeOneForced :: Puzzle -> Maybe Puzzle
+placeOneForced puzzle =
+  Solver.any (placeForcedUnknown puzzle) $ Puzzle.unknown puzzle
+
+placeForcedUnknown :: Puzzle -> Unknown -> Maybe Puzzle
+placeForcedUnknown puzzle unknown =
+  case Unknown.possible unknown of
+    [digit] -> Just $ Puzzle.place puzzle unknown digit
+    _ -> Nothing
 
 unknownsForDigit :: Int -> [Unknown] -> [Unknown]
 unknownsForDigit digit unknowns =
