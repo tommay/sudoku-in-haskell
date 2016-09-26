@@ -128,12 +128,13 @@ placeOneNeeded puzzle =
 placeOneNeededInSet :: Puzzle -> [Int] -> Maybe Puzzle
 placeOneNeededInSet puzzle set =
   let unknowns = unknownsInSet puzzle set
-  in Solver.any
-       (\ digit ->
-         case unknownsForDigit digit unknowns of
-           [unknown] -> Just $ Puzzle.place puzzle unknown digit
-           _ -> Nothing)
-       [1..9]
+  in Solver.any (placeNeededDigitInSet puzzle unknowns) [1..9]
+
+placeNeededDigitInSet :: Puzzle -> [Unknown] -> Int -> Maybe Puzzle
+placeNeededDigitInSet puzzle unknowns digit =
+  case unknownsForDigit unknowns digit of
+    [unknown] -> Just $ Puzzle.place puzzle unknown digit
+    _ -> Nothing
 
 placeOneForced :: Puzzle -> Maybe Puzzle
 placeOneForced puzzle =
@@ -145,8 +146,8 @@ placeForcedUnknown puzzle unknown =
     [digit] -> Just $ Puzzle.place puzzle unknown digit
     _ -> Nothing
 
-unknownsForDigit :: Int -> [Unknown] -> [Unknown]
-unknownsForDigit digit unknowns =
+unknownsForDigit :: [Unknown] -> Int -> [Unknown]
+unknownsForDigit unknowns digit =
   filter (\ u -> digit `elem` Unknown.possible u) unknowns
 
 minByNumPossible :: [Unknown] -> Unknown
