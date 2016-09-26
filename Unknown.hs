@@ -39,8 +39,12 @@ new cellNumber =
 place :: Unknown -> Unknown -> Int -> Unknown
 place this other digit =
   case isExcludedBy this other of
-    True -> this { possible = List.delete digit $ possible this }
+    True -> removeDigitFromPossible digit this
     False -> this
+
+removeDigitFromPossible :: Int -> Unknown -> Unknown
+removeDigitFromPossible digit this =
+  this { possible = List.delete digit $ possible this }
 
 -- Returns true if this and Other are in the same row, column, or
 -- square, else false.
