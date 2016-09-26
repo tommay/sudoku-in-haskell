@@ -111,9 +111,7 @@ placeOneMissingInSet puzzle set =
 
 unknownsInSet :: Puzzle -> [Int] -> [Unknown]
 unknownsInSet puzzle set =
-  filter
-    (\ unknown -> (Unknown.cellNumber unknown) `elem` set)
-    $ Puzzle.unknown puzzle
+  filter (isUnknownInSet set) $ Puzzle.unknown puzzle
 
 -- Try to place a digit where there is a set doesn't yet have some
 -- digit (it needs it) and there is only one cell in the set where it
@@ -132,7 +130,7 @@ placeOneNeededInSet puzzle set =
 
 placeNeededDigitInSet :: Puzzle -> [Unknown] -> Int -> Maybe Puzzle
 placeNeededDigitInSet puzzle unknowns digit =
-  case unknownsForDigit unknowns digit of
+  case filter (isDigitPossibleForUnknown digit) unknowns of
     [unknown] -> Just $ Puzzle.place puzzle unknown digit
     _ -> Nothing
 
@@ -146,9 +144,61 @@ placeForcedUnknown puzzle unknown =
     [digit] -> Just $ Puzzle.place puzzle unknown digit
     _ -> Nothing
 
-unknownsForDigit :: [Unknown] -> Int -> [Unknown]
-unknownsForDigit unknowns digit =
-  filter (\ u -> digit `elem` Unknown.possible u) unknowns
+tryTrickySets :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Solution]
+tryTrickySets puzzle maybeRnd guessCount results =
+  foldr (\ trickySet accum -> 
+          let maybePuzzle = tryTrickySet puzzle trickySet
+          in case maybePuzzle of
+               Nothing -> accum
+               Just puzzle -> solutions_a puzzle maybeRnd guessCount accum)
+    results
+    (Puzzle.trickySets puzzle)
+
+tryTrickySet :: Puzzle -> ([Int], [Int], [Int]) -> Maybe Puzzle
+tryTrickySet puzzle trickySet =
+  Solver.any (tryTrickySetWithDigit puzzle trickySet) [1..9]
+
+tryTrickySetWithDigit :: Puzzle -> ([Int], [Int], [Int]) -> Int -> Maybe Puzzle
+tryTrickySetWithDigit puzzle trickySet digit =
+  let (subset, rest, eliminate) = trickySet
+  in if (isDigitPossibleInSet puzzle digit subset) &&
+        (not $ isDigitPossibleInSet puzzle digit rest)
+       then
+         let newPuzzle = Puzzle.notPossibleForList puzzle digit eliminate
+         -- XXX Could narrow this down to a few ExclusionSets.
+         in placeNeededDigit newPuzzle digit
+       else
+         Nothing
+
+placeNeededDigit :: Puzzle -> Int -> Maybe Puzzle
+placeNeededDigit puzzle digit =
+  let unknowns = filter (isDigitPossibleForUnknown digit)
+        $ Puzzle.unknown puzzle
+  in Solver.any (placeNeededDigitInUnknown puzzle digit) unknowns
+
+placeNeededDigitInUnknown :: Puzzle -> Int -> Unknown -> Maybe Puzzle
+placeNeededDigitInUnknown puzzle digit unknown =
+  if digit `elem` Unknown.possible unknown
+    then Just $ Puzzle.place puzzle unknown digit
+    else Nothing
+
+isDigitPossibleInSet :: Puzzle -> Int -> [Int] -> Bool
+isDigitPossibleInSet puzzle digit set =
+  let possibleUnknowns =
+        filter (isUnknownInSet set)
+        $ filter (isDigitPossibleForUnknown digit)
+        $ Puzzle.unknown puzzle
+  in case possibleUnknowns of
+       [] -> False
+       _ -> True
+
+isDigitPossibleForUnknown :: Int -> Unknown -> Bool
+isDigitPossibleForUnknown digit unknown =
+  digit `elem` Unknown.possible unknown
+
+isUnknownInSet :: [Int] -> Unknown -> Bool
+isUnknownInSet list unknown =
+  Unknown.cellNumber unknown `elem` list
 
 minByNumPossible :: [Unknown] -> Unknown
 minByNumPossible  =

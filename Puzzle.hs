@@ -2,10 +2,12 @@ module Puzzle (
   Puzzle,
   Puzzle.unknown,
   Puzzle.exclusionSets,
+  Puzzle.trickySets,
   Puzzle.empty,
   Puzzle.fromString,
   Puzzle.place,
   Puzzle.remove,
+  Puzzle.notPossibleForList,
   Puzzle.toPuzzleString,
 ) where  
 
@@ -21,7 +23,10 @@ import Unknown (Unknown)
 data Puzzle = Puzzle {
   placed :: [Placed],
   unknown :: [Unknown],
-  exclusionSets :: [[Int]]
+  -- XXX exclusionSets and trickySets should be moved to Solver since
+  -- they're only here for Solver's heuristic methods.
+  exclusionSets :: [[Int]],
+  trickySets :: [([Int], [Int], [Int])]
 } deriving (Show)
 
 -- Returns a new Puzzle with all Unknown cells.
@@ -31,11 +36,20 @@ empty =
   Puzzle {
     placed = [],
     unknown = [Unknown.new n | n <- [0..80]],
-    exclusionSets = makeExclusionSets
+    exclusionSets = makeExclusionSets,
+    trickySets = makeTrickySets
   }
 
+-- An ExclusionSet is a list of all the cell numbers in a row, column,
+-- or square.  They're used as part of the heuristic methods in Solver.
+--
 makeExclusionSets :: [[Int]]
 makeExclusionSets =
+  let (rows, cols, squares) = makeExclusionSetsTuple
+  in rows ++ cols ++ squares
+
+makeExclusionSetsTuple :: ([[Int]], [[Int]], [[Int]])
+makeExclusionSetsTuple =
  let
    -- Create an ExclusionSet for each row, containing the cell numbers
    -- in the row.
@@ -54,7 +68,41 @@ makeExclusionSets =
          [(row + n `div` 3)*9 + (col + n `mod` 3) | n <- [0..8]])
      [0..8]
 
-    in rows ++ cols ++ squares
+  in (rows, cols, squares)
+
+-- Within a square, if the only possible places for a given digit are
+-- in the same row/col, then the digit can be removed from the
+-- possibilities for the rest of the Unknowns in that row/col.
+--
+-- The reverse of the situation is also true.  In a given row or
+-- column if it is only possible to place a given digit within a
+-- single square, then the digit can be eliminated from the other
+-- Unknowns of that square.
+--
+-- Each tuple in trickSets contains three lists of Unknowns.  If a
+-- digit is possible in the first list but not the second, it will be
+-- removed from the possibiles of the third.
+-- XXX This should be changed to [([Int], [([Int], [Int])])].
+--
+makeTrickySets :: [([Int], [Int], [Int])]
+makeTrickySets =
+  let (rows, cols, squares) = makeExclusionSetsTuple
+      product = cartesianProduct (rows ++ cols) squares
+      (\\) = (List.\\)
+  in concat $
+       map (\ (row, square) ->
+             case row `List.intersect` square of
+               [] -> []
+               common ->
+                 [
+                   (common, square \\ common, row \\ common),
+                   (common, row \\ common, square \\ common)
+                 ])
+         product
+
+cartesianProduct :: [a] -> [b] -> [(a, b)]
+cartesianProduct as bs =
+  [(a, b) | a <- as, b <- bs]
 
 -- Returns a new Puzzle with each Cell initialized according to
 -- Setup, which is a string of 81 digits or dashes.
@@ -100,6 +148,21 @@ remove this cellNumbers =
                (Placed.digit p))
        Puzzle.empty
        remaining
+
+-- Some external code has done some mojo and etermined that it's not actually
+-- possible to put the digit into any cells in the list.  Fix up unknowns
+-- to reflect this.
+--
+notPossibleForList :: Puzzle -> Int -> [Int] -> Puzzle
+notPossibleForList this digit cellNumbers =
+  this {
+    unknown = map
+      (\ u ->
+        if Unknown.cellNumber u `elem` cellNumbers
+           then Unknown.removeDigitFromPossible digit u
+           else u)
+      $ unknown this
+  }
 
 -- We've got placed and unknown and we have to combine them into s single
 -- single lit of characters ordered by originating cellNumber.

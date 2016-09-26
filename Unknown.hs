@@ -5,6 +5,7 @@ module Unknown
   Unknown.cellNumber,
   Unknown.possible,
   Unknown.place,
+  Unknown.removeDigitFromPossible,
 ) where  
 
 import qualified Data.List as List
