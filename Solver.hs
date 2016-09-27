@@ -11,12 +11,22 @@ import qualified Solution
 import Solution (Solution)
 import qualified ExclusionSets
 import qualified TrickySets
+import TrickySets (TrickySet)
 
 import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
+import Debug.Trace
 
 tryHeuristics = True
-tryTricky = False
+tryTricky = True
+
+doDebug = False
+
+debug :: String -> b -> b
+debug a b =
+  if doDebug
+    then trace a b
+    else b
 
 -- Try to solve this Puzzle, returning a list of solved Puzzles.
 --
@@ -160,29 +170,59 @@ solutionsTricky puzzle maybeRnd guessCount results =
     else
       solutionsGuess puzzle maybeRnd guessCount results
 
-tryTrickySet :: Puzzle -> ([Int], [Int], [Int]) -> Maybe Puzzle
+tryTrickySet :: Puzzle -> TrickySet -> Maybe Puzzle
 tryTrickySet puzzle trickySet =
   Solver.any (tryTrickySetWithDigit puzzle trickySet) [1..9]
 
-tryTrickySetWithDigit :: Puzzle -> ([Int], [Int], [Int]) -> Int -> Maybe Puzzle
+tryTrickySetWithDigit :: Puzzle -> TrickySet -> Int -> Maybe Puzzle
 tryTrickySetWithDigit puzzle trickySet digit =
-  let (subset, rest, eliminate) = trickySet
-  in if (isDigitPossibleInSet puzzle digit subset) &&
-        (notIsDigitPossibleInSet puzzle digit rest)
-       then
-         let newPuzzle = Puzzle.notPossibleForList puzzle digit eliminate
-         -- XXX Could narrow this down to a few ExclusionSets.
-         in placeNeededDigit newPuzzle digit
-       else
-         Nothing
+  if trickySetMatchesForDigit puzzle trickySet digit
+    then
+      -- XXX we could also check for new forced digits in
+      -- the eliminate positions.
+      trickySetCheckNeeded puzzle trickySet digit
+    else
+      Nothing
 
-placeNeededDigit :: Puzzle -> Int -> Maybe Puzzle
-placeNeededDigit puzzle digit =
+trickySetMatchesForDigit :: Puzzle -> TrickySet -> Int -> Bool
+trickySetMatchesForDigit puzzle trickySet digit =
+  let common = TrickySets.common trickySet
+      rest = TrickySets.rest trickySet
+  in (isDigitPossibleInSet puzzle digit common) &&
+     (notIsDigitPossibleInSet puzzle digit rest)
+
+trickySetCheckNeeded :: Puzzle -> TrickySet -> Int -> Maybe Puzzle
+trickySetCheckNeeded puzzle trickySet digit =
+  -- We could remove the digit from the possibilities permanently,
+  -- but that's not something a person would remember.  So just remove
+  -- while we see if that creates a new placement.
+  let eliminate = TrickySets.eliminate trickySet
+      tmpPuzzle = Puzzle.notPossibleForList puzzle digit eliminate
+      checkNeeded = TrickySets.checkNeeded trickySet
+      maybeUnknown =
+        Solver.any
+          (findUnknownWhereDigitIsNeeded tmpPuzzle digit)
+          checkNeeded
+  in case maybeUnknown of
+       Nothing -> Nothing
+       Just unknown ->
+         let newPuzzle' = Puzzle.place puzzle unknown digit
+             newPuzzle = debug
+               ("T: " ++ show trickySet ++ "\n" ++
+                "D: " ++ show digit ++ " " ++ show unknown ++ "\n" ++
+                (Puzzle.toPuzzleString puzzle) ++
+                (Puzzle.toPuzzleString newPuzzle'))
+               newPuzzle'
+         in Just $ newPuzzle
+
+findUnknownWhereDigitIsNeeded :: Puzzle -> Int -> [Int] -> Maybe Unknown
+findUnknownWhereDigitIsNeeded puzzle digit set =
   let unknowns = filter (isDigitPossibleForUnknown digit)
+        $ filter (isUnknownInSet set)
         $ Puzzle.unknown puzzle
   in case unknowns of
-       [] -> Nothing
-       (unknown:_) -> Just $ Puzzle.place puzzle unknown digit
+       [unknown] -> Just unknown
+       _ -> Nothing
 
 isDigitPossibleInSet :: Puzzle -> Int -> [Int] -> Bool
 isDigitPossibleInSet puzzle digit set =
