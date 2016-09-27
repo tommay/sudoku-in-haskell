@@ -38,9 +38,9 @@ solutionsHeuristic :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Sol
 solutionsHeuristic puzzle maybeRnd guessCount results =
   if tryHeuristics
     then -- Try the heuristic functions.
-      let maybeNext = firstMaybe $
-            map (\ f -> f puzzle)
-              [placeOneMissing, placeOneNeeded, placeOneForced]
+      let maybeNext = Solver.any
+            (\ f -> f puzzle)
+            $ [placeOneMissing, placeOneNeeded, placeOneForced]
       in case maybeNext of
         Just nextPuzzle ->
           solutionsTop nextPuzzle maybeRnd guessCount results
