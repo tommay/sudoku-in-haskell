@@ -167,7 +167,7 @@ tryTrickySetWithDigit :: Puzzle -> ([Int], [Int], [Int]) -> Int -> Maybe Puzzle
 tryTrickySetWithDigit puzzle trickySet digit =
   let (subset, rest, eliminate) = trickySet
   in if (isDigitPossibleInSet puzzle digit subset) &&
-        (not $ isDigitPossibleInSet puzzle digit rest)
+        (notIsDigitPossibleInSet puzzle digit rest)
        then
          let newPuzzle = Puzzle.notPossibleForList puzzle digit eliminate
          -- XXX Could narrow this down to a few ExclusionSets.
@@ -186,12 +186,28 @@ placeNeededDigit puzzle digit =
 isDigitPossibleInSet :: Puzzle -> Int -> [Int] -> Bool
 isDigitPossibleInSet puzzle digit set =
   let possibleUnknowns =
-        filter (isUnknownInSet set)
-        $ filter (isDigitPossibleForUnknown digit)
+        -- Filters can be in either order but this order is way faster.
+        filter (isDigitPossibleForUnknown digit)
+        $ filter (isUnknownInSet set)
         $ Puzzle.unknown puzzle
   in case possibleUnknowns of
        [] -> False
        _ -> True
+
+-- XXX It is stinky-ass slow to use not $ isDigitPossibleInSet ...
+-- Making this new function makes things 4 times faster solving
+-- puzzle-1339.txt.
+--
+notIsDigitPossibleInSet :: Puzzle -> Int -> [Int] -> Bool
+notIsDigitPossibleInSet puzzle digit set =
+  let possibleUnknowns =
+        -- Filters can be in either order but this order is way faster.
+        filter (isDigitPossibleForUnknown digit)
+        $ filter (isUnknownInSet set)
+        $ Puzzle.unknown puzzle
+  in case possibleUnknowns of
+       [] -> True
+       _ -> False
 
 isDigitPossibleForUnknown :: Int -> Unknown -> Bool
 isDigitPossibleForUnknown digit unknown =
