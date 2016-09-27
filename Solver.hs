@@ -179,13 +179,9 @@ placeNeededDigit :: Puzzle -> Int -> Maybe Puzzle
 placeNeededDigit puzzle digit =
   let unknowns = filter (isDigitPossibleForUnknown digit)
         $ Puzzle.unknown puzzle
-  in Solver.any (placeNeededDigitInUnknown puzzle digit) unknowns
-
-placeNeededDigitInUnknown :: Puzzle -> Int -> Unknown -> Maybe Puzzle
-placeNeededDigitInUnknown puzzle digit unknown =
-  if digit `elem` Unknown.possible unknown
-    then Just $ Puzzle.place puzzle unknown digit
-    else Nothing
+  in case unknowns of
+       [] -> Nothing
+       (unknown:_) -> Just $ Puzzle.place puzzle unknown digit
 
 isDigitPossibleInSet :: Puzzle -> Int -> [Int] -> Bool
 isDigitPossibleInSet puzzle digit set =
