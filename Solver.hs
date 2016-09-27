@@ -13,7 +13,7 @@ import Solution (Solution)
 import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
 
-tryHeuristics = True
+tryHeuristics = False
 tryTricky = True
 
 -- Try to solve this Puzzle, returning a list of solved Puzzles.
@@ -154,7 +154,7 @@ solutionsTricky puzzle maybeRnd guessCount results =
       let maybePuzzle = Solver.any (tryTrickySet puzzle)
             $ Puzzle.trickySets puzzle
       in case maybePuzzle of
-        Just puzzle' -> solutionsTop puzzle maybeRnd guessCount results
+        Just newPuzzle -> solutionsTop newPuzzle maybeRnd guessCount results
         Nothing -> solutionsGuess puzzle maybeRnd guessCount results
     else
       solutionsGuess puzzle maybeRnd guessCount results
