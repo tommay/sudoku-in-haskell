@@ -243,26 +243,6 @@ firstMaybe (_ : tail) =
 -- Call func with each element of the list and return the first result
 -- that isn't Nothing.
 --
-xany :: (a -> Maybe b) -> [a] -> Maybe b
-xany _ [] = Nothing
-xany func (head:tail) =
-  case func head of
-    result @ (Just _) -> result
-    Nothing -> Solver.xany func tail
-
--- Alternative definition using fold.
---
-yany :: (a -> Maybe b) -> [a] -> Maybe b
-yany func list =
-  foldr (\ elem accum ->
-    case accum of
-      Just _ -> accum
-      Nothing -> func elem)
-    Nothing
-    list
-
--- Alternative definition using firstMaybe.
---
 any :: (a -> Maybe b) -> [a] -> Maybe b
 any func list =
   firstMaybe $ map func list
