@@ -124,18 +124,18 @@ unknownsInSet puzzle set =
 --
 placeOneNeeded :: Puzzle -> Maybe Puzzle
 placeOneNeeded puzzle =
-  Solver.any (placeOneNeededDigit puzzle) [1..9]
+  Solver.any (placeOneNeededInSet puzzle) $ Puzzle.exclusionSets puzzle
 
-placeOneNeededDigit :: Puzzle -> Int -> Maybe Puzzle
-placeOneNeededDigit puzzle digit =
-  Solver.any (placeOneNeededDigitInSet puzzle digit) $ Puzzle.exclusionSets puzzle
-
-placeOneNeededDigitInSet :: Puzzle -> Int -> [Int] -> Maybe Puzzle
-placeOneNeededDigitInSet puzzle digit set =
+placeOneNeededInSet :: Puzzle -> [Int] -> Maybe Puzzle
+placeOneNeededInSet puzzle set =
   let unknowns = unknownsInSet puzzle set
-  in case filter (isDigitPossibleForUnknown digit) unknowns of
-       [unknown] -> Just $ Puzzle.place puzzle unknown digit
-       _ -> Nothing
+  in Solver.any (placeNeededDigitInSet puzzle unknowns) [1..9]
+
+placeNeededDigitInSet :: Puzzle -> [Unknown] -> Int -> Maybe Puzzle
+placeNeededDigitInSet puzzle unknowns digit =
+  case filter (isDigitPossibleForUnknown digit) unknowns of
+    [unknown] -> Just $ Puzzle.place puzzle unknown digit
+    _ -> Nothing
 
 placeOneForced :: Puzzle -> Maybe Puzzle
 placeOneForced puzzle =
