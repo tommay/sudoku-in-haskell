@@ -13,8 +13,8 @@ import Solution (Solution)
 import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
 
-tryHeuristics = False
-tryTricky = True
+tryHeuristics = True
+tryTricky = False
 
 -- Try to solve this Puzzle, returning a list of solved Puzzles.
 --
