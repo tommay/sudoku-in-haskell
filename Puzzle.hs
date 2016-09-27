@@ -1,7 +1,6 @@
 module Puzzle (
   Puzzle,
   Puzzle.unknown,
-  Puzzle.exclusionSets,
   Puzzle.trickySets,
   Puzzle.empty,
   Puzzle.fromString,
@@ -19,13 +18,13 @@ import qualified Placed
 import Placed (Placed)
 import qualified Unknown
 import Unknown (Unknown)
+import qualified ExclusionSets
 
 data Puzzle = Puzzle {
   placed :: [Placed],
   unknown :: [Unknown],
   -- XXX exclusionSets and trickySets should be moved to Solver since
   -- they're only here for Solver's heuristic methods.
-  exclusionSets :: [[Int]],
   trickySets :: [([Int], [Int], [Int])]
 } deriving (Show)
 
@@ -36,39 +35,8 @@ empty =
   Puzzle {
     placed = [],
     unknown = [Unknown.new n | n <- [0..80]],
-    exclusionSets = makeExclusionSets,
     trickySets = makeTrickySets
   }
-
--- An ExclusionSet is a list of all the cell numbers in a row, column,
--- or square.  They're used as part of the heuristic methods in Solver.
---
-makeExclusionSets :: [[Int]]
-makeExclusionSets =
-  let (rows, cols, squares) = makeExclusionSetsTuple
-  in rows ++ cols ++ squares
-
-makeExclusionSetsTuple :: ([[Int]], [[Int]], [[Int]])
-makeExclusionSetsTuple =
- let
-   -- Create an ExclusionSet for each row, containing the cell numbers
-   -- in the row.
-   rows = [[row*9 + col | col <- [0..8]] | row <- [0..8]]
-
-   -- Create an ExclusionSet for each column.
-   cols = [[row*9 + col | row <- [0..8]] | col <- [0..8]]
-
-   -- Create an ExclusionSet for each square.
-   squares = map (\ square ->
-       let
-         -- row and col of upper left corner of square
-         row = square `div` 3 * 3
-         col = square `mod` 3 * 3
-       in
-         [(row + n `div` 3)*9 + (col + n `mod` 3) | n <- [0..8]])
-     [0..8]
-
-  in (rows, cols, squares)
 
 -- Within a square, if the only possible places for a given digit are
 -- in the same row/col, then the digit can be removed from the
@@ -86,7 +54,7 @@ makeExclusionSetsTuple =
 --
 makeTrickySets :: [([Int], [Int], [Int])]
 makeTrickySets =
-  let (rows, cols, squares) = makeExclusionSetsTuple
+  let (rows, cols, squares) = ExclusionSets.exclusionSetsTuple
       product = cartesianProduct (rows ++ cols) squares
       (\\) = (List.\\)
   in concat $

@@ -9,6 +9,7 @@ import qualified Unknown
 import Unknown (Unknown)
 import qualified Solution
 import Solution (Solution)
+import qualified ExclusionSets
 
 import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
@@ -95,7 +96,7 @@ doGuesses puzzle maybeRnd guessCount unknown digits results =
 -- Try to place a digit where a set has only one unplaced cell.
 placeOneMissing :: Puzzle -> Maybe Puzzle
 placeOneMissing puzzle =
-  Solver.any (placeOneMissingInSet puzzle) $ Puzzle.exclusionSets puzzle
+  Solver.any (placeOneMissingInSet puzzle) ExclusionSets.exclusionSets
 
 placeOneMissingInSet :: Puzzle -> [Int] -> Maybe Puzzle
 placeOneMissingInSet puzzle set =
@@ -124,7 +125,7 @@ unknownsInSet puzzle set =
 --
 placeOneNeeded :: Puzzle -> Maybe Puzzle
 placeOneNeeded puzzle =
-  Solver.any (placeOneNeededInSet puzzle) $ Puzzle.exclusionSets puzzle
+  Solver.any (placeOneNeededInSet puzzle) ExclusionSets.exclusionSets
 
 placeOneNeededInSet :: Puzzle -> [Int] -> Maybe Puzzle
 placeOneNeededInSet puzzle set =
