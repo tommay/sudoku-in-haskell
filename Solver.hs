@@ -45,9 +45,9 @@ solutionsHeuristic puzzle maybeRnd guessCount results =
         Just nextPuzzle ->
           solutionsTop nextPuzzle maybeRnd guessCount results
         Nothing ->
-          solutionsGuess puzzle maybeRnd guessCount results
-    else -- Skip the heuristics and continue with solutionsGuess.
-      solutionsGuess puzzle maybeRnd guessCount results
+          solutionsTricky puzzle maybeRnd guessCount results
+    else -- Skip the heuristics and continue with solutionsTricky.
+      solutionsTricky puzzle maybeRnd guessCount results
 
 solutionsGuess :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Solution]
 solutionsGuess puzzle maybeRnd guessCount results =
@@ -151,16 +151,13 @@ solutionsTricky :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Soluti
 solutionsTricky puzzle maybeRnd guessCount results =
   if tryTricky
     then
-      foldr (\ trickySet accum -> 
-              let maybePuzzle = tryTrickySet puzzle trickySet
-              in case maybePuzzle of
-                   Nothing -> accum
-                   Just puzzle ->
-                     solutionsTop puzzle maybeRnd guessCount accum)
-        results
-        (Puzzle.trickySets puzzle)
+      let maybePuzzle = Solver.any (tryTrickySet puzzle)
+            $ Puzzle.trickySets puzzle
+      in case maybePuzzle of
+        Just puzzle' -> solutionsTop puzzle maybeRnd guessCount results
+        Nothing -> solutionsGuess puzzle maybeRnd guessCount results
     else
-      solutionsTop puzzle maybeRnd guessCount results
+      solutionsGuess puzzle maybeRnd guessCount results
 
 tryTrickySet :: Puzzle -> ([Int], [Int], [Int]) -> Maybe Puzzle
 tryTrickySet puzzle trickySet =
