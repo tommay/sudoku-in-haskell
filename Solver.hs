@@ -38,7 +38,7 @@ solutionsHeuristic :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Sol
 solutionsHeuristic puzzle maybeRnd guessCount results =
   if tryHeuristics
     then -- Try the heuristic functions.
-      let maybeNext = first $
+      let maybeNext = firstMaybe $
             map (\ f -> f puzzle)
               [placeOneMissing, placeOneNeeded, placeOneForced]
       in case maybeNext of
@@ -233,12 +233,12 @@ shuffle rnd list =
 -- Look through a list of Maybes and return the first one that isn't
 -- Nothing, or Nothing if they're all Nothing.
 --
-first :: [Maybe a] -> Maybe a
-first [] = Nothing
-first ((result @ (Just _)) : _) =
+firstMaybe :: [Maybe a] -> Maybe a
+firstMaybe [] = Nothing
+firstMaybe ((result @ (Just _)) : _) =
   result
-first (_ : tail) =
-  first tail
+firstMaybe (_ : tail) =
+  firstMaybe tail
 
 -- Call func with each element of the list and return the first result
 -- that isn't Nothing.
@@ -261,8 +261,8 @@ yany func list =
     Nothing
     list
 
--- Alternative definition using first.
+-- Alternative definition using firstMaybe.
 --
 any :: (a -> Maybe b) -> [a] -> Maybe b
 any func list =
-  first $ map func list
+  firstMaybe $ map func list
