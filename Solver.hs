@@ -13,6 +13,9 @@ import Solution (Solution)
 import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
 
+tryHeuristics = True
+tryTricky = True
+
 -- Try to solve this Puzzle, returning a list of solved Puzzles.
 --
 solutions :: Puzzle -> [Solution]
@@ -33,7 +36,7 @@ solutionsTop puzzle maybeRnd guessCount results =
 
 solutionsHeuristic :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Solution]
 solutionsHeuristic puzzle maybeRnd guessCount results =
-  if True
+  if tryHeuristics
     then -- Try the heuristic functions.
       let maybeNext = first $
             map (\ f -> f puzzle)
@@ -146,7 +149,7 @@ placeForcedUnknown puzzle unknown =
 
 solutionsTricky :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Solution]
 solutionsTricky puzzle maybeRnd guessCount results =
-  if True
+  if tryTricky
     then
       foldr (\ trickySet accum -> 
               let maybePuzzle = tryTrickySet puzzle trickySet
