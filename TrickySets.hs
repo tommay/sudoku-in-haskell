@@ -29,19 +29,20 @@ data TrickySet = TrickySet {
 -- Each tuple in trickySets contains three lists of Unknowns.  If a
 -- digit is possible in the first list but not the second, it will be
 -- removed from the possibiles of the third.
--- XXX This should be changed to [([Int], [([Int], [Int])])].
 --
 
 -- After we apply a tricky set with a particular digit, it may create
 -- some immediate placements:
 -- - There may be 
 
--- - Some of the Unknown in the eliminate set may now have ony one possibility.
+-- - Some of the Unknowns in the eliminate set may now have only one possibility.
 
 trickySets :: [TrickySet]
 trickySets =
-  let (rows, cols, squares) = ExclusionSets.exclusionSetsTuple
-      product = cartesianProduct (rows ++ cols) squares
+  let rows = ExclusionSets.rows
+      columns = ExclusionSets.columns
+      squares = ExclusionSets.squares
+      product = cartesianProduct (rows ++ columns) squares
   in concat $
        map (\ (row, square) ->
              case row `List.intersect` square of
