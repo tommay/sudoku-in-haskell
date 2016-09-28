@@ -42,28 +42,28 @@ trickySets =
   let rows = ExclusionSets.rows
       columns = ExclusionSets.columns
       squares = ExclusionSets.squares
-      product = cartesianProduct (rows ++ columns) squares
   in concat $
-       map (\ (row, square) ->
-             case row `List.intersect` square of
-               [] -> []
-               common -> createTrickySetsFrom common square row)
-         product
+       [createTrickySetsFrom square row | square <- squares, row <- rows] ++
+       [createTrickySetsFrom square col | square <- squares, col <- columns]
 
-createTrickySetsFrom:: [Int] -> [Int] -> [Int] -> [TrickySet]
-createTrickySetsFrom common square row =
+createTrickySetsFrom:: [Int] -> [Int] -> [TrickySet]
+createTrickySetsFrom square row =
   let (\\) = (List.\\)
+      common = row `List.intersect` square
       restOfRow = row \\ common
-  in [
-       TrickySet {
-         common = common, rest = square \\ common, eliminate = restOfRow,
-         checkNeeded = getSquaresIncluding(restOfRow)
-       },
-       TrickySet {
-         common = common, rest = restOfRow, eliminate = square \\ common,
-         checkNeeded = []
-       }
-     ]
+  in case common of
+       [] -> []
+       _ ->
+         [
+           TrickySet {
+             common = common, rest = square \\ common, eliminate = restOfRow,
+             checkNeeded = getSquaresIncluding restOfRow
+           },
+           TrickySet {
+             common = common, rest = restOfRow, eliminate = square \\ common,
+             checkNeeded = []
+           }
+         ]
 
 -- Given some cellNumbers, return the ExclusionSet squares containing
 -- them.
@@ -75,8 +75,3 @@ getSquaresIncluding cells =
              [] -> False
              _ -> True)
     ExclusionSets.squares
-
-cartesianProduct :: [a] -> [b] -> [(a, b)]
-cartesianProduct as bs =
-  [(a, b) | a <- as, b <- bs]
-
