@@ -10,6 +10,7 @@ import Unknown (Unknown)
 import qualified Solution
 import Solution (Solution)
 import qualified ExclusionSets
+import qualified TrickySets
 
 import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
@@ -152,8 +153,7 @@ solutionsTricky :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Soluti
 solutionsTricky puzzle maybeRnd guessCount results =
   if tryTricky
     then
-      let maybePuzzle = Solver.any (tryTrickySet puzzle)
-            $ Puzzle.trickySets puzzle
+      let maybePuzzle = Solver.any (tryTrickySet puzzle) TrickySets.trickySets
       in case maybePuzzle of
         Just newPuzzle -> solutionsTop newPuzzle maybeRnd guessCount results
         Nothing -> solutionsGuess puzzle maybeRnd guessCount results
