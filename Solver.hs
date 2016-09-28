@@ -17,7 +17,7 @@ import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
 import Debug.Trace
 
-tryHeuristics = True
+tryHeuristics = False
 tryTricky = True
 
 doDebug = False
@@ -180,7 +180,12 @@ tryTrickySetWithDigit puzzle trickySet digit =
     then
       -- XXX we could also check for new forced digits in
       -- the eliminate positions.
-      trickySetCheckNeeded puzzle trickySet digit
+      -- We could remove the digit from the possibilities permanently,
+      -- but that's not something a person would remember.  So just
+      -- remove while we see if that creates a new placement.
+      let eliminate = TrickySets.eliminate trickySet
+          tmpPuzzle = Puzzle.notPossibleForList puzzle digit eliminate
+      in trickySetCheckNeeded puzzle tmpPuzzle trickySet digit
     else
       Nothing
 
@@ -191,18 +196,12 @@ trickySetMatchesForDigit puzzle trickySet digit =
   in (isDigitPossibleInSet puzzle digit common) &&
      (notIsDigitPossibleInSet puzzle digit rest)
 
-trickySetCheckNeeded :: Puzzle -> TrickySet -> Int -> Maybe Puzzle
-trickySetCheckNeeded puzzle trickySet digit =
-  -- We could remove the digit from the possibilities permanently,
-  -- but that's not something a person would remember.  So just remove
-  -- while we see if that creates a new placement.
-  let eliminate = TrickySets.eliminate trickySet
-      tmpPuzzle = Puzzle.notPossibleForList puzzle digit eliminate
-      checkNeeded = TrickySets.checkNeeded trickySet
-      maybeUnknown =
+trickySetCheckNeeded :: Puzzle -> Puzzle -> TrickySet -> Int -> Maybe Puzzle
+trickySetCheckNeeded puzzle tmpPuzzle trickySet digit =
+  let maybeUnknown =
         Solver.any
           (findUnknownWhereDigitIsNeeded tmpPuzzle digit)
-          checkNeeded
+          $ TrickySets.checkNeeded trickySet
   in case maybeUnknown of
        Nothing -> Nothing
        Just unknown ->
