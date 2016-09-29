@@ -10,6 +10,16 @@ module TrickySets (
 import qualified ExclusionSets
 import qualified Data.List as List
 
+-- True to check an "inverted" TrickySet, where we scan the coincident
+-- rows and columns for needed digits rather than coincident squares.
+-- I personally don't do this, it's too hard.
+--
+checkCoincidentRowsColumnsForNeeded = False
+
+-- XXX Checking the eliminate set for newly forced Unknows isn't implemented.
+-- It's also not something I do.
+checkForced = False
+
 data TrickySet = TrickySet {
   common :: [Int],
   rest :: [Int],
@@ -42,36 +52,55 @@ trickySets =
   let rows = ExclusionSets.rows
       columns = ExclusionSets.columns
       squares = ExclusionSets.squares
+      getRows = getExclusionSetsIncluding ExclusionSets.rows
+      getColumns = getExclusionSetsIncluding ExclusionSets.rows
   in concat $
-       [createTrickySetsFrom square row | square <- squares, row <- rows] ++
-       [createTrickySetsFrom square col | square <- squares, col <- columns]
+       [createTrickySetsFrom square row getColumns
+         | square <- squares, row <- rows] ++
+       [createTrickySetsFrom square col getRows
+         | square <- squares, col <- columns]
 
-createTrickySetsFrom:: [Int] -> [Int] -> [TrickySet]
-createTrickySetsFrom square row =
+-- XXX Instead of creating two TrickySets with an identical common set, we
+-- should merge them into a single set with two branches.
+
+createTrickySetsFrom:: [Int] -> [Int] -> ([Int] -> [[Int]]) -> [TrickySet]
+createTrickySetsFrom square row getSetsIncluding =
   let (\\) = (List.\\)
       common = row `List.intersect` square
       restOfRow = row \\ common
+      restOfSquare = square \\ common
   in case common of
        [] -> []
        _ ->
          [
            TrickySet {
-             common = common, rest = square \\ common, eliminate = restOfRow,
+             common = common, rest = restOfSquare, eliminate = restOfRow,
              checkNeeded = getSquaresIncluding restOfRow
-           },
-           TrickySet {
-             common = common, rest = restOfRow, eliminate = square \\ common,
-             checkNeeded = []
            }
-         ]
+         ] ++
+         if checkCoincidentRowsColumnsForNeeded
+           then [
+             TrickySet {
+               common = common, rest = restOfRow, eliminate = restOfSquare,
+               checkNeeded = getSetsIncluding restOfSquare
+             }
+           ]
+           else []
+
+-- Given some ExclusionSets and some cellNumbers, return the
+-- ExclusionSets that contain them.
+--
+getExclusionSetsIncluding :: [[Int]] -> [Int] -> [[Int]]
+getExclusionSetsIncluding sets cells =
+  filter (\ set ->
+           case set `List.intersect` cells of
+             [] -> False
+             _ -> True)
+    sets
 
 -- Given some cellNumbers, return the ExclusionSet squares containing
 -- them.
 --
 getSquaresIncluding :: [Int] -> [[Int]]
 getSquaresIncluding cells =
-  filter (\ square ->
-           case square `List.intersect` cells of
-             [] -> False
-             _ -> True)
-    ExclusionSets.squares
+  getExclusionSetsIncluding ExclusionSets.squares cells

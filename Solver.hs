@@ -17,7 +17,7 @@ import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
 import Debug.Trace
 
-tryHeuristics = False
+tryHeuristics = True
 tryTricky = True
 
 doDebug = False
