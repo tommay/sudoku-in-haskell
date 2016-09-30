@@ -11,9 +11,8 @@ import qualified Solver
 import qualified Solution
 
 main = do
-  args <- System.Environment.getArgs
-  let file = head args
-  layout <- getLayout file
+  (filename:_) <- System.Environment.getArgs
+  layout <- getLayout filename
   let unknownCount = length $ head layout
   rnd <- Random.getStdGen
   putStrLn $ Puzzle.toPuzzleString $ head

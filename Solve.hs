@@ -13,8 +13,8 @@ import qualified Solver
 -- if any.
 --
 main = do
-  args <- System.Environment.getArgs
-  setup <- getSetup $ head args
+  (filename:_) <- System.Environment.getArgs
+  setup <- getSetup filename
   let solutions = Solver.solutions $ Puzzle.fromString setup
   count <- processAndCount printSolution solutions
   putStrLn $ "There are " ++ show count ++ " solutions."
