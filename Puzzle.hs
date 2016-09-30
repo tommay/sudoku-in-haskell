@@ -121,15 +121,10 @@ toPuzzleString this =
 -- You'd think there would be a function to do this but I can't
 -- find one easily.  It will be good practice to roll my own.
 -- This can be done all kinds of ways, but here I don't use
--- anything fancy.   Well ok splitAt is fancy.  And I'm building it
--- non-reversed with ++ instead of :.
+-- anything fancy.
 --
 slices :: Int -> [a] -> [[a]]
+slices _ [] = []
 slices n list =
-  slices' n list []
-
-slices' :: Int -> [a] -> [[a]] -> [[a]]
-slices' n [] accum = accum
-slices' n list accum =
   let (slice, rest) = splitAt n list
-  in slices' n rest (accum ++ [slice])
+  in slice : slices n rest
