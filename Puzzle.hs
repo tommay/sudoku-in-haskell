@@ -93,18 +93,17 @@ notPossibleForList this digit cellNumbers =
       $ unknown this
   }
 
--- We've got placed and unknown and we have to combine them into s single
--- single lit of characters ordered by originating cellNumber.
--- This can be done by building two lists of (cellNumber, char) then
--- sorting them together and extractin the Chars.
--- Or maybe we could make a Cell type which would be either Placed or Empty,
--- and have them all sort together and have a function that would return
--- their Char.  Maybe.  But for now, this works.
+-- The opposite of fromString.  Given a Puzzle, create a string of 81
+-- digits or dashes.  Creates two lists of (cellNumber, Char), one for
+-- placed cells and one for unplaced cells, then sorts them together and
+-- exracts the Chars in order.
+--
+toString:: Puzzle -> String
 toString this =
   let p = map (\ x -> (Placed.cellNumber x, Char.intToDigit $ Placed.digit x))
             $ placed this
-      u = map (\ x -> (Unknown.cellNumber x, '-'))
-            $ unknown this
+      unknownNumbers = (List.\\) [0..80] $ map Placed.cellNumber $ placed this
+      u = zip unknownNumbers $ repeat '-'
   in map snd $ List.sort $ p ++ u
 
 -- Returns a string that prints out as a grid of digits.
