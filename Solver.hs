@@ -26,7 +26,8 @@ doDebug = False
 data Solver = Solver {
   puzzle :: Puzzle,
   rnd :: Maybe Random.StdGen,
-  guessCount :: Int
+  guessCount :: Int,
+  results :: [Solution]
 } deriving (Show)
 
 new :: Puzzle -> Maybe Random.StdGen -> Solver
@@ -34,7 +35,8 @@ new puzzle maybeRnd =
   Solver {
     puzzle = puzzle,
     rnd = maybeRnd,
-    guessCount = 0
+    guessCount = 0,
+    results = []
   }
 
 -- Try to solve the Puzzle, returning a list of Solutions.  This uses
@@ -44,23 +46,28 @@ new puzzle maybeRnd =
 solutions :: Puzzle -> [Solution]
 solutions puzzle =
   let solver = Solver.new puzzle Nothing
-  in solutionsTop solver []
+      newSolver = solutionsTop solver
+  in Solver.results newSolver
 
 randomSolutions :: Puzzle -> Random.StdGen -> [Solution]
 randomSolutions puzzle rnd =
   let solver = Solver.new puzzle $ Just rnd
-  in solutionsTop solver []
+      newSolver = solutionsTop solver
+  in Solver.results newSolver
 
-solutionsTop :: Solver -> [Solution] -> [Solution]
-solutionsTop this results =
+solutionsTop :: Solver -> Solver
+solutionsTop this =
   case Puzzle.unknown $ Solver.puzzle this of
     [] ->
       -- No more unknowns, solved!
-      Solution.new (Solver.guessCount this) (Solver.puzzle this) : results
-    _ -> solutionsHeuristic this results
+      let solution = Solution.new
+            (Solver.guessCount this)
+            (Solver.puzzle this)
+      in this{results = solution : Solver.results this}
+    _ -> solutionsHeuristic this
 
-solutionsHeuristic :: Solver -> [Solution] -> [Solution]
-solutionsHeuristic this results =
+solutionsHeuristic :: Solver -> Solver
+solutionsHeuristic this =
   if tryHeuristics
     then -- Try the heuristic functions.
       let maybeNext = Solver.any
@@ -68,14 +75,14 @@ solutionsHeuristic this results =
             $ [placeOneMissing, placeOneNeeded, placeOneForced]
       in case maybeNext of
         Just nextPuzzle ->
-          solutionsTop this{puzzle = nextPuzzle} results
+          solutionsTop this{puzzle = nextPuzzle}
         Nothing ->
-          solutionsTricky this results
+          solutionsTricky this
     else -- Skip the heuristics and continue with solutionsTricky.
-      solutionsTricky this results
+      solutionsTricky this
 
-solutionsGuess :: Solver -> [Solution] -> [Solution]
-solutionsGuess this results =
+solutionsGuess :: Solver -> Solver
+solutionsGuess this =
   -- We get here because we can't place a digit using human-style
   -- heuristics, so we've either failed or we have to guess and
   -- recurse.  We can distinguish by examining the cell with the
@@ -90,12 +97,12 @@ solutionsGuess this results =
   in case possible of
     [] ->
       -- Failed.  No more solutions.
-      results
+      this
     [_] ->
       -- One possibility.  Recurse without incrementing guessCount.
       -- This will not happen if we're using the heuristics, but
       -- this case is included in case they're disabled.
-      doGuesses this minUnknown possible results
+      doGuesses this minUnknown possible
     _ ->
       -- Multiple possibilities.  Guess each, maybe in a random order,
       -- and recurse.
@@ -104,17 +111,17 @@ solutionsGuess this results =
               Nothing -> possible
               Just rnd -> shuffle rnd possible
           newSolver = this{guessCount = Solver.guessCount this + 1}
-      in doGuesses newSolver minUnknown shuffledPossible results
+      in doGuesses newSolver minUnknown shuffledPossible
 
 -- For each digit in the list, use it as a guess for unknown
 -- and try to solve the resulting Puzzle.
 --
-doGuesses :: Solver -> Unknown -> [Int] -> [Solution] -> [Solution]
-doGuesses this unknown digits results =
+doGuesses :: Solver -> Unknown -> [Int] -> Solver
+doGuesses this unknown digits =
   foldr (\ digit accum ->
           let guess = Puzzle.place (Solver.puzzle this) unknown digit
-          in solutionsTop this{puzzle = guess} accum)
-    results
+          in solutionsTop this{puzzle = guess, results = Solver.results accum})
+    this
     digits
 
 -- Try to place a digit where a set has only one unplaced cell.
@@ -173,19 +180,19 @@ placeForcedUnknown puzzle unknown =
     [digit] -> Just $ Puzzle.place puzzle unknown digit
     _ -> Nothing
 
-solutionsTricky :: Solver -> [Solution] -> [Solution]
-solutionsTricky this results =
+solutionsTricky :: Solver -> Solver
+solutionsTricky this =
   if tryTricky
     then
       let puzzle = Solver.puzzle this
           maybePuzzle = Solver.any (tryTrickySet puzzle) TrickySets.trickySets
       in case maybePuzzle of
         Just newPuzzle ->
-          solutionsTop this{puzzle = newPuzzle} results
+          solutionsTop this{puzzle = newPuzzle}
         Nothing ->
-          solutionsGuess this results
+          solutionsGuess this
     else
-      solutionsGuess this results
+      solutionsGuess this
 
 tryTrickySet :: Puzzle -> TrickySet -> Maybe Puzzle
 tryTrickySet puzzle trickySet =
