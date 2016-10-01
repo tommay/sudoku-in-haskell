@@ -1,4 +1,4 @@
-ALL = Solve Create Pattern
+ALL = Solve Create Pattern Color Uncolor
 
 all: $(ALL)
 
