@@ -69,7 +69,7 @@ place this unknown' digit =
 
 remove :: Puzzle -> [Int] -> Puzzle
 remove this cellNumbers =
-  let remaining = filter (\p -> not $ Placed.cellNumber p `elem` cellNumbers)
+  let remaining = filter (not . (`elem` cellNumbers) . Placed.cellNumber)
         $ placed this
   in foldr (\p accum ->
              Puzzle.place accum
