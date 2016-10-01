@@ -22,12 +22,6 @@ tryTricky = True
 
 doDebug = False
 
-debug :: String -> b -> b
-debug a b =
-  if doDebug
-    then trace a b
-    else b
-
 -- Try to solve this Puzzle, returning a list of solved Puzzles.
 --
 solutions :: Puzzle -> [Solution]
@@ -295,3 +289,11 @@ firstMaybe (_ : tail) =
 any :: (a -> Maybe b) -> [a] -> Maybe b
 any func list =
   firstMaybe $ map func list
+
+-- Debug function that outputs only if doDebug is True.
+--
+debug :: String -> b -> b
+debug a b =
+  if doDebug
+    then trace a b
+    else b
