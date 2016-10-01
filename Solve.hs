@@ -31,11 +31,11 @@ processAndCount func list =
 
 printSolution :: Solution -> IO ()
 printSolution solution =
-  if True
-    then return ()
-    else putStrLn $ unlines
+  if False
+    then putStrLn $ unlines
       ["Guesses: " ++ (show $ Solution.guessCount solution),
        Puzzle.toPuzzleString $ Solution.puzzle solution]
+    else return ()
 
 -- Returns the contents of Filename as an IO String with "#" comments
 -- and whitespace deleted.  The result should be a string of 81 digits
