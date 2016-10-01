@@ -15,11 +15,10 @@ import TrickySets (TrickySet)
 
 import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle
-import Control.Applicative
 import Debug.Trace
 
-tryHeuristics = False
-tryTricky = False
+tryHeuristics = True
+tryTricky = True
 
 doDebug = False
 
@@ -51,9 +50,9 @@ solutionsHeuristic :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Sol
 solutionsHeuristic puzzle maybeRnd guessCount results =
   if tryHeuristics
     then -- Try the heuristic functions.
-      let maybeNext = Solver.firstMaybe
+      let maybeNext = Solver.any
+            (\ f -> f puzzle)
             $ [placeOneMissing, placeOneNeeded, placeOneForced]
-                <*> [puzzle]
       in case maybeNext of
         Just nextPuzzle ->
           solutionsTop nextPuzzle maybeRnd guessCount results
