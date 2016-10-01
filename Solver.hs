@@ -1,4 +1,5 @@
 module Solver (
+  Solver.new,
   Solver.solutions,
   Solver.randomSolutions,
 ) where
@@ -22,41 +23,57 @@ tryTricky = True
 
 doDebug = False
 
--- Try to solve this Puzzle, returning a list of solved Puzzles.
+data Solver = Solver {
+  puzzle :: Puzzle,
+  rnd :: Maybe Random.StdGen
+} deriving (Show)
+
+new :: Puzzle -> Maybe Random.StdGen -> Solver
+new puzzle maybeRnd =
+  Solver {
+    puzzle = puzzle,
+    rnd = maybeRnd
+  }
+
+-- Try to solve the Puzzle, returning a list of Solutions.  This uses
+-- tail-recursive style, passing down a list of solutions discovered
+-- higher in the call stack.
 --
 solutions :: Puzzle -> [Solution]
 solutions puzzle =
-  solutionsTop puzzle Nothing 0 []
+  let solver = Solver.new puzzle Nothing
+  in solutionsTop solver 0 []
 
 randomSolutions :: Puzzle -> Random.StdGen -> [Solution]
 randomSolutions puzzle rnd =
-  solutionsTop puzzle (Just rnd) 0 []
+  let solver = Solver.new puzzle $ Just rnd
+  in solutionsTop solver 0 []
 
-solutionsTop :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Solution]
-solutionsTop puzzle maybeRnd guessCount results =
-  case Puzzle.unknown puzzle of
+solutionsTop :: Solver -> Int -> [Solution] -> [Solution]
+solutionsTop this guessCount results =
+  case Puzzle.unknown $ Solver.puzzle this of
     [] ->
       -- No more unknowns, solved!
-      Solution.new guessCount puzzle : results
-    _ -> solutionsHeuristic puzzle maybeRnd guessCount results
+      Solution.new guessCount (Solver.puzzle this) : results
+    _ -> solutionsHeuristic this guessCount results
 
-solutionsHeuristic :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Solution]
-solutionsHeuristic puzzle maybeRnd guessCount results =
+solutionsHeuristic :: Solver -> Int -> [Solution] -> [Solution]
+solutionsHeuristic this guessCount results =
   if tryHeuristics
     then -- Try the heuristic functions.
       let maybeNext = Solver.any
-            (\ f -> f puzzle)
+            (\ f -> f $ Solver.puzzle this)
             $ [placeOneMissing, placeOneNeeded, placeOneForced]
       in case maybeNext of
         Just nextPuzzle ->
-          solutionsTop nextPuzzle maybeRnd guessCount results
+          solutionsTop this{puzzle = nextPuzzle} guessCount results
         Nothing ->
-          solutionsTricky puzzle maybeRnd guessCount results
+          solutionsTricky this guessCount results
     else -- Skip the heuristics and continue with solutionsTricky.
-      solutionsTricky puzzle maybeRnd guessCount results
+      solutionsTricky this guessCount results
 
-solutionsGuess :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Solution]
-solutionsGuess puzzle maybeRnd guessCount results =
+solutionsGuess :: Solver -> Int -> [Solution] -> [Solution]
+solutionsGuess this guessCount results =
   -- We get here because we can't place a digit using human-style
   -- heuristics, so we've either failed or we have to guess and
   -- recurse.  We can distinguish by examining the cell with the
@@ -66,7 +83,7 @@ solutionsGuess puzzle maybeRnd guessCount results =
   -- so we can fail faster.  We may even chug along with the heuristics
   -- for a while before realizing we made a failing guess.
 
-  let minUnknown = minByNumPossible $ Puzzle.unknown puzzle
+  let minUnknown = minByNumPossible $ Puzzle.unknown $ Solver.puzzle this
       possible = Unknown.possible minUnknown
   in case possible of
     [] ->
@@ -76,29 +93,29 @@ solutionsGuess puzzle maybeRnd guessCount results =
       -- One possibility.  Recurse without incrementing guessCount.
       -- This will not happen if we're using the heuristics, but
       -- this case is included in case they're disabled.
-      doGuesses puzzle maybeRnd guessCount minUnknown possible results
+      doGuesses this guessCount minUnknown possible results
     _ ->
       -- Multiple possibilities.  Guess each, maybe in a random order,
       -- and recurse.
       let shuffledPossible =
-            case maybeRnd of
+            case Solver.rnd this of
               Nothing -> possible
               Just rnd -> shuffle rnd possible
-      in doGuesses puzzle maybeRnd
-           (guessCount + 1) minUnknown shuffledPossible results
+      in doGuesses this (guessCount + 1) minUnknown shuffledPossible results
 
 -- For each digit in the list, use it as a guess for unknown
 -- and try to solve the resulting Puzzle.
 --
-doGuesses :: Puzzle -> Maybe Random.StdGen -> Int -> Unknown -> [Int] -> [Solution] -> [Solution]
-doGuesses puzzle maybeRnd guessCount unknown digits results =
+doGuesses :: Solver -> Int -> Unknown -> [Int] -> [Solution] -> [Solution]
+doGuesses this guessCount unknown digits results =
   foldr (\ digit accum ->
-          let guess = Puzzle.place puzzle unknown digit
-          in solutionsTop guess maybeRnd guessCount accum)
+          let guess = Puzzle.place (Solver.puzzle this) unknown digit
+          in solutionsTop this{puzzle = guess} guessCount accum)
     results
     digits
 
 -- Try to place a digit where a set has only one unplaced cell.
+--
 placeOneMissing :: Puzzle -> Maybe Puzzle
 placeOneMissing puzzle =
   Solver.any (placeOneMissingInSet puzzle) ExclusionSets.exclusionSets
@@ -153,16 +170,19 @@ placeForcedUnknown puzzle unknown =
     [digit] -> Just $ Puzzle.place puzzle unknown digit
     _ -> Nothing
 
-solutionsTricky :: Puzzle -> Maybe Random.StdGen -> Int -> [Solution] -> [Solution]
-solutionsTricky puzzle maybeRnd guessCount results =
+solutionsTricky :: Solver -> Int -> [Solution] -> [Solution]
+solutionsTricky this guessCount results =
   if tryTricky
     then
-      let maybePuzzle = Solver.any (tryTrickySet puzzle) TrickySets.trickySets
+      let puzzle = Solver.puzzle this
+          maybePuzzle = Solver.any (tryTrickySet puzzle) TrickySets.trickySets
       in case maybePuzzle of
-        Just newPuzzle -> solutionsTop newPuzzle maybeRnd guessCount results
-        Nothing -> solutionsGuess puzzle maybeRnd guessCount results
+        Just newPuzzle ->
+          solutionsTop this{puzzle = newPuzzle} guessCount results
+        Nothing ->
+          solutionsGuess this guessCount results
     else
-      solutionsGuess puzzle maybeRnd guessCount results
+      solutionsGuess this guessCount results
 
 tryTrickySet :: Puzzle -> TrickySet -> Maybe Puzzle
 tryTrickySet puzzle trickySet =
