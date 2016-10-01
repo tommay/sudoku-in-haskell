@@ -16,7 +16,7 @@ main = do
   let unknownCount = length $ head layout
   rnd <- Random.getStdGen
   putStrLn $ Puzzle.toPuzzleString $ head
-    $ filter (\ p -> (length $ Puzzle.unknown p) == unknownCount)
+    $ filter ((== unknownCount) . length . Puzzle.unknown)
     $ createListNoGuessing rnd layout
 
 getLayout :: FilePath -> IO [[Int]]
