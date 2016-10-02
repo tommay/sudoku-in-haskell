@@ -2,6 +2,7 @@ module Puzzle (
   Puzzle,
   Puzzle.unknown,
   Puzzle.empty,
+  Puzzle.size,
   Puzzle.fromString,
   Puzzle.place,
   Puzzle.remove,
@@ -32,6 +33,12 @@ empty =
     placed = [],
     unknown = [Unknown.new n | n <- [0..80]]
   }
+
+-- Returns the number of places digits.
+--
+size :: Puzzle -> Int
+size this =
+  length $ Puzzle.placed this
 
 -- Returns a new Puzzle with each Cell initialized according to
 -- Setup, which is a string of 81 digits or dashes.

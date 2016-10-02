@@ -14,10 +14,10 @@ import qualified Solution
 main = do
   (filename:_) <- System.Environment.getArgs
   layout <- getLayout filename
-  let unknownCount = length $ head layout
+  let size = 81 - (length $ head layout)
   rnd <- Random.getStdGen
   putStrLn $ Puzzle.toPuzzleString $ head
-    $ filter ((== unknownCount) . length . Puzzle.unknown)
+    $ filter ((== size) . Puzzle.size)
     $ createListNoGuessing rnd layout
 
 getLayout :: FilePath -> IO [[Int]]
