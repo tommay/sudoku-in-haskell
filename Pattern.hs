@@ -48,7 +48,5 @@ toLayout string =
 createListNoGuessing :: Random.StdGen -> [[Int]] -> [Puzzle]
 createListNoGuessing rnd layout =
   filter
-    (\ puzzle ->
-      let solution = head $ Solver.solutions puzzle
-      in Solution.guessCount solution == 0)
+    ((== 0) . Solution.guessCount . head . Solver.solutions)
     $ Creater.createList rnd layout
