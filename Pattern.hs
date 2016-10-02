@@ -1,4 +1,6 @@
 import qualified Data.List as List
+import Data.Map (Map)
+import qualified Data.Map as Map
 import qualified System.FilePath as FilePath
 import qualified Text.Regex as Regex
 import qualified System.Random as Random
@@ -7,6 +9,7 @@ import qualified Debug.Trace
 
 import qualified Puzzle
 import Puzzle (Puzzle)
+import qualified Placed
 import qualified Creater
 import qualified Solver
 import qualified Solution
@@ -16,9 +19,12 @@ main = do
   layout <- getLayout filename
   let size = 81 - (length $ head layout)
   rnd <- Random.getStdGen
-  putStrLn $ Puzzle.toPuzzleString $ head
-    $ filter ((== size) . Puzzle.size)
-    $ createListNoGuessing rnd layout
+  let puzzle = head
+        $ filter ((== size) . Puzzle.size)
+        $ createListNoGuessing rnd layout
+  putStrLn $ Puzzle.toPuzzleString puzzle
+  putStrLn $ unlines $ map (flip replicate $ '*') $ List.sort
+    $ Map.elems $ count puzzle
 
 getLayout :: FilePath -> IO [[Int]]
 getLayout filename = do
@@ -50,3 +56,10 @@ createListNoGuessing rnd layout =
   filter
     ((== 0) . Solution.guessCount . head . Solver.solutions)
     $ Creater.createList rnd layout
+
+count :: Puzzle -> Map Int Int
+count puzzle =
+  foldr (\ digit ->
+          Map.insertWith (+) digit 1)
+        Map.empty
+        $ map Placed.digit $ Puzzle.placed puzzle

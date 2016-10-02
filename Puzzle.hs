@@ -2,6 +2,7 @@ module Puzzle (
   Puzzle,
   Puzzle.unknown,
   Puzzle.empty,
+  Puzzle.placed,
   Puzzle.size,
   Puzzle.fromString,
   Puzzle.place,
