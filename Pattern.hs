@@ -6,6 +6,7 @@ import qualified System.Environment
 import qualified Debug.Trace
 
 import qualified Puzzle
+import Puzzle (Puzzle)
 import qualified Creater
 import qualified Solver
 import qualified Solution
@@ -44,6 +45,7 @@ toLayout string =
       cells =  map fst $ filter (\ (n, char) -> char == '-') zipped
   in [cells]
 
+createListNoGuessing :: Random.StdGen -> [[Int]] -> [Puzzle]
 createListNoGuessing rnd layout =
   filter
     (\ puzzle ->
