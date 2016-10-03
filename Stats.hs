@@ -17,4 +17,4 @@ new =
 
 guess :: Stats -> Stats
 guess this =
-  this{ guesses = succ $ Stats.guesses this }
+  this{ guesses = Stats.guesses this + 1 }
