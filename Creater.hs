@@ -13,8 +13,9 @@ import qualified System.Random.Shuffle as Shuffle
 
 create :: Random.StdGen -> [[Int]] -> Puzzle
 create rnd layout =
-  let puzzle = randomSolvedPuzzle rnd
-      layout' = shuffle rnd layout
+  let (rnd1, rnd2) = Random.split rnd
+      puzzle = randomSolvedPuzzle rnd1
+      layout' = shuffle rnd2 layout
   in create' puzzle layout'
 
 create' :: Puzzle -> [[Int]] -> Puzzle
