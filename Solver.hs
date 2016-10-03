@@ -11,6 +11,8 @@ import qualified Unknown
 import Unknown (Unknown)
 import qualified Solution
 import Solution (Solution)
+import qualified Stats
+import Stats (Stats)
 import qualified ExclusionSets
 import qualified TrickySets
 import TrickySets (TrickySet)
@@ -27,7 +29,7 @@ doDebug = False
 data Solver = Solver {
   puzzle :: Puzzle,
   rnd :: Maybe Random.StdGen,
-  guessCount :: Int
+  stats :: Stats
 } deriving (Show)
 
 new :: Puzzle -> Maybe Random.StdGen -> Solver
@@ -35,7 +37,7 @@ new puzzle maybeRnd =
   Solver {
     puzzle = puzzle,
     rnd = maybeRnd,
-    guessCount = 0
+    stats = Stats.new
   }
 
 -- Try to solve the Puzzle, returning a list of Solutions.  This uses
@@ -57,7 +59,7 @@ solutionsTop this results =
   case Puzzle.unknown $ Solver.puzzle this of
     [] ->
       -- No more unknowns, solved!
-      Solution.new (Solver.guessCount this) (Solver.puzzle this) : results
+      Solution.new (Solver.puzzle this) (Solver.stats this) : results
     _ -> solutionsHeuristic this results
 
 solutionsHeuristic :: Solver -> [Solution] -> [Solution]
@@ -104,7 +106,7 @@ solutionsGuess this results =
             case Solver.rnd this of
               Nothing -> possible
               Just rnd -> shuffle rnd possible
-          newSolver = this{guessCount = Solver.guessCount this + 1}
+          newSolver = this{stats = Stats.guess $ Solver.stats this}
       in doGuesses newSolver minUnknown shuffledPossible results
 
 -- For each digit in the list, use it as a guess for unknown

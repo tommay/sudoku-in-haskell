@@ -7,6 +7,7 @@ import qualified Puzzle
 import Puzzle (Puzzle)
 import qualified Creater
 import qualified Solver
+import qualified Stats
 import qualified Solution
 import Solution (Solution)
 
@@ -41,5 +42,5 @@ createListNoGuessing rnd layout =
   filter
     (\ puzzle ->
       let solution = head $ Solver.solutions puzzle
-      in Solution.guessCount solution == 0)
+      in (Stats.guesses $ Solution.stats solution) == 0)
     $ Creater.createList rnd layout

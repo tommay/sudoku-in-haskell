@@ -14,6 +14,7 @@ import qualified Placed
 import qualified Creater
 import qualified Solver
 import qualified Solution
+import qualified Stats
 
 main = do
   (filename:_) <- System.Environment.getArgs
@@ -55,7 +56,7 @@ toLayout string =
 createListNoGuessing :: Random.StdGen -> [[Int]] -> [Puzzle]
 createListNoGuessing rnd layout =
   filter
-    ((== 0) . Solution.guessCount . head . Solver.solutions)
+    ((== 0) . Stats.guesses . Solution.stats . head . Solver.solutions)
     $ Creater.createList rnd layout
 
 count :: Puzzle -> Map Digit Int

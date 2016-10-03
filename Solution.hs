@@ -2,17 +2,18 @@ module Solution
 (
   Solution,
   new,
-  guessCount,
   puzzle,
+  stats,
 ) where
 
 import Puzzle (Puzzle)
+import Stats (Stats)
 
 data Solution = Solution {
-  guessCount :: Int,
-  puzzle :: Puzzle
+  puzzle :: Puzzle,
+  stats :: Stats
 } deriving (Show)
 
-new :: Int -> Puzzle -> Solution
-new guessCount puzzle =
-  Solution { guessCount = guessCount, puzzle = puzzle }
+new :: Puzzle -> Stats -> Solution
+new puzzle stats =
+  Solution { puzzle = puzzle, stats = stats }

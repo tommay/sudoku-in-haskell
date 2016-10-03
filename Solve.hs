@@ -4,6 +4,8 @@ import qualified System.Environment
 
 import qualified Puzzle
 import Puzzle (Puzzle)
+import qualified Stats
+import Stats (Stats)
 import qualified Solution
 import Solution (Solution)
 import qualified Solver
@@ -33,7 +35,7 @@ printSolution :: Solution -> IO ()
 printSolution solution =
   if False
     then putStrLn $ unlines
-      ["Guesses: " ++ (show $ Solution.guessCount solution),
+      ["Guesses: " ++ (show $ Stats.guesses $ Solution.stats solution),
        Puzzle.toPuzzleString $ Solution.puzzle solution]
     else return ()
 
