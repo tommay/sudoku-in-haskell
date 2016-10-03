@@ -15,12 +15,18 @@ exclusionSets =
 -- An ExclusionSet for each row.
 --
 rows :: [[Int]]
-rows = [[row*9 + col | col <- [0..8]] | row <- [0..8]]
+rows = [row n | n <-[0..8]]
+
+row :: Int -> [Int]
+row n = [n*9 + col | col <- [0..8]]
 
 -- An ExclusionSet for each column.
 --
 columns :: [[Int]]
-columns = [[row*9 + col | row <- [0..8]] | col <- [0..8]]
+columns = [column n | n <- [0..8]]
+
+column :: Int -> [Int]
+column n = [row*9 + n | row <- [0..8]]
 
 -- An ExclusionSet for each square.
 --
