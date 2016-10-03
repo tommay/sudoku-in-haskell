@@ -8,6 +8,8 @@ module Unknown
   Unknown.removeDigitFromPossible,
 ) where  
 
+import Digit (Digit)
+
 import qualified Data.List as List
 
 data Unknown = Unknown {
@@ -15,7 +17,7 @@ data Unknown = Unknown {
   row :: Int,
   col :: Int,
   square :: Int,
-  possible :: [Int]
+  possible :: [Digit]
 } deriving (Show)
 
 instance Eq Unknown where
@@ -37,13 +39,13 @@ new cellNumber =
     possible = [1..9]
   }
 
-place :: Unknown -> Unknown -> Int -> Unknown
+place :: Unknown -> Unknown -> Digit -> Unknown
 place this other digit =
   case isExcludedBy this other of
     True -> removeDigitFromPossible digit this
     False -> this
 
-removeDigitFromPossible :: Int -> Unknown -> Unknown
+removeDigitFromPossible :: Digit -> Unknown -> Unknown
 removeDigitFromPossible digit this =
   this { possible = List.delete digit $ possible this }
 

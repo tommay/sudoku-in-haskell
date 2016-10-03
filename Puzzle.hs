@@ -15,6 +15,7 @@ import qualified Data.Char as Char
 import qualified Data.List as List
 import qualified Debug.Trace
 
+import Digit (Digit)
 import qualified Placed
 import Placed (Placed)
 import qualified Unknown
@@ -55,17 +56,17 @@ fromString setup =
        empty
        zipped
 
--- Given a Setup string, returns a list of Maybe Int for
+-- Given a Setup string, returns a list of Maybe Digit for
 -- each cell.
 --
-toDigits :: String -> [Maybe Int]
+toDigits :: String -> [Maybe Digit]
 toDigits setup =
   [case char of
     '-' -> Nothing
     _ -> Just $ Char.digitToInt char
    | char <- setup]
 
-place :: Puzzle -> Unknown -> Int -> Puzzle
+place :: Puzzle -> Unknown -> Digit -> Puzzle
 place this unknown' digit =
   let cellNumber = Unknown.cellNumber unknown'
   in this {
@@ -90,7 +91,7 @@ remove this cellNumbers =
 -- possible to put the digit into any cells in the list.  Fix up unknowns
 -- to reflect this.
 --
-notPossibleForList :: Puzzle -> Int -> [Int] -> Puzzle
+notPossibleForList :: Puzzle -> Digit -> [Int] -> Puzzle
 notPossibleForList this digit cellNumbers =
   this {
     unknown = map

@@ -7,6 +7,7 @@ import qualified System.Random as Random
 import qualified System.Environment
 import qualified Debug.Trace
 
+import Digit (Digit)
 import qualified Puzzle
 import Puzzle (Puzzle)
 import qualified Placed
@@ -57,7 +58,7 @@ createListNoGuessing rnd layout =
     ((== 0) . Solution.guessCount . head . Solver.solutions)
     $ Creater.createList rnd layout
 
-count :: Puzzle -> Map Int Int
+count :: Puzzle -> Map Digit Int
 count puzzle =
   foldr (\ digit ->
           Map.insertWith (+) digit 1)

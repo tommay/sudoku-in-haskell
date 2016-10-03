@@ -4,6 +4,7 @@ module Solver (
   Solver.randomSolutions,
 ) where
 
+import Digit (Digit)
 import qualified Puzzle
 import Puzzle (Puzzle)
 import qualified Unknown
@@ -109,7 +110,7 @@ solutionsGuess this results =
 -- For each digit in the list, use it as a guess for unknown
 -- and try to solve the resulting Puzzle.
 --
-doGuesses :: Solver -> Unknown -> [Int] -> [Solution] -> [Solution]
+doGuesses :: Solver -> Unknown -> [Digit] -> [Solution] -> [Solution]
 doGuesses this unknown digits results =
   foldr (\ digit accum ->
           let guess = Puzzle.place (Solver.puzzle this) unknown digit
@@ -157,7 +158,7 @@ placeOneNeededInSet puzzle set =
   let unknowns = unknownsInSet puzzle set
   in Solver.any (placeNeededDigitInSet puzzle unknowns) [1..9]
 
-placeNeededDigitInSet :: Puzzle -> [Unknown] -> Int -> Maybe Puzzle
+placeNeededDigitInSet :: Puzzle -> [Unknown] -> Digit -> Maybe Puzzle
 placeNeededDigitInSet puzzle unknowns digit =
   case filter (isDigitPossibleForUnknown digit) unknowns of
     [unknown] -> Just $ Puzzle.place puzzle unknown digit
@@ -191,7 +192,7 @@ tryTrickySet :: Puzzle -> TrickySet -> Maybe Puzzle
 tryTrickySet puzzle trickySet =
   Solver.any (tryTrickySetWithDigit puzzle trickySet) [1..9]
 
-tryTrickySetWithDigit :: Puzzle -> TrickySet -> Int -> Maybe Puzzle
+tryTrickySetWithDigit :: Puzzle -> TrickySet -> Digit -> Maybe Puzzle
 tryTrickySetWithDigit puzzle trickySet digit =
   if trickySetMatchesForDigit puzzle trickySet digit
     then
@@ -206,14 +207,14 @@ tryTrickySetWithDigit puzzle trickySet digit =
     else
       Nothing
 
-trickySetMatchesForDigit :: Puzzle -> TrickySet -> Int -> Bool
+trickySetMatchesForDigit :: Puzzle -> TrickySet -> Digit -> Bool
 trickySetMatchesForDigit puzzle trickySet digit =
   let common = TrickySets.common trickySet
       rest = TrickySets.rest trickySet
   in (isDigitPossibleInSet puzzle digit common) &&
      (notIsDigitPossibleInSet puzzle digit rest)
 
-trickySetCheckNeeded :: Puzzle -> Puzzle -> TrickySet -> Int -> Maybe Puzzle
+trickySetCheckNeeded :: Puzzle -> Puzzle -> TrickySet -> Digit -> Maybe Puzzle
 trickySetCheckNeeded puzzle tmpPuzzle trickySet digit =
   let maybeUnknown =
         Solver.any
@@ -231,7 +232,7 @@ trickySetCheckNeeded puzzle tmpPuzzle trickySet digit =
                newPuzzle'
          in Just $ newPuzzle
 
-findUnknownWhereDigitIsNeeded :: Puzzle -> Int -> [Int] -> Maybe Unknown
+findUnknownWhereDigitIsNeeded :: Puzzle -> Digit -> [Int] -> Maybe Unknown
 findUnknownWhereDigitIsNeeded puzzle digit set =
   let unknowns = filter (isDigitPossibleForUnknown digit)
         $ filter (isUnknownInSet set)
@@ -240,7 +241,7 @@ findUnknownWhereDigitIsNeeded puzzle digit set =
        [unknown] -> Just unknown
        _ -> Nothing
 
-isDigitPossibleInSet :: Puzzle -> Int -> [Int] -> Bool
+isDigitPossibleInSet :: Puzzle -> Digit -> [Int] -> Bool
 isDigitPossibleInSet puzzle digit set =
   let possibleUnknowns =
         -- Filters can be in either order but this order is way faster.
@@ -255,7 +256,7 @@ isDigitPossibleInSet puzzle digit set =
 -- Making this new function makes things 4 times faster solving
 -- puzzle-1339.txt.
 --
-notIsDigitPossibleInSet :: Puzzle -> Int -> [Int] -> Bool
+notIsDigitPossibleInSet :: Puzzle -> Digit -> [Int] -> Bool
 notIsDigitPossibleInSet puzzle digit set =
   let possibleUnknowns =
         -- Filters can be in either order but this order is way faster.
@@ -266,7 +267,7 @@ notIsDigitPossibleInSet puzzle digit set =
        [] -> True
        _ -> False
 
-isDigitPossibleForUnknown :: Int -> Unknown -> Bool
+isDigitPossibleForUnknown :: Digit -> Unknown -> Bool
 isDigitPossibleForUnknown digit unknown =
   digit `elem` Unknown.possible unknown
 

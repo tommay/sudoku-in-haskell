@@ -6,12 +6,14 @@ module Placed
   Placed.digit,
 ) where  
 
+import Digit (Digit)
+
 data Placed = Placed {
   cellNumber :: Int,
-  digit :: Int
+  digit :: Digit
 } deriving (Show)
 
-new :: Int -> Int -> Placed
+new :: Int -> Digit -> Placed
 new cellNumber digit =
   Placed {
     cellNumber = cellNumber,
