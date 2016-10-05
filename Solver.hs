@@ -13,6 +13,7 @@ import qualified Solution
 import Solution (Solution)
 import qualified Stats
 import Stats (Stats)
+import Step (Step (Initial))
 import qualified ExclusionSets
 import qualified TrickySets
 import TrickySets (TrickySet)
@@ -29,6 +30,7 @@ doDebug = False
 data Solver = Solver {
   puzzle :: Puzzle,
   rnd :: Maybe Random.StdGen,
+  steps :: [Step],
   stats :: Stats
 } deriving (Show)
 
@@ -37,6 +39,7 @@ new puzzle maybeRnd =
   Solver {
     puzzle = puzzle,
     rnd = maybeRnd,
+    steps = [Initial puzzle],
     stats = Stats.new
   }
 
@@ -59,7 +62,11 @@ solutionsTop this results =
   case Puzzle.unknown $ Solver.puzzle this of
     [] ->
       -- No more unknowns, solved!
-      Solution.new (Solver.puzzle this) (Solver.stats this) : results
+      Solution.new
+        (Solver.puzzle this)
+        (Solver.steps this)
+        (Solver.stats this)
+      : results
     _ -> solutionsHeuristic this results
 
 solutionsHeuristic :: Solver -> [Solution] -> [Solution]
