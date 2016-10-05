@@ -66,13 +66,13 @@ solutionsHeuristic :: Solver -> [Solution] -> [Solution]
 solutionsHeuristic this results =
   if tryHeuristics
     then -- Try the heuristic functions.
-      let maybeNext = Solver.any
-            (\ f -> f $ Solver.puzzle this)
+      let maybeNext = concat
+            $ map (\ f -> f $ Solver.puzzle this)
             $ [placeOneMissing, placeOneNeeded, placeOneForced]
       in case maybeNext of
-        Just nextPuzzle ->
+        (nextPuzzle : _) ->
           solutionsTop this{puzzle = nextPuzzle} results
-        Nothing ->
+        [] ->
           solutionsTricky this results
     else -- Skip the heuristics and continue with solutionsTricky.
       solutionsTricky this results
@@ -122,11 +122,11 @@ doGuesses this unknown digits results =
 
 -- Try to place a digit where a set has only one unplaced cell.
 --
-placeOneMissing :: Puzzle -> Maybe Puzzle
+placeOneMissing :: Puzzle -> [Puzzle]
 placeOneMissing puzzle =
-  Solver.any (placeOneMissingInSet puzzle) ExclusionSets.exclusionSets
+  concat $ map (placeOneMissingInSet puzzle) ExclusionSets.exclusionSets
 
-placeOneMissingInSet :: Puzzle -> [Int] -> Maybe Puzzle
+placeOneMissingInSet :: Puzzle -> [Int] -> [Puzzle]
 placeOneMissingInSet puzzle set =
   case unknownsInSet puzzle set of
     [unknown] ->
@@ -135,11 +135,11 @@ placeOneMissingInSet puzzle set =
       -- there should be exactly one possible digit remaining.  But we
       -- may have made a wrong guess, which leaves no possibilities.
       case Unknown.possible unknown of
-        [digit] -> Just $ Puzzle.place puzzle unknown digit
-        [] -> Nothing
+        [digit] -> [Puzzle.place puzzle unknown digit]
+        [] -> []
     _ ->
       -- Zero or multiple cells in the set are unknown.
-      Nothing
+      []
 
 unknownsInSet :: Puzzle -> [Int] -> [Unknown]
 unknownsInSet puzzle set =
@@ -151,50 +151,50 @@ unknownsInSet puzzle set =
 -- This is pretty inefficient since it has to look through all the
 -- digits and cells repeatedly but so what.
 --
-placeOneNeeded :: Puzzle -> Maybe Puzzle
+placeOneNeeded :: Puzzle -> [Puzzle]
 placeOneNeeded puzzle =
-  Solver.any (placeOneNeededInSet puzzle) ExclusionSets.exclusionSets
+  concat $ map (placeOneNeededInSet puzzle) ExclusionSets.exclusionSets
 
-placeOneNeededInSet :: Puzzle -> [Int] -> Maybe Puzzle
+placeOneNeededInSet :: Puzzle -> [Int] -> [Puzzle]
 placeOneNeededInSet puzzle set =
   let unknowns = unknownsInSet puzzle set
-  in Solver.any (placeNeededDigitInSet puzzle unknowns) [1..9]
+  in concat $ map (placeNeededDigitInSet puzzle unknowns) [1..9]
 
-placeNeededDigitInSet :: Puzzle -> [Unknown] -> Digit -> Maybe Puzzle
+placeNeededDigitInSet :: Puzzle -> [Unknown] -> Digit -> [Puzzle]
 placeNeededDigitInSet puzzle unknowns digit =
   case filter (isDigitPossibleForUnknown digit) unknowns of
-    [unknown] -> Just $ Puzzle.place puzzle unknown digit
-    _ -> Nothing
+    [unknown] -> [Puzzle.place puzzle unknown digit]
+    _ -> []
 
-placeOneForced :: Puzzle -> Maybe Puzzle
+placeOneForced :: Puzzle -> [Puzzle]
 placeOneForced puzzle =
-  Solver.any (placeForcedUnknown puzzle) $ Puzzle.unknown puzzle
+  concat $ map (placeForcedUnknown puzzle) $ Puzzle.unknown puzzle
 
-placeForcedUnknown :: Puzzle -> Unknown -> Maybe Puzzle
+placeForcedUnknown :: Puzzle -> Unknown -> [Puzzle]
 placeForcedUnknown puzzle unknown =
   case Unknown.possible unknown of
-    [digit] -> Just $ Puzzle.place puzzle unknown digit
-    _ -> Nothing
+    [digit] -> [Puzzle.place puzzle unknown digit]
+    _ -> []
 
 solutionsTricky :: Solver -> [Solution] -> [Solution]
 solutionsTricky this results =
   if tryTricky
     then
       let puzzle = Solver.puzzle this
-          maybePuzzle = Solver.any (tryTrickySet puzzle) TrickySets.trickySets
+          maybePuzzle = concat $ map (tryTrickySet puzzle) TrickySets.trickySets
       in case maybePuzzle of
-        Just newPuzzle ->
+        (newPuzzle : _) ->
           solutionsTop this{puzzle = newPuzzle} results
-        Nothing ->
+        _ ->
           solutionsGuess this results
     else
       solutionsGuess this results
 
-tryTrickySet :: Puzzle -> TrickySet -> Maybe Puzzle
+tryTrickySet :: Puzzle -> TrickySet -> [Puzzle]
 tryTrickySet puzzle trickySet =
-  Solver.any (tryTrickySetWithDigit puzzle trickySet) [1..9]
+  concat $ map (tryTrickySetWithDigit puzzle trickySet) [1..9]
 
-tryTrickySetWithDigit :: Puzzle -> TrickySet -> Digit -> Maybe Puzzle
+tryTrickySetWithDigit :: Puzzle -> TrickySet -> Digit -> [Puzzle]
 tryTrickySetWithDigit puzzle trickySet digit =
   if trickySetMatchesForDigit puzzle trickySet digit
     then
@@ -207,7 +207,7 @@ tryTrickySetWithDigit puzzle trickySet digit =
           tmpPuzzle = Puzzle.notPossibleForList puzzle digit eliminate
       in trickySetCheckNeeded puzzle tmpPuzzle trickySet digit
     else
-      Nothing
+      []
 
 trickySetMatchesForDigit :: Puzzle -> TrickySet -> Digit -> Bool
 trickySetMatchesForDigit puzzle trickySet digit =
@@ -216,15 +216,14 @@ trickySetMatchesForDigit puzzle trickySet digit =
   in (isDigitPossibleInSet puzzle digit common) &&
      (notIsDigitPossibleInSet puzzle digit rest)
 
-trickySetCheckNeeded :: Puzzle -> Puzzle -> TrickySet -> Digit -> Maybe Puzzle
+trickySetCheckNeeded :: Puzzle -> Puzzle -> TrickySet -> Digit -> [Puzzle]
 trickySetCheckNeeded puzzle tmpPuzzle trickySet digit =
   let maybeUnknown =
-        Solver.any
-          (findUnknownWhereDigitIsNeeded tmpPuzzle digit)
+        concat $ map
+          (findUnknownsWhereDigitIsNeeded tmpPuzzle digit)
           $ TrickySets.checkNeeded trickySet
   in case maybeUnknown of
-       Nothing -> Nothing
-       Just unknown ->
+       [unknown] ->
          let newPuzzle' = Puzzle.place puzzle unknown digit
              newPuzzle = debug
                ("T: " ++ show trickySet ++ "\n" ++
@@ -232,16 +231,14 @@ trickySetCheckNeeded puzzle tmpPuzzle trickySet digit =
                 (Puzzle.toPuzzleString puzzle) ++
                 (Puzzle.toPuzzleString newPuzzle'))
                newPuzzle'
-         in Just $ newPuzzle
+         in [newPuzzle]
+       _ -> []
 
-findUnknownWhereDigitIsNeeded :: Puzzle -> Digit -> [Int] -> Maybe Unknown
-findUnknownWhereDigitIsNeeded puzzle digit set =
-  let unknowns = filter (isDigitPossibleForUnknown digit)
-        $ filter (isUnknownInSet set)
-        $ Puzzle.unknown puzzle
-  in case unknowns of
-       [unknown] -> Just unknown
-       _ -> Nothing
+findUnknownsWhereDigitIsNeeded :: Puzzle -> Digit -> [Int] -> [Unknown]
+findUnknownsWhereDigitIsNeeded puzzle digit set =
+  filter (isDigitPossibleForUnknown digit)
+    $ filter (isUnknownInSet set)
+    $ Puzzle.unknown puzzle
 
 isDigitPossibleInSet :: Puzzle -> Digit -> [Int] -> Bool
 isDigitPossibleInSet puzzle digit set =
@@ -298,23 +295,6 @@ minBy func list =
 shuffle :: Random.StdGen -> [a] -> [a]
 shuffle rnd list =
   Shuffle.shuffle' list (length list) rnd
-
--- Look through a list of Maybes and return the first one that isn't
--- Nothing, or Nothing if they're all Nothing.
---
-firstMaybe :: [Maybe a] -> Maybe a
-firstMaybe [] = Nothing
-firstMaybe ((result @ (Just _)) : _) =
-  result
-firstMaybe (_ : tail) =
-  firstMaybe tail
-
--- Call func with each element of the list and return the first result
--- that isn't Nothing.
---
-any :: (a -> Maybe b) -> [a] -> Maybe b
-any func list =
-  firstMaybe $ map func list
 
 -- Debug function that outputs only if doDebug is True.
 --
