@@ -1,11 +1,9 @@
 module Step (
-  Step (Initial, EasyPeasy),
+  Step (Step),
 ) where
 
 import Placement (Placement)
 import Puzzle (Puzzle)
 
-data Step =
-    Initial Puzzle
-  | EasyPeasy Puzzle Placement
+data Step = Step Puzzle (Maybe Placement) String
   deriving (Show)

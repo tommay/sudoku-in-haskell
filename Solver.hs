@@ -6,6 +6,7 @@ module Solver (
 
 import Digit (Digit)
 import qualified Puzzle
+import Placement (Placement (Placement))
 import Puzzle (Puzzle)
 import qualified Unknown
 import Unknown (Unknown)
@@ -13,7 +14,7 @@ import qualified Solution
 import Solution (Solution)
 import qualified Stats
 import Stats (Stats)
-import Step (Step (Initial))
+import Step (Step (Step))
 import qualified ExclusionSets
 import qualified TrickySets
 import TrickySets (TrickySet)
@@ -34,12 +35,14 @@ data Solver = Solver {
   stats :: Stats
 } deriving (Show)
 
+data Next = Next Placement String (Stats -> Stats)
+
 new :: Puzzle -> Maybe Random.StdGen -> Solver
 new puzzle maybeRnd =
   Solver {
     puzzle = puzzle,
     rnd = maybeRnd,
-    steps = [Initial puzzle],
+    steps = [Step puzzle Nothing "Initial puzzle"],
     stats = Stats.new
   }
 
@@ -73,16 +76,28 @@ solutionsHeuristic :: Solver -> [Solution] -> [Solution]
 solutionsHeuristic this results =
   if tryHeuristics
     then -- Try the heuristic functions.
-      let maybeNext = concat
+      let nextList = concat
             $ map (\ f -> f $ Solver.puzzle this)
             $ [placeOneMissing, placeOneNeeded, placeOneForced]
-      in case maybeNext of
-        (nextPuzzle : _) ->
-          solutionsTop this{puzzle = nextPuzzle} results
+      in case nextList of
+        (next : _) ->
+          placeAndContinue this next results
         [] ->
           solutionsTricky this results
     else -- Skip the heuristics and continue with solutionsTricky.
       solutionsTricky this results
+
+placeAndContinue :: Solver -> Next -> [Solution] -> [Solution]
+placeAndContinue this next results =
+  let Next placement description incStats = next
+      Placement cellNumber digit = placement
+      puzzle = Solver.puzzle this
+      newPuzzle = Puzzle.place puzzle (Unknown.new cellNumber) digit
+      step = Step newPuzzle (Just placement) description
+      newSteps = (Solver.steps this) ++ [step]
+      newStats = incStats $ Solver.stats this
+      newSolver = this{ puzzle = newPuzzle, steps = newSteps }
+  in solutionsTop newSolver results
 
 solutionsGuess :: Solver -> [Solution] -> [Solution]
 solutionsGuess this results =
@@ -129,11 +144,11 @@ doGuesses this unknown digits results =
 
 -- Try to place a digit where a set has only one unplaced cell.
 --
-placeOneMissing :: Puzzle -> [Puzzle]
+placeOneMissing :: Puzzle -> [Next]
 placeOneMissing puzzle =
   concat $ map (placeOneMissingInSet puzzle) ExclusionSets.exclusionSets
 
-placeOneMissingInSet :: Puzzle -> [Int] -> [Puzzle]
+placeOneMissingInSet :: Puzzle -> [Int] -> [Next]
 placeOneMissingInSet puzzle set =
   case unknownsInSet puzzle set of
     [unknown] ->
@@ -142,11 +157,17 @@ placeOneMissingInSet puzzle set =
       -- there should be exactly one possible digit remaining.  But we
       -- may have made a wrong guess, which leaves no possibilities.
       case Unknown.possible unknown of
-        [digit] -> [Puzzle.place puzzle unknown digit]
+        [digit] -> [Next
+                     (Placement (Unknown.cellNumber unknown) digit)
+                     "One missing in set"
+                     incOneMissingInSet]
         [] -> []
     _ ->
       -- Zero or multiple cells in the set are unknown.
       []
+
+incOneMissingInSet :: Stats -> Stats
+incOneMissingInSet stats = stats  -- XXX
 
 unknownsInSet :: Puzzle -> [Int] -> [Unknown]
 unknownsInSet puzzle set =
@@ -158,29 +179,31 @@ unknownsInSet puzzle set =
 -- This is pretty inefficient since it has to look through all the
 -- digits and cells repeatedly but so what.
 --
-placeOneNeeded :: Puzzle -> [Puzzle]
+placeOneNeeded :: Puzzle -> [Next]
 placeOneNeeded puzzle =
   concat $ map (placeOneNeededInSet puzzle) ExclusionSets.exclusionSets
 
-placeOneNeededInSet :: Puzzle -> [Int] -> [Puzzle]
+placeOneNeededInSet :: Puzzle -> [Int] -> [Next]
 placeOneNeededInSet puzzle set =
   let unknowns = unknownsInSet puzzle set
   in concat $ map (placeNeededDigitInSet puzzle unknowns) [1..9]
 
-placeNeededDigitInSet :: Puzzle -> [Unknown] -> Digit -> [Puzzle]
+placeNeededDigitInSet :: Puzzle -> [Unknown] -> Digit -> [Next]
 placeNeededDigitInSet puzzle unknowns digit =
   case filter (isDigitPossibleForUnknown digit) unknowns of
-    [unknown] -> [Puzzle.place puzzle unknown digit]
+    [unknown] -> [Next (Placement (Unknown.cellNumber unknown) digit)
+                  "Needed" id]
     _ -> []
 
-placeOneForced :: Puzzle -> [Puzzle]
+placeOneForced :: Puzzle -> [Next]
 placeOneForced puzzle =
   concat $ map (placeForcedUnknown puzzle) $ Puzzle.unknown puzzle
 
-placeForcedUnknown :: Puzzle -> Unknown -> [Puzzle]
+placeForcedUnknown :: Puzzle -> Unknown -> [Next]
 placeForcedUnknown puzzle unknown =
   case Unknown.possible unknown of
-    [digit] -> [Puzzle.place puzzle unknown digit]
+    [digit] -> [Next (Placement (Unknown.cellNumber unknown) digit)
+                "Forced" id]
     _ -> []
 
 solutionsTricky :: Solver -> [Solution] -> [Solution]
