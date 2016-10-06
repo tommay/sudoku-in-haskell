@@ -20,6 +20,7 @@ import qualified Placed
 import Placed (Placed)
 import qualified Unknown
 import Unknown (Unknown)
+import qualified Util
 
 data Puzzle = Puzzle {
   placed :: [Placed],
@@ -121,17 +122,6 @@ toPuzzleString this =
   unlines $
     map (\puzzles ->
           unlines $
-            map (\row -> unwords $ slices 3 row) $
-              slices 9 puzzles) $
-      slices 27 $ Puzzle.toString this
-
--- You'd think there would be a function to do this but I can't
--- find one easily.  It will be good practice to roll my own.
--- This can be done all kinds of ways, but here I don't use
--- anything fancy.
---
-slices :: Int -> [a] -> [[a]]
-slices _ [] = []
-slices n list =
-  let (slice, rest) = splitAt n list
-  in slice : slices n rest
+            map (\row -> unwords $ Util.slices 3 row) $
+              Util.slices 9 puzzles) $
+      Util.slices 27 $ Puzzle.toString this
