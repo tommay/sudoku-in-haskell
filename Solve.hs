@@ -8,7 +8,7 @@ import qualified Stats
 import Stats (Stats)
 import qualified Solution
 import Solution (Solution)
-import Step (Step)
+import Step (Step (Step))
 import qualified Solver
 
 -- This is the main function, called from the sudoku script.
@@ -45,7 +45,8 @@ printSolution solution =
 
 showStep :: Step -> String
 showStep step =
-  "A step."
+  let Step _ _ description = step
+  in description
 
 -- Returns the contents of Filename as an IO String with "#" comments
 -- and whitespace deleted.  The result should be a string of 81 digits

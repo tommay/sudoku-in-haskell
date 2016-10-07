@@ -20,7 +20,6 @@ import qualified Placed
 import Placed (Placed)
 import qualified Unknown
 import Unknown (Unknown)
-import qualified ExclusionSets
 
 data Puzzle = Puzzle {
   placed :: [Placed],

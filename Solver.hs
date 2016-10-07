@@ -15,7 +15,8 @@ import Solution (Solution)
 import qualified Stats
 import Stats (Stats)
 import Step (Step (Step))
-import qualified ExclusionSets
+import qualified ExclusionSet
+import ExclusionSet (ExclusionSet (ExclusionSet))
 import qualified TrickySets
 import TrickySets (TrickySet)
 
@@ -146,25 +147,26 @@ doGuesses this unknown digits results =
 --
 placeOneMissing :: Puzzle -> [Next]
 placeOneMissing puzzle =
-  concat $ map (placeOneMissingInSet puzzle) ExclusionSets.exclusionSets
+  concat $ map (placeOneMissingInSet puzzle) ExclusionSet.exclusionSets
 
-placeOneMissingInSet :: Puzzle -> [Int] -> [Next]
+placeOneMissingInSet :: Puzzle -> ExclusionSet -> [Next]
 placeOneMissingInSet puzzle set =
-  case unknownsInSet puzzle set of
-    [unknown] ->
-      -- Exactly one cell in the set is unknown.  Place a digit in it.
-      -- Note that since this is the only unknown position in the set
-      -- there should be exactly one possible digit remaining.  But we
-      -- may have made a wrong guess, which leaves no possibilities.
-      case Unknown.possible unknown of
-        [digit] -> [Next
-                     (Placement (Unknown.cellNumber unknown) digit)
-                     "One missing in set"
-                     incOneMissingInSet]
-        [] -> []
-    _ ->
-      -- Zero or multiple cells in the set are unknown.
-      []
+  let ExclusionSet name cellNumbers = set
+  in case unknownsInSet puzzle cellNumbers of
+       [unknown] ->
+         -- Exactly one cell in the set is unknown.  Place a digit in it.
+         -- Note that since this is the only unknown position in the set
+         -- there should be exactly one possible digit remaining.  But we
+         -- may have made a wrong guess, which leaves no possibilities.
+         case Unknown.possible unknown of
+           [digit] -> [Next
+                        (Placement (Unknown.cellNumber unknown) digit)
+                        ("One missing in " ++ name)
+                        incOneMissingInSet]
+           [] -> []
+       _ ->
+         -- Zero or multiple cells in the set are unknown.
+         []
 
 incOneMissingInSet :: Stats -> Stats
 incOneMissingInSet stats = stats  -- XXX
@@ -181,18 +183,19 @@ unknownsInSet puzzle set =
 --
 placeOneNeeded :: Puzzle -> [Next]
 placeOneNeeded puzzle =
-  concat $ map (placeOneNeededInSet puzzle) ExclusionSets.exclusionSets
+  concat $ map (placeOneNeededInSet puzzle) ExclusionSet.exclusionSets
 
-placeOneNeededInSet :: Puzzle -> [Int] -> [Next]
+placeOneNeededInSet :: Puzzle -> ExclusionSet -> [Next]
 placeOneNeededInSet puzzle set =
-  let unknowns = unknownsInSet puzzle set
-  in concat $ map (placeNeededDigitInSet puzzle unknowns) [1..9]
+  let ExclusionSet name cellNumbers = set
+      unknowns = unknownsInSet puzzle cellNumbers
+  in concat $ map (placeNeededDigitInSet puzzle unknowns name) [1..9]
 
-placeNeededDigitInSet :: Puzzle -> [Unknown] -> Digit -> [Next]
-placeNeededDigitInSet puzzle unknowns digit =
+placeNeededDigitInSet :: Puzzle -> [Unknown] -> String -> Digit -> [Next]
+placeNeededDigitInSet puzzle unknowns name digit =
   case filter (isDigitPossibleForUnknown digit) unknowns of
     [unknown] -> [Next (Placement (Unknown.cellNumber unknown) digit)
-                  "Needed" id]
+                  ("Needed in " ++ name) id]
     _ -> []
 
 placeOneForced :: Puzzle -> [Next]
