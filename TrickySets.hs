@@ -52,8 +52,8 @@ trickySets =
   let rows = ExclusionSets.rows
       columns = ExclusionSets.columns
       squares = ExclusionSets.squares
-      getRows = getExclusionSetsIncluding ExclusionSets.rows
-      getColumns = getExclusionSetsIncluding ExclusionSets.rows
+      getRows = getExclusionSetsIncluding rows
+      getColumns = getExclusionSetsIncluding columns
   in concat $
        [createTrickySetsFrom square row getColumns
          | square <- squares, row <- rows] ++
