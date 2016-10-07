@@ -8,6 +8,7 @@ import qualified Stats
 import Stats (Stats)
 import qualified Solution
 import Solution (Solution)
+import Step (Step)
 import qualified Solver
 
 -- This is the main function, called from the sudoku script.
@@ -33,11 +34,18 @@ processAndCount func list =
 
 printSolution :: Solution -> IO ()
 printSolution solution =
-  if False
-    then putStrLn $ unlines
-      ["Guesses: " ++ (show $ Stats.guesses $ Solution.stats solution),
-       Puzzle.toPuzzleString $ Solution.puzzle solution]
+  if True
+    then do
+      let steps = Solution.steps solution
+      mapM_ putStrLn $ map showStep steps
+      putStrLn $ unlines
+        ["Guesses: " ++ (show $ Stats.guesses $ Solution.stats solution),
+         Puzzle.toPuzzleString $ Solution.puzzle solution]
     else return ()
+
+showStep :: Step -> String
+showStep step =
+  "A step."
 
 -- Returns the contents of Filename as an IO String with "#" comments
 -- and whitespace deleted.  The result should be a string of 81 digits
