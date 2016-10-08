@@ -127,7 +127,8 @@ solutionsGuess this results =
       doGuesses this minUnknown possible results
     _ ->
       -- Multiple possibilities.  Guess each, maybe in a random order,
-      -- and recurse.
+      -- and recurse.  We could use Random.split when shuffling or
+      -- recursing, but it's not really important for this application.
       let shuffledPossible =
             case Solver.rnd this of
               Nothing -> possible
