@@ -4,6 +4,7 @@ import qualified System.Environment
 
 import qualified Puzzle
 import Puzzle (Puzzle)
+import Placement (Placement (Placement))
 import qualified Stats
 import Stats (Stats)
 import qualified Solution
@@ -45,8 +46,16 @@ printSolution solution =
 
 showStep :: Step -> String
 showStep step =
-  let Step _ _ description = step
-  in description
+  let Step _ maybePlacement description = step
+  in description ++
+     case maybePlacement of
+       Just (Placement cellNumber digit) ->
+         unwords $ [":", show $ rowcol cellNumber, show digit]
+       Nothing -> ""
+
+rowcol :: Int -> (Int, Int)
+rowcol n =
+  (n `div` 9, n `mod` 9)
 
 -- Returns the contents of Filename as an IO String with "#" comments
 -- and whitespace deleted.  The result should be a string of 81 digits

@@ -97,7 +97,7 @@ placeAndContinue this next results =
       step = Step newPuzzle (Just placement) description
       newSteps = (Solver.steps this) ++ [step]
       newStats = incStats $ Solver.stats this
-      newSolver = this{ puzzle = newPuzzle, steps = newSteps }
+      newSolver = this{ puzzle = newPuzzle, steps = newSteps, stats = newStats }
   in solutionsTop newSolver results
 
 solutionsGuess :: Solver -> [Solution] -> [Solution]
