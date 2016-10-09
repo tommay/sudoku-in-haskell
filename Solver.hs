@@ -5,9 +5,10 @@ module Solver (
 ) where
 
 import Digit (Digit)
-import qualified Puzzle
+import qualified EasyPeasy
 import Next (Next (Next))
 import Placement (Placement (Placement))
+import qualified Puzzle
 import Puzzle (Puzzle)
 import qualified Unknown
 import Unknown (Unknown)
@@ -22,7 +23,6 @@ import qualified ExclusionSet
 import ExclusionSet (ExclusionSet (ExclusionSet))
 import qualified TrickySets
 import TrickySets (TrickySet)
-import qualified Util
 
 import qualified Data.List as List
 import qualified System.Random as Random
@@ -89,7 +89,7 @@ solutionsHeuristic this results =
           nextList = concat
             $ map (maybeShuffle rnd1)
             $ map (\ f -> f $ Solver.puzzle this)
-            $ [placeEasyPeasy, placeOneMissing, placeOneNeeded, placeOneForced]
+            $ [EasyPeasy.find, placeOneMissing, placeOneNeeded, placeOneForced]
       in case nextList of
         (next : _) ->
           placeAndContinue this{rnd = rnd2} next results
@@ -153,42 +153,6 @@ doGuesses this unknown digits results =
           in solutionsTop this{puzzle = guess} accum)
     results
     digits
-
-placeEasyPeasy :: Puzzle -> [Next]
-placeEasyPeasy puzzle =
-  concat $ map (easyPeasyStripe puzzle) $ makeEasyPeasyStripes
-
-makeEasyPeasyStripes :: [(ExclusionSet, [ExclusionSet])]
-makeEasyPeasyStripes =
-  concat $ map makeEasyPeasyStripe
-  $ Util.slices 3 (ExclusionSet.rows ++ ExclusionSet.columns)
-
-makeEasyPeasyStripe :: [ExclusionSet] -> [(ExclusionSet, [ExclusionSet])]
-makeEasyPeasyStripe slice =
-  map (\ set -> (set, List.delete set slice)) slice
-
-easyPeasyStripe :: Puzzle -> (ExclusionSet, [ExclusionSet]) -> [Next]
-easyPeasyStripe puzzle (col0, [col1, col2]) =
-  let digitsInCol1 = getDigitsInSet puzzle col1
-      digitsInCol2 = getDigitsInSet puzzle col2
-      easyPeasyDigits = (digitsInCol1 `List.intersect` digitsInCol2)
-  in concat $ map (placeDigitInSet puzzle col0) easyPeasyDigits
-
-getDigitsInSet :: Puzzle -> ExclusionSet -> [Digit]
-getDigitsInSet puzzle set =
-  map Placed.digit
-  $ filter (\ p -> Placed.cellNumber p `elem` ExclusionSet.cells set)
-  $ Puzzle.placed puzzle
-
-placeDigitInSet :: Puzzle -> ExclusionSet -> Digit -> [Next]
-placeDigitInSet puzzle set digit =
-  let unknowns = SolverUtil.unknownsInSet puzzle $ ExclusionSet.cells set
-  in case filter (elem digit . Unknown.possible) unknowns of
-      [unknown] -> [Next
-                    (Placement (Unknown.cellNumber unknown) digit)
-                    ("EasyPeasy " ++ ExclusionSet.name set)
-                    id]
-      _ -> []
 
 -- Try to place a digit where a set has only one unplaced cell.
 --
