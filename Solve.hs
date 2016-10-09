@@ -1,6 +1,7 @@
 import qualified System.FilePath as FilePath
 import qualified Text.Regex as Regex
 import qualified System.Environment
+import qualified System.Random as Random
 
 import qualified Puzzle
 import Puzzle (Puzzle)
@@ -19,7 +20,8 @@ import qualified Solver
 main = do
   (filename:_) <- System.Environment.getArgs
   setup <- getSetup filename
-  let solutions = Solver.solutions $ Puzzle.fromString setup
+  rnd <- Random.getStdGen
+  let solutions = Solver.randomSolutions (Puzzle.fromString setup) rnd
   count <- processAndCount printSolution solutions
   putStrLn $ "There are " ++ show count ++ " solutions."
 
