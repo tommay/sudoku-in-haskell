@@ -59,6 +59,9 @@ solutions puzzle =
   let solver = Solver.new puzzle Nothing
   in solutionsTop solver []
 
+-- This computes all the solutions but they're returned in a random
+-- order.
+--
 randomSolutions :: Puzzle -> Random.StdGen -> [Solution]
 randomSolutions puzzle rnd =
   let solver = Solver.new puzzle $ Just rnd
@@ -80,12 +83,16 @@ solutionsHeuristic :: Solver -> [Solution] -> [Solution]
 solutionsHeuristic this results =
   if tryHeuristics
     then -- Try the heuristic functions.
-      let nextList = concat
+      let (rnd1, rnd2) = maybeSplit $ Solver.rnd this
+          -- This uses rnd1 to shuffle each function's list, but that's ok
+          -- because only the first Next is used.
+          nextList = concat
+            $ map (maybeShuffle rnd1)
             $ map (\ f -> f $ Solver.puzzle this)
             $ [placeEasyPeasy, placeOneMissing, placeOneNeeded, placeOneForced]
       in case nextList of
         (next : _) ->
-          placeAndContinue this next results
+          placeAndContinue this{rnd = rnd2} next results
         [] ->
           solutionsTricky this results
     else -- Skip the heuristics and continue with solutionsTricky.
@@ -366,8 +373,30 @@ minBy func list =
        enhanced
 
 shuffle :: Random.StdGen -> [a] -> [a]
+-- shuffle' infinite loops on [], grr.
+shuffle _ [] = []
 shuffle rnd list =
   Shuffle.shuffle' list (length list) rnd
+
+myShuffle :: Random.StdGen -> [a] -> [a]
+myShuffle rnd [] = []
+myShuffle rnd list =
+  let len = length list
+      (n, newRnd) = Random.randomR (0, len - 1) rnd
+      (first, (e : rest)) = List.splitAt n list
+  in e : (myShuffle newRnd $ first ++ rest)
+
+maybeSplit :: Maybe Random.StdGen -> (Maybe Random.StdGen, Maybe Random.StdGen)
+maybeSplit Nothing =
+  (Nothing, Nothing)
+maybeSplit (Just rnd) =
+  let (rnd1, rnd2) = Random.split rnd
+  in (Just rnd1, Just rnd2)
+
+maybeShuffle :: Maybe Random.StdGen -> [a] -> [a]
+maybeShuffle Nothing list = list
+maybeShuffle (Just rnd) list =
+  shuffle rnd list
 
 -- Debug function that outputs only if doDebug is True.
 --
