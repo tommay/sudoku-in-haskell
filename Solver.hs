@@ -6,6 +6,7 @@ module Solver (
 
 import Digit (Digit)
 import qualified Puzzle
+import Next (Next (Next))
 import Placement (Placement (Placement))
 import Puzzle (Puzzle)
 import qualified Unknown
@@ -38,8 +39,6 @@ data Solver = Solver {
   steps :: [Step],
   stats :: Stats
 } deriving (Show)
-
-data Next = Next Placement String (Stats -> Stats)
 
 new :: Puzzle -> Maybe Random.StdGen -> Solver
 new puzzle maybeRnd =
