@@ -14,6 +14,7 @@ import Unknown (Unknown)
 import qualified Placed
 import qualified Solution
 import Solution (Solution)
+import qualified SolverUtil
 import qualified Stats
 import Stats (Stats)
 import Step (Step (Step))
@@ -181,7 +182,7 @@ getDigitsInSet puzzle set =
 
 placeDigitInSet :: Puzzle -> ExclusionSet -> Digit -> [Next]
 placeDigitInSet puzzle set digit =
-  let unknowns = unknownsInSet puzzle $ ExclusionSet.cells set
+  let unknowns = SolverUtil.unknownsInSet puzzle $ ExclusionSet.cells set
   in case filter (elem digit . Unknown.possible) unknowns of
       [unknown] -> [Next
                     (Placement (Unknown.cellNumber unknown) digit)
@@ -198,7 +199,7 @@ placeOneMissing puzzle =
 placeOneMissingInSet :: Puzzle -> ExclusionSet -> [Next]
 placeOneMissingInSet puzzle set =
   let ExclusionSet name cellNumbers = set
-  in case unknownsInSet puzzle cellNumbers of
+  in case SolverUtil.unknownsInSet puzzle cellNumbers of
        [unknown] ->
          -- Exactly one cell in the set is unknown.  Place a digit in it.
          -- Note that since this is the only unknown position in the set
@@ -217,10 +218,6 @@ placeOneMissingInSet puzzle set =
 incOneMissingInSet :: Stats -> Stats
 incOneMissingInSet stats = stats  -- XXX
 
-unknownsInSet :: Puzzle -> [Int] -> [Unknown]
-unknownsInSet puzzle set =
-  filter (isUnknownInSet set) $ Puzzle.unknown puzzle
-
 -- Try to place a digit where there is a set doesn't yet have some
 -- digit (it needs it) and there is only one cell in the set where it
 -- can possibly go, and return Just Puzzle if a digit was placed.
@@ -234,7 +231,7 @@ placeOneNeeded puzzle =
 placeOneNeededInSet :: Puzzle -> ExclusionSet -> [Next]
 placeOneNeededInSet puzzle set =
   let ExclusionSet name cellNumbers = set
-      unknowns = unknownsInSet puzzle cellNumbers
+      unknowns = SolverUtil.unknownsInSet puzzle cellNumbers
   in concat $ map (placeNeededDigitInSet puzzle unknowns name) [1..9]
 
 placeNeededDigitInSet :: Puzzle -> [Unknown] -> String -> Digit -> [Next]
@@ -316,7 +313,7 @@ trickySetCheckNeeded puzzle tmpPuzzle trickySet digit =
 findUnknownsWhereDigitIsNeeded :: Puzzle -> Digit -> [Int] -> [Unknown]
 findUnknownsWhereDigitIsNeeded puzzle digit set =
   filter (isDigitPossibleForUnknown digit)
-    $ filter (isUnknownInSet set)
+    $ filter (SolverUtil.isUnknownInSet set)
     $ Puzzle.unknown puzzle
 
 isDigitPossibleInSet :: Puzzle -> Digit -> [Int] -> Bool
@@ -324,7 +321,7 @@ isDigitPossibleInSet puzzle digit set =
   let possibleUnknowns =
         -- Filters can be in either order but this order is way faster.
         filter (isDigitPossibleForUnknown digit)
-        $ filter (isUnknownInSet set)
+        $ filter (SolverUtil.isUnknownInSet set)
         $ Puzzle.unknown puzzle
   in case possibleUnknowns of
        [] -> False
@@ -339,7 +336,7 @@ notIsDigitPossibleInSet puzzle digit set =
   let possibleUnknowns =
         -- Filters can be in either order but this order is way faster.
         filter (isDigitPossibleForUnknown digit)
-        $ filter (isUnknownInSet set)
+        $ filter (SolverUtil.isUnknownInSet set)
         $ Puzzle.unknown puzzle
   in case possibleUnknowns of
        [] -> True
@@ -348,10 +345,6 @@ notIsDigitPossibleInSet puzzle digit set =
 isDigitPossibleForUnknown :: Digit -> Unknown -> Bool
 isDigitPossibleForUnknown digit unknown =
   digit `elem` Unknown.possible unknown
-
-isUnknownInSet :: [Int] -> Unknown -> Bool
-isUnknownInSet list unknown =
-  Unknown.cellNumber unknown `elem` list
 
 minByNumPossible :: [Unknown] -> Unknown
 minByNumPossible  =
