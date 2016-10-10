@@ -7,6 +7,7 @@ module Solver (
 import Digit (Digit)
 import qualified EasyPeasy
 import Next (Next (Next))
+import qualified Next
 import Placement (Placement (Placement))
 import qualified Puzzle
 import Puzzle (Puzzle)
@@ -189,10 +190,8 @@ findMissingOneInSet puzzle set =
          -- there should be exactly one possible digit remaining.  But we
          -- may have made a wrong guess, which leaves no possibilities.
          case Unknown.possible unknown of
-           [digit] -> [Next
-                        (Placement (Unknown.cellNumber unknown) digit)
-                        ("Missing one in " ++ name)
-                        incMissingOneInSet]
+           [digit] -> [Next.new ("Missing one in " ++ name) incMissingOneInSet
+                       digit unknown]
            [] -> []
        _ ->
          -- Zero or multiple cells in the set are unknown.
@@ -236,8 +235,9 @@ findNeededInSet puzzle set =
 findNeededDigitInSet :: Puzzle -> [Unknown] -> String -> Digit -> [Next]
 findNeededDigitInSet puzzle unknowns name digit =
   case filter (isDigitPossibleForUnknown digit) unknowns of
-    [unknown] -> [Next (Placement (Unknown.cellNumber unknown) digit)
-                  (unwords ["Need a", show digit, "in", name]) id]
+    [unknown] -> [Next.new
+                  (unwords ["Need a", show digit, "in", name])
+                  id digit unknown]
     _ -> []
 
 findForced :: Puzzle -> [Next]
@@ -247,8 +247,7 @@ findForced puzzle =
 findForcedForUnknown :: Puzzle -> String -> Unknown -> [Next]
 findForcedForUnknown puzzle description unknown =
   case Unknown.possible unknown of
-    [digit] -> [Next (Placement (Unknown.cellNumber unknown) digit)
-                description id]
+    [digit] -> [Next.new description id digit unknown]
     _ -> []
 
 findTricky :: Puzzle -> [Next]
@@ -287,11 +286,9 @@ trickySetCheckNeeded puzzle tmpPuzzle trickySet digit =
         concat $ map
           (findUnknownWhereDigitIsNeeded tmpPuzzle digit)
           $ TrickySets.checkNeeded trickySet
-  in map (\ unknown ->
-           Next
-             (Placement (Unknown.cellNumber unknown) digit)
-             (TrickySets.name trickySet)
-             id) unknownForEachNeededSet
+  in map (Next.new
+           (TrickySets.name trickySet)
+           id digit) unknownForEachNeededSet
 
 findUnknownWhereDigitIsNeeded :: Puzzle -> Digit -> [Int] -> [Unknown]
 findUnknownWhereDigitIsNeeded puzzle digit set =

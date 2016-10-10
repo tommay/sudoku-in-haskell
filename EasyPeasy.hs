@@ -6,7 +6,8 @@ import ExclusionSet (ExclusionSet)
 import qualified ExclusionSet
 import qualified Puzzle as Puzzle
 import Digit (Digit)
-import Next (Next (Next))
+import Next (Next)
+import qualified Next
 import qualified Placed
 import Placement (Placement (Placement))
 import Puzzle (Puzzle)
@@ -57,9 +58,7 @@ placeDigitInSet :: Puzzle -> ExclusionSet -> Digit -> [Next]
 placeDigitInSet puzzle set digit =
   let unknowns = SolverUtil.unknownsInSet puzzle $ ExclusionSet.cells set
   in case filter (elem digit . Unknown.possible) unknowns of
-      [unknown] -> [Next
-                    (Placement (Unknown.cellNumber unknown) digit)
-                    ("Easy peasy " ++ ExclusionSet.name set)
-                    id]
+      [unknown] -> [Next.new ("Easy peasy " ++ ExclusionSet.name set)
+                    id digit unknown]
       _ -> []
 
