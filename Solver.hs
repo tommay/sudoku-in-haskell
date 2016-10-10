@@ -170,7 +170,12 @@ doGuesses :: Solver -> Unknown -> [Digit] -> [Solution] -> [Solution]
 doGuesses this unknown digits results =
   foldr (\ digit accum ->
           let guess = Puzzle.place (Solver.puzzle this) unknown digit
-          in solutionsTop this{puzzle = guess} accum)
+              step = Step
+                guess
+                (Just $ Placement (Unknown.cellNumber unknown) digit)
+                "Guess"
+              newSteps = (Solver.steps this) ++ [step]
+          in solutionsTop this{puzzle = guess, steps = newSteps} accum)
     results
     digits
 
