@@ -156,10 +156,7 @@ solutionsGuess this results =
       -- Multiple possibilities.  Guess each, maybe in a random order,
       -- and recurse.  We could use Random.split when shuffling or
       -- recursing, but it's not really important for this application.
-      let shuffledPossible =
-            case Solver.rnd this of
-              Nothing -> possible
-              Just rnd -> shuffle rnd possible
+      let shuffledPossible = maybeShuffle (Solver.rnd this) possible
           newSolver = this{stats = Stats.guess $ Solver.stats this}
       in doGuesses newSolver minUnknown shuffledPossible results
 
