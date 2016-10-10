@@ -30,10 +30,11 @@ import qualified System.Random.Shuffle as Shuffle
 import Debug.Trace
 
 useHeuristics = True
-useEasyPeasy = True
-useMissingOne = True
-useNeeded = True
-useForced = True  -- This is actually hard for people.
+useEasyPeasy = False
+useMissingOne = False
+useMissingTwo = True
+useNeeded = False
+useForced = False  -- This is actually hard for people.
 useTricky = False
 
 doDebug = False
@@ -110,6 +111,7 @@ heuristics =
    -- for people to do.  Easy placements are used preferentially.
    heuristic useEasyPeasy EasyPeasy.find,
    heuristic useMissingOne findMissingOne,
+   heuristic useMissingTwo findMissingTwo,
    heuristic useNeeded findNeeded,
    heuristic useForced findForced
  ]
@@ -198,6 +200,24 @@ findMissingOneInSet puzzle set =
 incMissingOneInSet :: Stats -> Stats
 incMissingOneInSet stats = stats  -- XXX
 
+-- Try to place a digit where a set has two unplaced cells.  We only
+-- place one of the digits but the second will follow quickly.
+--
+findMissingTwo :: Puzzle -> [Next]
+findMissingTwo puzzle =
+  concat $ map (findMissingTwoInSet puzzle) ExclusionSet.exclusionSets
+
+findMissingTwoInSet :: Puzzle -> ExclusionSet -> [Next]
+findMissingTwoInSet puzzle set =
+  let ExclusionSet name cellNumbers = set
+  in case SolverUtil.unknownsInSet puzzle cellNumbers of
+       unknowns@[_, _] ->
+         concat $
+           map (findForcedForUnknown puzzle ("Missing two in " ++ name))
+           unknowns
+       _ ->
+         []
+
 -- Try to place a digit where there is a set that doesn't yet have
 -- some digit (i.e., it needs it) and there is only one cell in the
 -- set where it can possibly go.
@@ -221,13 +241,13 @@ findNeededDigitInSet puzzle unknowns name digit =
 
 findForced :: Puzzle -> [Next]
 findForced puzzle =
-  concat $ map (findForcedForUnknown puzzle) $ Puzzle.unknown puzzle
+  concat $ map (findForcedForUnknown puzzle "Forced") $ Puzzle.unknown puzzle
 
-findForcedForUnknown :: Puzzle -> Unknown -> [Next]
-findForcedForUnknown puzzle unknown =
+findForcedForUnknown :: Puzzle -> String -> Unknown -> [Next]
+findForcedForUnknown puzzle description unknown =
   case Unknown.possible unknown of
     [digit] -> [Next (Placement (Unknown.cellNumber unknown) digit)
-                "Forced" id]
+                description id]
     _ -> []
 
 solutionsTricky :: Solver -> [Solution] -> [Solution]
