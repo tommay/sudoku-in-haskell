@@ -32,10 +32,10 @@ import Debug.Trace
 useHeuristics = True
 useEasyPeasy = False
 useMissingOne = False
-useMissingTwo = True
+useMissingTwo = False
 useNeeded = False
 useForced = False  -- This is actually hard for people.
-useTricky = False
+useTricky = True
 
 doDebug = False
 
@@ -99,9 +99,9 @@ solutionsHeuristic this results =
         (next : _) ->
           placeAndContinue this{rnd = rnd2} next results
         [] ->
-          solutionsTricky this results
-    else -- Skip the heuristics and continue with solutionsTricky.
-      solutionsTricky this results
+          solutionsGuess this results
+    else -- Skip the heuristics and continue with solutionsGuess.
+      solutionsGuess this results
 
 heuristics :: [Puzzle -> [Next]]
 heuristics =
@@ -113,7 +113,8 @@ heuristics =
    heuristic useMissingOne findMissingOne,
    heuristic useMissingTwo findMissingTwo,
    heuristic useNeeded findNeeded,
-   heuristic useForced findForced
+   heuristic useForced findForced,
+   heuristic useTricky findTricky
  ]
 
 placeAndContinue :: Solver -> Next -> [Solution] -> [Solution]
@@ -250,26 +251,16 @@ findForcedForUnknown puzzle description unknown =
                 description id]
     _ -> []
 
-solutionsTricky :: Solver -> [Solution] -> [Solution]
-solutionsTricky this results =
-  if useTricky
-    then
-      let puzzle = Solver.puzzle this
-          maybePuzzle = concat $ map (tryTrickySet puzzle) TrickySets.trickySets
-      in case maybePuzzle of
-        (newPuzzle : _) ->
-          solutionsTop this{puzzle = newPuzzle} results
-        _ ->
-          solutionsGuess this results
-    else
-      solutionsGuess this results
+findTricky :: Puzzle -> [Next]
+findTricky puzzle =
+  concat $ map (findTrickySet puzzle) TrickySets.trickySets
 
-tryTrickySet :: Puzzle -> TrickySet -> [Puzzle]
-tryTrickySet puzzle trickySet =
-  concat $ map (tryTrickySetWithDigit puzzle trickySet) [1..9]
+findTrickySet :: Puzzle -> TrickySet -> [Next]
+findTrickySet puzzle trickySet =
+  concat $ map (findTrickySetWithDigit puzzle trickySet) [1..9]
 
-tryTrickySetWithDigit :: Puzzle -> TrickySet -> Digit -> [Puzzle]
-tryTrickySetWithDigit puzzle trickySet digit =
+findTrickySetWithDigit :: Puzzle -> TrickySet -> Digit -> [Next]
+findTrickySetWithDigit puzzle trickySet digit =
   if trickySetMatchesForDigit puzzle trickySet digit
     then
       -- XXX we could also check for new forced digits in
@@ -290,29 +281,26 @@ trickySetMatchesForDigit puzzle trickySet digit =
   in (isDigitPossibleInSet puzzle digit common) &&
      (notIsDigitPossibleInSet puzzle digit rest)
 
-trickySetCheckNeeded :: Puzzle -> Puzzle -> TrickySet -> Digit -> [Puzzle]
+trickySetCheckNeeded :: Puzzle -> Puzzle -> TrickySet -> Digit -> [Next]
 trickySetCheckNeeded puzzle tmpPuzzle trickySet digit =
-  let maybeUnknown =
+  let unknownForEachNeededSet =
         concat $ map
-          (findUnknownsWhereDigitIsNeeded tmpPuzzle digit)
+          (findUnknownWhereDigitIsNeeded tmpPuzzle digit)
           $ TrickySets.checkNeeded trickySet
-  in case maybeUnknown of
-       [unknown] ->
-         let newPuzzle' = Puzzle.place puzzle unknown digit
-             newPuzzle = debug
-               ("T: " ++ show trickySet ++ "\n" ++
-                "D: " ++ show digit ++ " " ++ show unknown ++ "\n" ++
-                (Puzzle.toPuzzleString puzzle) ++
-                (Puzzle.toPuzzleString newPuzzle'))
-               newPuzzle'
-         in [newPuzzle]
-       _ -> []
+  in map (\ unknown ->
+           Next
+             (Placement (Unknown.cellNumber unknown) digit)
+             (TrickySets.name trickySet)
+             id) unknownForEachNeededSet
 
-findUnknownsWhereDigitIsNeeded :: Puzzle -> Digit -> [Int] -> [Unknown]
-findUnknownsWhereDigitIsNeeded puzzle digit set =
-  filter (isDigitPossibleForUnknown digit)
-    $ filter (SolverUtil.isUnknownInSet set)
-    $ Puzzle.unknown puzzle
+findUnknownWhereDigitIsNeeded :: Puzzle -> Digit -> [Int] -> [Unknown]
+findUnknownWhereDigitIsNeeded puzzle digit set =
+  let unknowns = filter (isDigitPossibleForUnknown digit)
+        $ filter (SolverUtil.isUnknownInSet set)
+        $ Puzzle.unknown puzzle
+  in case unknowns of
+    [_] -> unknowns
+    _ -> []
 
 isDigitPossibleInSet :: Puzzle -> Digit -> [Int] -> Bool
 isDigitPossibleInSet puzzle digit set =
