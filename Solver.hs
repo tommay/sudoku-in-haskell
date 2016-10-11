@@ -31,12 +31,14 @@ import qualified System.Random.Shuffle as Shuffle
 import Debug.Trace
 
 useHeuristics = True
-useEasyPeasy = True
-useMissingOne = True
-useMissingTwo = True
+useEasyPeasy = False
+useMissingOne = False
+useMissingTwo = False
 useNeeded = True
 useForced = False  -- This is actually hard for people.
-useTricky = True
+useTricky = False
+
+usePermanentTrickySets = False
 
 doDebug = False
 
@@ -120,9 +122,9 @@ heuristics =
    heuristic useEasyPeasy EasyPeasy.find,
    heuristic useMissingOne findMissingOne,
    heuristic useMissingTwo findMissingTwo,
+   heuristic useTricky findTricky,
    heuristic useNeeded findNeeded,
-   heuristic useForced findForced,
-   heuristic useTricky findTricky
+   heuristic useForced findForced
  ]
 
 placeAndContinue :: Solver -> Next -> [Solution] -> [Solution]
@@ -147,11 +149,15 @@ solutionsGuess this results =
   -- XXX May be faster to find minUnknown before even trying the heuristics
   -- so we can fail faster.  We may even chug along with the heuristics
   -- for a while before realizing we made a failing guess.
+  let (rnd1, rnd2) = maybeSplit $ Solver.rnd this
+      newSolver = this{ rnd = rnd1 }
+  in solutionsGuess2 newSolver rnd2 results
+
+solutionsGuess2 :: Solver -> Maybe Random.StdGen -> [Solution] -> [Solution]
+solutionsGuess2 this rnd results =
   let puzzle = Solver.puzzle this
-      (rnd1, rnd2) = maybeSplit $ Solver.rnd this
-      minUnknown = minByNumPossible $ maybeShuffle rnd1 $ Puzzle.unknown puzzle
+      minUnknown = minByNumPossible $ maybeShuffle rnd $ Puzzle.unknown puzzle
       possible = Unknown.possible minUnknown
-      newSolver = this{ rnd = rnd2 }
   in case possible of
     [] ->
       -- Failed.  No more solutions.
@@ -159,14 +165,19 @@ solutionsGuess this results =
     [digit] ->
       -- One possibility.  The choice is forced, no guessing.
       let next = Next.new "Forced guess" id digit minUnknown
-      in placeAndContinue newSolver next results
+      in placeAndContinue this next results
     _ ->
-      -- Multiple possibilities.  Guess each, maybe in a random order,
-      -- and recurse.  We could use Random.split when shuffling or
-      -- recursing, but it's not really important for this application.
-      let shuffledPossible = maybeShuffle (Solver.rnd this) possible
-          newSolver' = newSolver{stats = Stats.guess $ Solver.stats this}
-      in doGuesses newSolver' minUnknown shuffledPossible results
+      -- Multiple possibilities.  Try to apply a TrickySet to permanently
+      -- remove some possibilities, and loop.
+      case if usePermanentTrickySets then applyTrickySets this else Nothing of
+        Just newSolver -> solutionsTop newSolver results
+        Nothing ->
+          -- Guess each possibility, maybe in a random order,
+          -- and recurse.  We could use Random.split when shuffling or
+          -- recursing, but it's not really important for this application.
+          let shuffledPossible = maybeShuffle (Solver.rnd this) possible
+              newSolver = this{stats = Stats.guess $ Solver.stats this}
+          in doGuesses newSolver minUnknown shuffledPossible results
 
 -- For each digit in the list, use it as a guess for unknown
 -- and try to solve the resulting Puzzle.
@@ -262,33 +273,17 @@ findForcedForUnknown puzzle description unknown =
 
 findTricky :: Puzzle -> [Next]
 findTricky puzzle =
-  concat $ map (findTrickySet puzzle) TrickySets.trickySets
-
-findTrickySet :: Puzzle -> TrickySet -> [Next]
-findTrickySet puzzle trickySet =
-  concat $ map (findTrickySetWithDigit puzzle trickySet) [1..9]
-
-findTrickySetWithDigit :: Puzzle -> TrickySet -> Digit -> [Next]
-findTrickySetWithDigit puzzle trickySet digit =
-  if trickySetMatchesForDigit puzzle trickySet digit
-    then
-      -- XXX we could also check for new forced digits in
-      -- the eliminate positions.
-      -- We could remove the digit from the possibilities permanently,
-      -- but that's not something a person would remember.  So just
-      -- remove while we see if that creates a new placement.
-      let eliminate = TrickySets.eliminate trickySet
-          tmpPuzzle = Puzzle.notPossibleForList puzzle digit eliminate
-      in trickySetCheckNeeded puzzle tmpPuzzle trickySet digit
-    else
-      []
-
-trickySetMatchesForDigit :: Puzzle -> TrickySet -> Digit -> Bool
-trickySetMatchesForDigit puzzle trickySet digit =
-  let common = TrickySets.common trickySet
-      rest = TrickySets.rest trickySet
-  in (isDigitPossibleInSet puzzle digit common) &&
-     (notIsDigitPossibleInSet puzzle digit rest)
+  let applicableTrickySets = findApplicableTrickySets puzzle
+  in concat $ map
+       (\ (digit, trickySet) ->
+         -- XXX we could also check for new forced digits in the
+         -- eliminate positions.  We could remove the digit from the
+         -- possibilities permanently, but that's not something a
+         -- person would remember unless they're using paper.  So just
+         -- remove while we see if that creates a new placement.
+         let tmpPuzzle = eliminateWithTrickySet puzzle digit trickySet
+         in trickySetCheckNeeded puzzle tmpPuzzle trickySet digit)
+       applicableTrickySets
 
 trickySetCheckNeeded :: Puzzle -> Puzzle -> TrickySet -> Digit -> [Next]
 trickySetCheckNeeded puzzle tmpPuzzle trickySet digit =
@@ -299,6 +294,13 @@ trickySetCheckNeeded puzzle tmpPuzzle trickySet digit =
   in map (Next.new
            (TrickySets.name trickySet)
            id digit) unknownForEachNeededSet
+
+trickySetMatchesForDigit :: Puzzle -> TrickySet -> Digit -> Bool
+trickySetMatchesForDigit puzzle trickySet digit =
+  let common = TrickySets.common trickySet
+      rest = TrickySets.rest trickySet
+  in (isDigitPossibleInSet puzzle digit common) &&
+     (notIsDigitPossibleInSet puzzle digit rest)
 
 findUnknownWhereDigitIsNeeded :: Puzzle -> Digit -> [Int] -> [Unknown]
 findUnknownWhereDigitIsNeeded puzzle digit set =
@@ -338,6 +340,49 @@ notIsDigitPossibleInSet puzzle digit set =
 isDigitPossibleForUnknown :: Digit -> Unknown -> Bool
 isDigitPossibleForUnknown digit unknown =
   digit `elem` Unknown.possible unknown
+
+-- Eliminate all possibilities from all applicable TrickySets and return Just
+-- Puzzle if the Puzzle was modified, otherwise Nothing.
+--
+applyTrickySets :: Solver -> Maybe Solver
+applyTrickySets this =
+  let applicableTrickySets = findApplicableTrickySets $ Solver.puzzle this
+      (applied, newSolver) =
+        foldr (\ (digit, trickySet) accum@(_, oldSolver) ->
+                case applyTrickySet oldSolver digit trickySet of
+                  Nothing -> accum
+                  Just newSolver -> (True, newSolver))
+              (False, this)
+              applicableTrickySets
+  in if applied
+       then Just newSolver
+       else Nothing
+
+applyTrickySet :: Solver -> Digit -> TrickySet -> Maybe Solver
+applyTrickySet this digit trickySet =
+  let oldPuzzle = Solver.puzzle this
+      newPuzzle = eliminateWithTrickySet oldPuzzle digit trickySet
+  in if newPuzzle == oldPuzzle
+       then Nothing
+       else
+         let newSolver = Solver.addStep this
+               (Step newPuzzle Nothing ("Apply " ++ TrickySets.name trickySet))
+         in Just newSolver{ puzzle = newPuzzle }
+
+findApplicableTrickySets :: Puzzle -> [(Digit, TrickySet)]
+findApplicableTrickySets puzzle =
+  let allTrickySets = TrickySets.trickySets ++ TrickySets.inverseTrickySets
+  in [(digit, trickySet) | digit <- [1..9], trickySet <- allTrickySets,
+      trickySetMatchesForDigit puzzle trickySet digit]
+
+eliminateWithTrickySet :: Puzzle -> Digit -> TrickySet -> Puzzle
+eliminateWithTrickySet puzzle digit trickySet =
+  let eliminate = TrickySets.eliminate trickySet
+  in Puzzle.notPossibleForList puzzle digit eliminate
+
+addStep :: Solver -> Step -> Solver
+addStep this step =
+  this{ steps = Solver.steps this ++ [step] }
 
 minByNumPossible :: [Unknown] -> Unknown
 minByNumPossible =
