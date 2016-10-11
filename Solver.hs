@@ -140,9 +140,11 @@ solutionsGuess this results =
   -- XXX May be faster to find minUnknown before even trying the heuristics
   -- so we can fail faster.  We may even chug along with the heuristics
   -- for a while before realizing we made a failing guess.
-
-  let minUnknown = minByNumPossible $ Puzzle.unknown $ Solver.puzzle this
+  let (rnd1, rnd2) = maybeSplit $ Solver.rnd this
+      minUnknown = minByNumPossible
+        $ maybeShuffle rnd1 $ Puzzle.unknown $ Solver.puzzle this
       possible = Unknown.possible minUnknown
+      newSolver = this{ rnd = rnd2 }
   in case possible of
     [] ->
       -- Failed.  No more solutions.
@@ -151,14 +153,14 @@ solutionsGuess this results =
       -- One possibility.  Recurse without incrementing guessCount.
       -- This will not happen if we're using the heuristics, but
       -- this case is included in case they're disabled.
-      doGuesses this minUnknown possible results
+      doGuesses newSolver minUnknown possible results
     _ ->
       -- Multiple possibilities.  Guess each, maybe in a random order,
       -- and recurse.  We could use Random.split when shuffling or
       -- recursing, but it's not really important for this application.
       let shuffledPossible = maybeShuffle (Solver.rnd this) possible
-          newSolver = this{stats = Stats.guess $ Solver.stats this}
-      in doGuesses newSolver minUnknown shuffledPossible results
+          newSolver' = newSolver{stats = Stats.guess $ Solver.stats this}
+      in doGuesses newSolver' minUnknown shuffledPossible results
 
 -- For each digit in the list, use it as a guess for unknown
 -- and try to solve the resulting Puzzle.
@@ -332,7 +334,7 @@ isDigitPossibleForUnknown digit unknown =
   digit `elem` Unknown.possible unknown
 
 minByNumPossible :: [Unknown] -> Unknown
-minByNumPossible  =
+minByNumPossible =
   minBy (length . Unknown.possible)
 
 minBy :: Ord b => (a -> b) -> [a] -> a
