@@ -31,10 +31,10 @@ import qualified System.Random.Shuffle as Shuffle
 import Debug.Trace
 
 useHeuristics = True
-useEasyPeasy = False
-useMissingOne = False
-useMissingTwo = False
-useNeeded = False
+useEasyPeasy = True
+useMissingOne = True
+useMissingTwo = True
+useNeeded = True
 useForced = False  -- This is actually hard for people.
 useTricky = True
 
@@ -140,20 +140,19 @@ solutionsGuess this results =
   -- XXX May be faster to find minUnknown before even trying the heuristics
   -- so we can fail faster.  We may even chug along with the heuristics
   -- for a while before realizing we made a failing guess.
-  let (rnd1, rnd2) = maybeSplit $ Solver.rnd this
-      minUnknown = minByNumPossible
-        $ maybeShuffle rnd1 $ Puzzle.unknown $ Solver.puzzle this
+  let puzzle = Solver.puzzle this
+      (rnd1, rnd2) = maybeSplit $ Solver.rnd this
+      minUnknown = minByNumPossible $ maybeShuffle rnd1 $ Puzzle.unknown puzzle
       possible = Unknown.possible minUnknown
       newSolver = this{ rnd = rnd2 }
   in case possible of
     [] ->
       -- Failed.  No more solutions.
       results
-    [_] ->
-      -- One possibility.  Recurse without incrementing guessCount.
-      -- This will not happen if we're using the heuristics, but
-      -- this case is included in case they're disabled.
-      doGuesses newSolver minUnknown possible results
+    [digit] ->
+      -- One possibility.  The choice is forced, no guessing.
+      let next = Next.new "Forced guess" id digit minUnknown
+      in placeAndContinue newSolver next results
     _ ->
       -- Multiple possibilities.  Guess each, maybe in a random order,
       -- and recurse.  We could use Random.split when shuffling or
