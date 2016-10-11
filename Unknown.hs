@@ -20,9 +20,6 @@ data Unknown = Unknown {
   possible :: [Digit]
 } deriving (Show)
 
-instance Eq Unknown where
-  this == that = cellNumber this == cellNumber that
-
 -- Returns a new Unknown at position cellNumber.  Determine the
 -- Unknown's row, column, and square, set all digits possible.
 --
@@ -56,5 +53,5 @@ removeDigitFromPossible digit this =
 --
 isExcludedBy :: Unknown -> Unknown -> Bool
 isExcludedBy this other =
-  this /= other &&
+  (Unknown.cellNumber this /= Unknown.cellNumber other) &&
     any (\ f -> f this == f other) [row, col, square]
