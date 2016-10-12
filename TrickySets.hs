@@ -6,6 +6,7 @@ module TrickySets (
   TrickySets.eliminate,
   TrickySets.checkNeeded,
   TrickySets.trickySets,
+  TrickySets.inverseTrickySets,
 ) where
 
 import qualified ExclusionSet
@@ -16,7 +17,7 @@ import qualified Data.List as List
 -- rows and columns for needed digits rather than coincident squares.
 -- I personally don't do this, it's too hard.
 --
-checkCoincidentRowsColumnsForNeeded = False
+-- XXX checkCoincidentRowsColumnsForNeeded = False
 
 -- XXX Checking the eliminate set for newly forced Unknows isn't implemented.
 -- It's also not something I do.
@@ -51,23 +52,29 @@ data TrickySet = TrickySet {
 -- - Some of the Unknowns in the eliminate set may now have only one possibility.
 
 trickySets :: [TrickySet]
-trickySets =
+trickySets = createTrickySets False
+
+inverseTrickySets :: [TrickySet]
+inverseTrickySets = createTrickySets True
+
+createTrickySets :: Bool -> [TrickySet]
+createTrickySets inverse =
   let rows = ExclusionSet.rows
       columns = ExclusionSet.columns
       squares = ExclusionSet.squares
       getRows = getCellSetsIncluding rows
       getColumns = getCellSetsIncluding columns
   in concat $
-       [createTrickySetsFrom square row getColumns
+       [createTrickySetsFrom inverse square row getColumns
          | square <- squares, row <- rows] ++
-       [createTrickySetsFrom square col getRows
+       [createTrickySetsFrom inverse square col getRows
          | square <- squares, col <- columns]
 
 -- XXX Instead of creating two TrickySets with an identical common set, we
 -- should merge them into a single set with two branches.
 
-createTrickySetsFrom:: ExclusionSet -> ExclusionSet -> ([Int] -> [[Int]]) -> [TrickySet]
-createTrickySetsFrom square row getSetsIncluding =
+createTrickySetsFrom :: Bool -> ExclusionSet -> ExclusionSet -> ([Int] -> [[Int]]) -> [TrickySet]
+createTrickySetsFrom inverse square row getSetsIncluding =
   let (\\) = (List.\\)
       ExclusionSet squareName squareCells = square
       ExclusionSet rowName rowCells = row
@@ -76,23 +83,21 @@ createTrickySetsFrom square row getSetsIncluding =
       restOfSquare = squareCells \\ common
   in case common of
        [] -> []
-       _ ->
-         [
+       _ -> if not inverse
+         then [
            TrickySet {
              name = unwords ["TrickySet", squareName, rowName],
              common = common, rest = restOfSquare, eliminate = restOfRow,
              checkNeeded = getSquaresIncluding restOfRow
            }
-         ] ++
-         if checkCoincidentRowsColumnsForNeeded
-           then [
-             TrickySet {
-               name = unwords ["Inverse TrickySet", squareName, rowName],
-               common = common, rest = restOfRow, eliminate = restOfSquare,
-               checkNeeded = getSetsIncluding restOfSquare
-             }
-           ]
-           else []
+         ]
+         else [
+           TrickySet {
+             name = unwords ["Inverse TrickySet", squareName, rowName],
+             common = common, rest = restOfRow, eliminate = restOfSquare,
+             checkNeeded = getSetsIncluding restOfSquare
+           }
+         ]
 
 -- Given some ExclusionSets and some cellNumbers, return the
 -- ExclusionSets that contain them.
