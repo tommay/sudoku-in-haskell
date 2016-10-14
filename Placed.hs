@@ -11,7 +11,7 @@ import Digit (Digit)
 data Placed = Placed {
   cellNumber :: Int,
   digit :: Digit
-} deriving (Show)
+} deriving (Show, Eq)
 
 new :: Int -> Digit -> Placed
 new cellNumber digit =

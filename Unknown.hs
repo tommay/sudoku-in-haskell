@@ -20,6 +20,13 @@ data Unknown = Unknown {
   possible :: [Digit]
 } deriving (Show)
 
+-- Check for equality by testing cellNumber and possible.  The other fields
+-- are functions of cellNumber.
+--
+instance Eq Unknown where
+  this == that = 
+    (cellNumber this == cellNumber that) && (possible this == possible that)
+
 -- Returns a new Unknown at position cellNumber.  Determine the
 -- Unknown's row, column, and square, set all digits possible.
 --

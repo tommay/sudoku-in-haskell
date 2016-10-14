@@ -25,7 +25,7 @@ import qualified Util
 data Puzzle = Puzzle {
   placed :: [Placed],
   unknown :: [Unknown]
-} deriving (Show)
+} deriving (Show, Eq)
 
 -- Returns a new Puzzle with all Unknown cells.
 --
