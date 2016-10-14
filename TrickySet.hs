@@ -1,12 +1,12 @@
-module TrickySets (
+module TrickySet (
   TrickySet,
-  TrickySets.name,
-  TrickySets.common,
-  TrickySets.rest,
-  TrickySets.eliminate,
-  TrickySets.checkNeeded,
-  TrickySets.trickySets,
-  TrickySets.inverseTrickySets,
+  TrickySet.name,
+  TrickySet.common,
+  TrickySet.rest,
+  TrickySet.eliminate,
+  TrickySet.checkNeeded,
+  TrickySet.trickySets,
+  TrickySet.inverseTrickySets,
 ) where
 
 import qualified ExclusionSet

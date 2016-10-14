@@ -22,8 +22,8 @@ import Stats (Stats)
 import Step (Step (Step))
 import qualified ExclusionSet
 import ExclusionSet (ExclusionSet (ExclusionSet))
-import qualified TrickySets
-import TrickySets (TrickySet)
+import qualified TrickySet
+import TrickySet (TrickySet)
 
 import qualified Data.List as List
 import qualified System.Random as Random
@@ -290,15 +290,15 @@ trickySetCheckNeeded puzzle tmpPuzzle trickySet digit =
   let unknownForEachNeededSet =
         concat $ map
           (findUnknownWhereDigitIsNeeded tmpPuzzle digit)
-          $ TrickySets.checkNeeded trickySet
+          $ TrickySet.checkNeeded trickySet
   in map (Next.new
-           (TrickySets.name trickySet)
+           (TrickySet.name trickySet)
            id digit) unknownForEachNeededSet
 
 trickySetMatchesForDigit :: Puzzle -> TrickySet -> Digit -> Bool
 trickySetMatchesForDigit puzzle trickySet digit =
-  let common = TrickySets.common trickySet
-      rest = TrickySets.rest trickySet
+  let common = TrickySet.common trickySet
+      rest = TrickySet.rest trickySet
   in (isDigitPossibleInSet puzzle digit common) &&
      (notIsDigitPossibleInSet puzzle digit rest)
 
@@ -366,18 +366,18 @@ applyTrickySet this digit trickySet =
        then Nothing
        else
          let newSolver = Solver.addStep this
-               (Step newPuzzle Nothing ("Apply " ++ TrickySets.name trickySet))
+               (Step newPuzzle Nothing ("Apply " ++ TrickySet.name trickySet))
          in Just newSolver{ puzzle = newPuzzle }
 
 findApplicableTrickySets :: Puzzle -> [(Digit, TrickySet)]
 findApplicableTrickySets puzzle =
-  let allTrickySets = TrickySets.trickySets ++ TrickySets.inverseTrickySets
+  let allTrickySets = TrickySet.trickySets ++ TrickySet.inverseTrickySets
   in [(digit, trickySet) | digit <- [1..9], trickySet <- allTrickySets,
       trickySetMatchesForDigit puzzle trickySet digit]
 
 eliminateWithTrickySet :: Puzzle -> Digit -> TrickySet -> Puzzle
 eliminateWithTrickySet puzzle digit trickySet =
-  let eliminate = TrickySets.eliminate trickySet
+  let eliminate = TrickySet.eliminate trickySet
   in Puzzle.notPossibleForList puzzle digit eliminate
 
 addStep :: Solver -> Step -> Solver
