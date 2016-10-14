@@ -1,4 +1,4 @@
-ALL = Solve Create Pattern Color Uncolor
+ALL = Solve Create Pattern Color Uncolor Min
 
 all: $(ALL)
 
