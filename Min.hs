@@ -1,17 +1,17 @@
+import qualified Creater
+import qualified Layout
+import qualified Puzzle
+import           Puzzle (Puzzle)
+import qualified Solution
+import           Solution (Solution)
+import qualified Solver
+import qualified Stats
+import           Stats (Stats)
+
 import qualified System.IO as IO
 import qualified Data.List as List
 import qualified System.Random as Random
 import qualified System.Environment
-
-import qualified Layout
-import qualified Puzzle
-import Puzzle (Puzzle)
-import qualified Creater
-import qualified Solver
-import qualified Solution
-import Solution (Solution)
-import qualified Stats
-import Stats (Stats)
 
 main = do
   args <- System.Environment.getArgs

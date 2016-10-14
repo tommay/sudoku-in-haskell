@@ -3,11 +3,11 @@ module Next (
   new,
 ) where
 
-import Digit (Digit)
-import Placement (Placement (Placement))
-import Stats (Stats)
-import Unknown (Unknown)
+import           Digit (Digit)
+import           Placement (Placement (Placement))
+import           Stats (Stats)
 import qualified Unknown
+import           Unknown (Unknown)
 
 data Next = Next Placement String (Stats -> Stats)
 

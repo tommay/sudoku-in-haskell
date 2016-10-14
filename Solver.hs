@@ -4,26 +4,26 @@ module Solver (
   Solver.randomSolutions,
 ) where
 
-import Digit (Digit)
+import           Digit (Digit)
 import qualified EasyPeasy
-import Next (Next (Next))
+import qualified ExclusionSet
+import           ExclusionSet (ExclusionSet (ExclusionSet))
 import qualified Next
-import Placement (Placement (Placement))
-import qualified Puzzle
-import Puzzle (Puzzle)
-import qualified Unknown
-import Unknown (Unknown)
+import           Next (Next (Next))
 import qualified Placed
+import           Placement (Placement (Placement))
+import qualified Puzzle
+import           Puzzle (Puzzle)
 import qualified Solution
-import Solution (Solution)
+import           Solution (Solution)
 import qualified SolverUtil
 import qualified Stats
-import Stats (Stats)
-import Step (Step (Step))
-import qualified ExclusionSet
-import ExclusionSet (ExclusionSet (ExclusionSet))
+import           Stats (Stats)
+import           Step (Step (Step))
 import qualified TrickySet
-import TrickySet (TrickySet)
+import           TrickySet (TrickySet)
+import qualified Unknown
+import           Unknown (Unknown)
 
 import qualified Data.List as List
 import qualified System.Random as Random

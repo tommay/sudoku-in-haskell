@@ -2,15 +2,15 @@ module EasyPeasy (
   find,
 ) where
 
-import ExclusionSet (ExclusionSet)
+import           Digit (Digit)
 import qualified ExclusionSet
-import qualified Puzzle as Puzzle
-import Digit (Digit)
-import Next (Next)
+import           ExclusionSet (ExclusionSet)
 import qualified Next
+import           Next (Next)
 import qualified Placed
-import Placement (Placement (Placement))
-import Puzzle (Puzzle)
+import           Placement (Placement (Placement))
+import qualified Puzzle as Puzzle
+import           Puzzle (Puzzle)
 import qualified SolverUtil
 import qualified Unknown
 import qualified Util

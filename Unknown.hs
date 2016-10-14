@@ -1,5 +1,4 @@
-module Unknown
-(
+module Unknown (
   Unknown,
   Unknown.new,
   Unknown.cellNumber,

@@ -1,5 +1,4 @@
-module Placed
-(
+module Placed (
   Placed,
   Placed.new,
   Placed.cellNumber,

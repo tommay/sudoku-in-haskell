@@ -10,7 +10,8 @@ module TrickySet (
 ) where
 
 import qualified ExclusionSet
-import ExclusionSet (ExclusionSet (ExclusionSet))
+import           ExclusionSet (ExclusionSet (ExclusionSet))
+
 import qualified Data.List as List
 
 -- True to check an "inverted" TrickySet, where we scan the coincident

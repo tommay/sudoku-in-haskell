@@ -6,7 +6,7 @@ module Creater (
 import qualified Solver
 import qualified Solution
 import qualified Puzzle
-import Puzzle (Puzzle)
+import           Puzzle (Puzzle)
 
 import qualified System.Random as Random
 import qualified System.Random.Shuffle as Shuffle

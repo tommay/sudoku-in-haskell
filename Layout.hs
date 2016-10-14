@@ -1,5 +1,4 @@
-module Layout
-(
+module Layout (
   getLayout,
   getLayoutStrings,
 ) where

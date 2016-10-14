@@ -7,8 +7,8 @@ module Solution (
 ) where
 
 import Puzzle (Puzzle)
-import Step (Step)
 import Stats (Stats)
+import Step (Step)
 
 data Solution = Solution {
   puzzle :: Puzzle,

@@ -3,10 +3,10 @@ module SolverUtil (
   isUnknownInSet,
 ) where
 
-import Puzzle (Puzzle)
 import qualified Puzzle
-import Unknown (Unknown)
+import           Puzzle (Puzzle)
 import qualified Unknown
+import           Unknown (Unknown)
 
 unknownsInSet :: Puzzle -> [Int] -> [Unknown]
 unknownsInSet puzzle set =

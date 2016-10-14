@@ -11,16 +11,18 @@ module Puzzle (
   Puzzle.toPuzzleString,
 ) where  
 
+import           Digit (Digit)
+import qualified Placed
+import           Placed (Placed)
+import qualified Unknown
+import           Unknown (Unknown)
+import qualified Util
+
 import qualified Data.Char as Char
 import qualified Data.List as List
 import qualified Debug.Trace
 
-import Digit (Digit)
-import qualified Placed
-import Placed (Placed)
-import qualified Unknown
-import Unknown (Unknown)
-import qualified Util
+
 
 data Puzzle = Puzzle {
   placed :: [Placed],

@@ -2,14 +2,14 @@ import Data.List as List
 import qualified System.Random as Random
 import qualified System.Environment
 
+import qualified Creater
 import qualified Layout
 import qualified Puzzle
-import Puzzle (Puzzle)
-import qualified Creater
+import           Puzzle (Puzzle)
 import qualified Solver
-import qualified Stats
 import qualified Solution
-import Solution (Solution)
+import           Solution (Solution)
+import qualified Stats
 
 dothis = doOneNoGuessing
 

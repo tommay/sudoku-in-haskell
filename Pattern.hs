@@ -1,3 +1,12 @@
+import qualified Creater
+import           Digit (Digit)
+import qualified Placed
+import qualified Puzzle
+import           Puzzle (Puzzle)
+import qualified Solution
+import qualified Solver
+import qualified Stats
+
 import qualified Data.List as List
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -6,15 +15,6 @@ import qualified Text.Regex as Regex
 import qualified System.Random as Random
 import qualified System.Environment
 import qualified Debug.Trace
-
-import Digit (Digit)
-import qualified Puzzle
-import Puzzle (Puzzle)
-import qualified Placed
-import qualified Creater
-import qualified Solver
-import qualified Solution
-import qualified Stats
 
 main = do
   (filename:_) <- System.Environment.getArgs
