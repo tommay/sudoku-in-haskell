@@ -110,6 +110,13 @@ heuristics =
  in concat [
    -- Heuristic methods to find placements, ordered from easiest to hardest
    -- for people to do.  Easy placements are used preferentially.
+
+   -- EasyPeasy is a subset of Needed.
+   -- MissingOne and MissingTwo are subsets of Forced.
+   -- Forced is the same as guessing with only one possibility.
+   -- So Needed and Tricky are the only options that maybe add
+   -- capabilities beyond the forced/guess algorithm.
+
    heuristic useEasyPeasy EasyPeasy.find,
    heuristic useMissingOne findMissingOne,
    heuristic useMissingTwo findMissingTwo,
