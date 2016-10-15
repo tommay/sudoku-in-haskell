@@ -1,6 +1,25 @@
 module Util (
-  slices,
+  Util.shuffle,
+  Util.slices,
 ) where
+
+import qualified Data.List as List
+import System.Random as Random
+import System.Random.Shuffle as Shuffle
+
+shuffle :: Random.StdGen -> [a] -> [a]
+-- shuffle' infinite loops on [], grr.
+shuffle _ [] = []
+shuffle rnd list =
+  Shuffle.shuffle' list (length list) rnd
+
+myShuffle :: Random.StdGen -> [a] -> [a]
+myShuffle rnd [] = []
+myShuffle rnd list =
+  let len = length list
+      (n, newRnd) = Random.randomR (0, len - 1) rnd
+      (first, (e : rest)) = List.splitAt n list
+  in e : (myShuffle newRnd $ first ++ rest)
 
 -- Slice an array up into sub-arrays of n elements, and return the
 -- sub-arrays in a list.

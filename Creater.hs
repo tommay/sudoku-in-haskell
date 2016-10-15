@@ -7,15 +7,15 @@ import qualified Solver
 import qualified Solution
 import qualified Puzzle
 import           Puzzle (Puzzle)
+import qualified Util
 
 import qualified System.Random as Random
-import qualified System.Random.Shuffle as Shuffle
 
 create :: Random.StdGen -> [[Int]] -> Puzzle
 create rnd layout =
   let (rnd1, rnd2) = Random.split rnd
       puzzle = randomSolvedPuzzle rnd1
-      layout' = shuffle rnd2 layout
+      layout' = Util.shuffle rnd2 layout
   in create' puzzle layout'
 
 create' :: Puzzle -> [[Int]] -> Puzzle
@@ -51,7 +51,3 @@ randomSolvedPuzzle rnd =
 hasOnlyOneSolution :: Puzzle -> Bool
 hasOnlyOneSolution puzzle =
   (length $ take 2 $ Solver.solutions puzzle) == 1
-
-shuffle :: Random.StdGen -> [a] -> [a]
-shuffle rnd list =
-  Shuffle.shuffle' list (length list) rnd

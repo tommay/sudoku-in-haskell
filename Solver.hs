@@ -24,10 +24,9 @@ import qualified TrickySet
 import           TrickySet (TrickySet)
 import qualified Unknown
 import           Unknown (Unknown)
+import qualified Util
 
-import qualified Data.List as List
 import qualified System.Random as Random
-import qualified System.Random.Shuffle as Shuffle
 import Debug.Trace
 
 useHeuristics = True
@@ -402,20 +401,6 @@ minBy func list =
          else b)
        enhanced
 
-shuffle :: Random.StdGen -> [a] -> [a]
--- shuffle' infinite loops on [], grr.
-shuffle _ [] = []
-shuffle rnd list =
-  Shuffle.shuffle' list (length list) rnd
-
-myShuffle :: Random.StdGen -> [a] -> [a]
-myShuffle rnd [] = []
-myShuffle rnd list =
-  let len = length list
-      (n, newRnd) = Random.randomR (0, len - 1) rnd
-      (first, (e : rest)) = List.splitAt n list
-  in e : (myShuffle newRnd $ first ++ rest)
-
 maybeSplit :: Maybe Random.StdGen -> (Maybe Random.StdGen, Maybe Random.StdGen)
 maybeSplit Nothing =
   (Nothing, Nothing)
@@ -426,7 +411,7 @@ maybeSplit (Just rnd) =
 maybeShuffle :: Maybe Random.StdGen -> [a] -> [a]
 maybeShuffle Nothing list = list
 maybeShuffle (Just rnd) list =
-  shuffle rnd list
+  Util.shuffle rnd list
 
 -- Debug function that outputs only if doDebug is True.
 --
