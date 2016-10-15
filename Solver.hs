@@ -16,6 +16,8 @@ import qualified Puzzle
 import           Puzzle (Puzzle)
 import qualified Solution
 import           Solution (Solution)
+import qualified SolverOptions
+import           SolverOptions (SolverOptions)
 import qualified SolverUtil
 import qualified Stats
 import           Stats (Stats)
@@ -29,19 +31,10 @@ import qualified Util
 import qualified System.Random as Random
 import Debug.Trace
 
-useHeuristics = False
-useEasyPeasy = False
-useMissingOne = False
-useMissingTwo = False
-useNeeded = True
-useForced = False  -- This is actually hard for people.
-useTricky = False
-
-usePermanentTrickySets = False
-
 doDebug = False
 
 data Solver = Solver {
+  options :: SolverOptions,
   puzzle :: Puzzle,
   rnd :: Maybe Random.StdGen,
   unknowns :: [Unknown],
@@ -53,6 +46,7 @@ new :: Puzzle -> Maybe Random.StdGen -> Solver
 new puzzle maybeRnd =
   let (rnd1, rnd2) = maybeSplit maybeRnd
       solver = Solver {
+        options = SolverOptions.new,
         puzzle = Puzzle.empty,
         rnd = rnd1,
         unknowns = maybeShuffle rnd2 [Unknown.new n | n <- [0..80]],
@@ -71,8 +65,6 @@ place this cellNumber digit =
         $ filter ((/= cellNumber) . Unknown.cellNumber)
         $ unknowns this
   in this{ puzzle = newPuzzle, unknowns = newUnknowns }
-
-
 
 -- Try to solve the Puzzle, returning a list of Solutions.  This uses
 -- tail-recursive style, passing down a list of solutions discovered
@@ -105,7 +97,7 @@ solutionsTop this results =
 
 solutionsHeuristic :: Solver -> [Solution] -> [Solution]
 solutionsHeuristic this results =
-  if useHeuristics
+  if SolverOptions.useHeuristics $ options this
     then -- Try the heuristic functions.
       let (rnd1, rnd2) = maybeSplit $ Solver.rnd this
           -- This uses rnd1 to shuffle each function's list, but that's ok
@@ -113,7 +105,7 @@ solutionsHeuristic this results =
           nextList = concat
             $ map (maybeShuffle rnd1)
             $ map (\ f -> f this)
-            $ heuristics
+            $ heuristics this
       in case nextList of
         (next : _) ->
           placeAndContinue this{rnd = rnd2} next results
@@ -122,9 +114,9 @@ solutionsHeuristic this results =
     else -- Skip the heuristics and continue with solutionsGuess.
       solutionsGuess this results
 
-heuristics :: [Solver -> [Next]]
-heuristics =
- let heuristic bool func = if bool then [func] else []
+heuristics :: Solver -> [Solver -> [Next]]
+heuristics this =
+ let heuristic opt func = if (opt $ options this) then [func] else []
  in concat [
    -- Heuristic methods to find placements, ordered from easiest to hardest
    -- for people to do.  Easy placements are used preferentially.
@@ -135,12 +127,12 @@ heuristics =
    -- So Needed and Tricky are the only options that maybe add
    -- capabilities beyond the forced/guess algorithm.
 
-   heuristic useEasyPeasy findEasyPeasy,
-   heuristic useMissingOne findMissingOne,
-   heuristic useMissingTwo findMissingTwo,
-   heuristic useTricky findTricky,
-   heuristic useNeeded findNeeded,
-   heuristic useForced findForced
+   heuristic SolverOptions.useEasyPeasy findEasyPeasy,
+   heuristic SolverOptions.useMissingOne findMissingOne,
+   heuristic SolverOptions.useMissingTwo findMissingTwo,
+   heuristic SolverOptions.useTricky findTricky,
+   heuristic SolverOptions.useNeeded findNeeded,
+   heuristic SolverOptions.useForced findForced
  ]
 
 placeAndContinue :: Solver -> Next -> [Solution] -> [Solution]
@@ -178,7 +170,9 @@ solutionsGuess this results =
     _ ->
       -- Multiple possibilities.  Try to apply a TrickySet to permanently
       -- remove some possibilities, and loop.
-      case if usePermanentTrickySets then applyTrickySets this else Nothing of
+      case if SolverOptions.usePermanentTrickySets $ options this
+             then applyTrickySets this
+             else Nothing of
         Just newSolver -> solutionsTop newSolver results
         Nothing ->
           -- Guess each possibility, maybe in a random order,
