@@ -37,7 +37,7 @@ processAndCount func list =
 
 printSolution :: Solution -> IO ()
 printSolution solution =
-  if True
+  if False
     then do
       let steps = Solution.steps solution
       mapM_ putStrLn $ map showStep steps

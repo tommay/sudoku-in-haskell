@@ -1,44 +1,48 @@
 module Puzzle (
   Puzzle,
-  Puzzle.unknown,
   Puzzle.empty,
   Puzzle.placed,
   Puzzle.size,
   Puzzle.fromString,
   Puzzle.place,
   Puzzle.remove,
-  Puzzle.notPossibleForList,
   Puzzle.toPuzzleString,
 ) where  
 
 import           Digit (Digit)
 import qualified Placed
 import           Placed (Placed)
-import qualified Unknown
-import           Unknown (Unknown)
 import qualified Util
 
 import qualified Data.Char as Char
 import qualified Data.List as List
 import qualified Debug.Trace
 
-
-
 data Puzzle = Puzzle {
-  placed :: [Placed],
-  unknown :: [Unknown]
-} deriving (Show, Eq)
+  placed :: [Placed]
+} deriving (Show)
 
--- Returns a new Puzzle with all Unknown cells.
+-- Returns a new Puzzle with nothing placed.
 --
 empty :: Puzzle
 empty =
   Puzzle {
-    placed = [],
-    unknown = [Unknown.new n | n <- [0..80]]
+    placed = []
   }
 
--- Returns the number of places digits.
+place :: Puzzle -> Int -> Digit -> Puzzle
+place this cellNumber digit =
+  this {
+    placed = Placed.new cellNumber digit : placed this
+  }
+
+remove :: Puzzle -> [Int] -> Puzzle
+remove this cellNumbers =
+  let remaining = filter (not . (`elem` cellNumbers) . Placed.cellNumber)
+        $ placed this
+  in this{ placed = remaining }
+
+-- Returns the number of placed digits.
 --
 size :: Puzzle -> Int
 size this =
@@ -54,7 +58,7 @@ fromString setup =
   in foldr (\ (cellNumber, digit) this ->
             case digit of
               Nothing -> this
-              Just digit -> Puzzle.place this (Unknown.new cellNumber) digit)
+              Just digit -> Puzzle.place this cellNumber digit)
        empty
        zipped
 
@@ -68,46 +72,10 @@ toDigits setup =
     _ -> Just $ Char.digitToInt char
    | char <- setup]
 
-place :: Puzzle -> Unknown -> Digit -> Puzzle
-place this unknown' digit =
-  let cellNumber = Unknown.cellNumber unknown'
-  in this {
-    placed = Placed.new cellNumber digit : placed this,
-    unknown = map (\ u -> Unknown.place u unknown' digit)
-      $ filter ((/= cellNumber) . Unknown.cellNumber)
-      $ unknown this
-  }
-
-remove :: Puzzle -> [Int] -> Puzzle
-remove this cellNumbers =
-  let remaining = filter (not . (`elem` cellNumbers) . Placed.cellNumber)
-        $ placed this
-  in foldr (\p accum ->
-             Puzzle.place accum
-               (Unknown.new $ Placed.cellNumber p)
-               (Placed.digit p))
-       Puzzle.empty
-       remaining
-
--- Some external code has done some mojo and etermined that it's not actually
--- possible to put the digit into any cells in the list.  Fix up unknowns
--- to reflect this.
---
-notPossibleForList :: Puzzle -> Digit -> [Int] -> Puzzle
-notPossibleForList this digit cellNumbers =
-  this {
-    unknown = map
-      (\ u ->
-        if Unknown.cellNumber u `elem` cellNumbers
-           then Unknown.removeDigitFromPossible digit u
-           else u)
-      $ unknown this
-  }
-
 -- The opposite of fromString.  Given a Puzzle, create a string of 81
 -- digits or dashes.  Creates two lists of (cellNumber, Char), one for
 -- placed cells and one for unplaced cells, then sorts them together and
--- exracts the Chars in order.
+-- extracts the Chars in order.
 --
 toString:: Puzzle -> String
 toString this =

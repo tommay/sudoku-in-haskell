@@ -8,9 +8,9 @@ import           Puzzle (Puzzle)
 import qualified Unknown
 import           Unknown (Unknown)
 
-unknownsInSet :: Puzzle -> [Int] -> [Unknown]
-unknownsInSet puzzle set =
-  filter (isUnknownInSet set) $ Puzzle.unknown puzzle
+unknownsInSet :: [Unknown] -> [Int] -> [Unknown]
+unknownsInSet unknowns set =
+  filter (isUnknownInSet set) unknowns
 
 isUnknownInSet :: [Int] -> Unknown -> Bool
 isUnknownInSet list unknown =

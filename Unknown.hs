@@ -42,11 +42,12 @@ new cellNumber =
     possible = [1..9]
   }
 
-place :: Unknown -> Unknown -> Digit -> Unknown
-place this other digit =
-  case isExcludedBy this other of
-    True -> removeDigitFromPossible digit this
-    False -> this
+place :: Int -> Digit -> Unknown -> Unknown
+place cellNumber digit this =
+  let other = Unknown.new cellNumber
+  in if isExcludedBy this other
+       then removeDigitFromPossible digit this
+       else this
 
 removeDigitFromPossible :: Digit -> Unknown -> Unknown
 removeDigitFromPossible digit this =

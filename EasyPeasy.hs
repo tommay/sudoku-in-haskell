@@ -8,11 +8,11 @@ import           ExclusionSet (ExclusionSet)
 import qualified Next
 import           Next (Next)
 import qualified Placed
-import           Placement (Placement (Placement))
 import qualified Puzzle as Puzzle
 import           Puzzle (Puzzle)
 import qualified SolverUtil
 import qualified Unknown
+import           Unknown (Unknown)
 import qualified Util
 
 import qualified Data.List as List
@@ -34,19 +34,19 @@ makeEasyPeasyStripe slice =
 
 -- Return a list of all possible easy peasy placements for the Puzzle.
 --
-find :: Puzzle -> [Next]
-find puzzle =
-  concat $ map (findForEasyPeasyStripe puzzle) $ makeEasyPeasyStripes
+find :: Puzzle -> [Unknown] -> [Next]
+find puzzle unknowns =
+  concat $ map (findForEasyPeasyStripe puzzle unknowns) makeEasyPeasyStripes
 
 -- Returns any easy peasies in the Puzzle and EasyPeasyStripe.  All
 -- digits are considered
 --
-findForEasyPeasyStripe :: Puzzle -> (ExclusionSet, [ExclusionSet]) -> [Next]
-findForEasyPeasyStripe puzzle (col0, [col1, col2]) =
+findForEasyPeasyStripe :: Puzzle -> [Unknown] -> (ExclusionSet, [ExclusionSet]) -> [Next]
+findForEasyPeasyStripe puzzle unknowns (col0, [col1, col2]) =
   let digitsInCol1 = getDigitsInSet puzzle col1
       digitsInCol2 = getDigitsInSet puzzle col2
       easyPeasyDigits = (digitsInCol1 `List.intersect` digitsInCol2)
-  in concat $ map (placeDigitInSet puzzle col0) easyPeasyDigits
+  in concat $ map (placeDigitInSet unknowns col0) easyPeasyDigits
 
 getDigitsInSet :: Puzzle -> ExclusionSet -> [Digit]
 getDigitsInSet puzzle set =
@@ -54,9 +54,9 @@ getDigitsInSet puzzle set =
   $ filter (\ p -> Placed.cellNumber p `elem` ExclusionSet.cells set)
   $ Puzzle.placed puzzle
 
-placeDigitInSet :: Puzzle -> ExclusionSet -> Digit -> [Next]
-placeDigitInSet puzzle set digit =
-  let unknowns = SolverUtil.unknownsInSet puzzle $ ExclusionSet.cells set
+placeDigitInSet :: [Unknown] -> ExclusionSet -> Digit -> [Next]
+placeDigitInSet unknowns set digit =
+  let unknowns = SolverUtil.unknownsInSet unknowns $ ExclusionSet.cells set
   in case filter (elem digit . Unknown.possible) unknowns of
       [unknown] -> [Next.new ("Easy peasy " ++ ExclusionSet.name set)
                     id digit (Unknown.cellNumber unknown)]
