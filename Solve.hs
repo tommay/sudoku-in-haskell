@@ -20,7 +20,8 @@ heuristics = [
   Forced,
   Tricky
   ]
-options = SolverOptions.new heuristics
+
+options = SolverOptions.new heuristics False
 
 -- This is the main function, called from the sudoku script.
 -- Initializes Puzzle from the given Filename and prints out solutions

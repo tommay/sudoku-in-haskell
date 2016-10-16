@@ -18,12 +18,12 @@ data Heuristic =
   EasyPeasy | MissingOne | MissingTwo | Needed | Forced | Tricky
   deriving (Show)
 
-new :: [Heuristic] -> SolverOptions
-new heuristicList =
+new :: [Heuristic]-> Bool -> SolverOptions
+new heuristicList trickySets =
   SolverOptions {
     useHeuristics = null heuristicList,
     heuristics = heuristicList,
-    usePermanentTrickySets = False
+    usePermanentTrickySets = trickySets
   }
 
 fast :: SolverOptions
