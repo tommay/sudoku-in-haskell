@@ -5,6 +5,7 @@ import qualified System.Environment
 import qualified Creater
 import qualified Layout
 import qualified Puzzle
+import           Puzzle (Puzzle)
 import qualified Solver
 import qualified Solution
 import qualified Stats
@@ -36,9 +37,8 @@ doListNoGuessing layout = do
   rnd <- Random.getStdGen
   mapM_ putStrLn $ map Puzzle.toPuzzleString $ createListNoGuessing rnd layout
 
+createListNoGuessing :: Random.StdGen -> [[Int]] -> [Puzzle]
 createListNoGuessing rnd layout =
   filter
-    (\ puzzle ->
-      let solution = head $ Solver.fastSolutions puzzle
-      in (Stats.guesses $ Solution.stats solution) == 0)
+    ((== 0) . Stats.guesses . Solution.stats . head . Solver.fastSolutions)
     $ Creater.createList rnd layout
