@@ -176,8 +176,10 @@ solutionsGuess this results =
           -- Guess each possibility, maybe in a random order,
           -- and recurse.  We could use Random.split when shuffling or
           -- recursing, but it's not really important for this application.
-          let shuffledPossible = maybeShuffle (Solver.rnd this) possible
-          in doGuesses this cellNumber shuffledPossible results
+          if SolverOptions.useGuessing $ options this
+            then let shuffledPossible = maybeShuffle (Solver.rnd this) possible
+                 in doGuesses this cellNumber shuffledPossible results
+            else results
 
 -- For each digit in the list, use it as a guess for unknown
 -- and try to solve the resulting Puzzle.
