@@ -21,7 +21,7 @@ data Heuristic =
 new :: [Heuristic]-> Bool -> SolverOptions
 new heuristicList trickySets =
   SolverOptions {
-    useHeuristics = null heuristicList,
+    useHeuristics = not $ null heuristicList,
     heuristics = heuristicList,
     usePermanentTrickySets = trickySets
   }
