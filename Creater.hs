@@ -25,11 +25,11 @@ create' puzzle cellNumberLists =
       -- We know accum has only one solution.
       -- Remove more stuff and check if that's still true.
       let newPuzzle = Puzzle.remove accum list
-      in case hasOnlyOneSolution newPuzzle of
-        True ->
+      in case Solver.fastSolutions newPuzzle of
+        [_] ->
           -- newPuzzle has only one solution, go with it.
           newPuzzle
-        False ->
+        _ ->
           -- Ooops, removed too much, stick with the original.
           accum)
     puzzle
@@ -47,7 +47,3 @@ randomSolvedPuzzle rnd =
       randomSolution = head $ Solver.fastRandomSolutions emptyPuzzle rnd
       randomPuzzle = Solution.puzzle randomSolution
   in randomPuzzle
-
-hasOnlyOneSolution :: Puzzle -> Bool
-hasOnlyOneSolution puzzle =
-  (length $ take 2 $ Solver.fastSolutions puzzle) == 1
