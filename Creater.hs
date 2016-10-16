@@ -25,7 +25,7 @@ create' puzzle cellNumberLists =
       -- We know accum has only one solution.
       -- Remove more stuff and check if that's still true.
       let newPuzzle = Puzzle.remove accum list
-      in case Solver.fastSolutions newPuzzle of
+      in case Solver.allSolutions newPuzzle of
         [_] ->
           -- newPuzzle has only one solution, go with it.
           newPuzzle
@@ -44,6 +44,6 @@ createList rnd layout =
 randomSolvedPuzzle :: Random.StdGen -> Puzzle
 randomSolvedPuzzle rnd =
   let emptyPuzzle = Puzzle.empty
-      randomSolution = head $ Solver.fastRandomSolutions rnd emptyPuzzle
+      randomSolution = head $ Solver.allRandomSolutions rnd emptyPuzzle
       randomPuzzle = Solution.puzzle randomSolution
   in randomPuzzle

@@ -2,8 +2,8 @@ module Solver (
   Solver.new,
   Solver.solutions,
   Solver.randomSolutions,
-  Solver.fastSolutions,
-  Solver.fastRandomSolutions,
+  Solver.allSolutions,
+  Solver.allRandomSolutions,
 ) where
 
 import           Digit (Digit)
@@ -78,19 +78,18 @@ solutions options puzzle =
   let solver = Solver.new options Nothing puzzle
   in solutionsTop solver []
 
-fastSolutions :: Puzzle -> [Solution]
-fastSolutions = solutions SolverOptions.fast
+allSolutions :: Puzzle -> [Solution]
+allSolutions = solutions SolverOptions.all
 
--- This computes all the solutions but they're returned in a random
--- order.
---
 randomSolutions :: SolverOptions -> Random.StdGen -> Puzzle -> [Solution]
 randomSolutions options rnd puzzle =
   let solver = Solver.new options (Just rnd) puzzle
   in solutionsTop solver []
 
-fastRandomSolutions :: Random.StdGen -> Puzzle -> [Solution]
-fastRandomSolutions = randomSolutions SolverOptions.fast
+-- Compute all the solutions and return them in a random order.
+--
+allRandomSolutions :: Random.StdGen -> Puzzle -> [Solution]
+allRandomSolutions = randomSolutions SolverOptions.all
 
 solutionsTop :: Solver -> [Solution] -> [Solution]
 solutionsTop this results =

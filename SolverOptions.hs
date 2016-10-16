@@ -2,7 +2,7 @@ module SolverOptions (
   SolverOptions,
   Heuristic (..),
   new,
-  fast,
+  SolverOptions.all,
   useHeuristics,
   heuristics,
   usePermanentTrickySets,
@@ -26,5 +26,5 @@ new heuristicList trickySets =
     usePermanentTrickySets = trickySets
   }
 
-fast :: SolverOptions
-fast = new [] False
+all :: SolverOptions
+all = new [] False

@@ -40,5 +40,5 @@ doListNoGuessing layout = do
 createListNoGuessing :: Random.StdGen -> [[Int]] -> [Puzzle]
 createListNoGuessing rnd layout =
   filter
-    ((== 0) . Stats.guesses . Solution.stats . head . Solver.fastSolutions)
+    ((== 0) . Stats.guesses . Solution.stats . head . Solver.allSolutions)
     $ Creater.createList rnd layout
