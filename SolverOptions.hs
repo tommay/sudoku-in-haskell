@@ -1,40 +1,35 @@
 module SolverOptions (
   SolverOptions,
+  Heuristic (..),
   new,
+  fast,
   useHeuristics,
-  useEasyPeasy,
-  useMissingOne,
-  useMissingTwo,
-  useNeeded,
-  useForced,
-  useTricky,
+  heuristics,
   usePermanentTrickySets,
 ) where
 
 data SolverOptions = SolverOptions {
   useHeuristics :: Bool,
-
-  useEasyPeasy :: Bool,
-  useMissingOne :: Bool,
-  useMissingTwo :: Bool,
-  useNeeded :: Bool,
-  useForced :: Bool,
-  useTricky :: Bool,
-
+  heuristics :: [Heuristic],
   usePermanentTrickySets :: Bool
-} deriving (Show, Eq)
+} deriving (Show)
 
-new :: SolverOptions
-new =
+data Heuristic =
+  EasyPeasy | MissingOne | MissingTwo | Needed | Forced | Tricky
+  deriving (Show)
+
+new :: [Heuristic] -> SolverOptions
+new heuristicList =
+  SolverOptions {
+    useHeuristics = null heuristicList,
+    heuristics = heuristicList,
+    usePermanentTrickySets = False
+  }
+
+fast :: SolverOptions
+fast =
   SolverOptions {
     useHeuristics = False,
-
-    useEasyPeasy = False,
-    useMissingOne = False,
-    useMissingTwo = False,
-    useNeeded = False,
-    useForced = False,
-    useTricky = False,
-
+    heuristics = [],
     usePermanentTrickySets = False
   }

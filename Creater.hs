@@ -3,10 +3,10 @@ module Creater (
   createList
 ) where
 
-import qualified Solver
-import qualified Solution
 import qualified Puzzle
 import           Puzzle (Puzzle)
+import qualified Solution
+import qualified Solver
 import qualified Util
 
 import qualified System.Random as Random
@@ -44,10 +44,10 @@ createList rnd layout =
 randomSolvedPuzzle :: Random.StdGen -> Puzzle
 randomSolvedPuzzle rnd =
   let emptyPuzzle = Puzzle.empty
-      randomSolution = head $ Solver.randomSolutions emptyPuzzle rnd
+      randomSolution = head $ Solver.fastRandomSolutions emptyPuzzle rnd
       randomPuzzle = Solution.puzzle randomSolution
   in randomPuzzle
 
 hasOnlyOneSolution :: Puzzle -> Bool
 hasOnlyOneSolution puzzle =
-  (length $ take 2 $ Solver.solutions puzzle) == 1
+  (length $ take 2 $ Solver.fastSolutions puzzle) == 1

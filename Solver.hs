@@ -2,6 +2,8 @@ module Solver (
   Solver.new,
   Solver.solutions,
   Solver.randomSolutions,
+  Solver.fastSolutions,
+  Solver.fastRandomSolutions,
 ) where
 
 import           Digit (Digit)
@@ -18,6 +20,7 @@ import qualified Solution
 import           Solution (Solution)
 import qualified SolverOptions
 import           SolverOptions (SolverOptions)
+import           SolverOptions (Heuristic (..))
 import qualified SolverUtil
 import qualified Stats
 import           Stats (Stats)
@@ -42,11 +45,11 @@ data Solver = Solver {
   stats :: Stats
 } deriving (Show)
 
-new :: Puzzle -> Maybe Random.StdGen -> Solver
-new puzzle maybeRnd =
+new :: SolverOptions -> Puzzle -> Maybe Random.StdGen -> Solver
+new options' puzzle maybeRnd =
   let (rnd1, rnd2) = maybeSplit maybeRnd
-      solver = Solver {
-        options = SolverOptions.new,
+      emptySolver = Solver {
+        options = options',
         puzzle = Puzzle.empty,
         rnd = rnd1,
         unknowns = maybeShuffle rnd2 [Unknown.new n | n <- [0..80]],
@@ -55,7 +58,7 @@ new puzzle maybeRnd =
       }
   in foldr (\placed accum ->
        place accum (Placed.cellNumber placed) (Placed.digit placed))
-     solver
+     emptySolver
      $ Puzzle.placed puzzle
 
 place :: Solver -> Int -> Digit -> Solver
@@ -70,18 +73,24 @@ place this cellNumber digit =
 -- tail-recursive style, passing down a list of solutions discovered
 -- higher in the call stack.
 --
-solutions :: Puzzle -> [Solution]
-solutions puzzle =
-  let solver = Solver.new puzzle Nothing
+solutions :: SolverOptions -> Puzzle -> [Solution]
+solutions options puzzle =
+  let solver = Solver.new options puzzle Nothing
   in solutionsTop solver []
+
+fastSolutions :: Puzzle -> [Solution]
+fastSolutions = solutions SolverOptions.fast
 
 -- This computes all the solutions but they're returned in a random
 -- order.
 --
-randomSolutions :: Puzzle -> Random.StdGen -> [Solution]
-randomSolutions puzzle rnd =
-  let solver = Solver.new puzzle $ Just rnd
+randomSolutions :: SolverOptions -> Puzzle -> Random.StdGen -> [Solution]
+randomSolutions options puzzle rnd =
+  let solver = Solver.new options puzzle $ Just rnd
   in solutionsTop solver []
+
+fastRandomSolutions :: Puzzle -> Random.StdGen -> [Solution]
+fastRandomSolutions = randomSolutions SolverOptions.fast
 
 solutionsTop :: Solver -> [Solution] -> [Solution]
 solutionsTop this results =
@@ -116,24 +125,14 @@ solutionsHeuristic this results =
 
 heuristics :: Solver -> [Solver -> [Next]]
 heuristics this =
- let heuristic opt func = if (opt $ options this) then [func] else []
- in concat [
-   -- Heuristic methods to find placements, ordered from easiest to hardest
-   -- for people to do.  Easy placements are used preferentially.
-
-   -- EasyPeasy is a subset of Needed.
-   -- MissingOne and MissingTwo are subsets of Forced.
-   -- Forced is the same as guessing with only one possibility.
-   -- So Needed and Tricky are the only options that maybe add
-   -- capabilities beyond the forced/guess algorithm.
-
-   heuristic SolverOptions.useEasyPeasy findEasyPeasy,
-   heuristic SolverOptions.useMissingOne findMissingOne,
-   heuristic SolverOptions.useMissingTwo findMissingTwo,
-   heuristic SolverOptions.useTricky findTricky,
-   heuristic SolverOptions.useNeeded findNeeded,
-   heuristic SolverOptions.useForced findForced
- ]
+  map (\ h -> case h of
+        EasyPeasy -> findEasyPeasy
+        MissingOne -> findMissingOne
+        MissingTwo -> findMissingTwo
+        Tricky -> findTricky
+        Needed -> findNeeded
+        Forced -> findForced)
+  $ SolverOptions.heuristics $ options this
 
 placeAndContinue :: Solver -> Next -> [Solution] -> [Solution]
 placeAndContinue this next results =

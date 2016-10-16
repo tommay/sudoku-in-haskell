@@ -3,12 +3,24 @@ import qualified Puzzle
 import qualified Solution
 import           Solution (Solution)
 import qualified Solver
+import qualified SolverOptions
+import           SolverOptions (Heuristic (..))
 import qualified Stats
 import           Step (Step (Step))
 
 import qualified Text.Regex as Regex
 import qualified System.Environment
 import qualified System.Random as Random
+
+heuristics = [
+  EasyPeasy,
+  MissingOne,
+  MissingTwo,
+  Needed,
+  Forced,
+  Tricky
+  ]
+options = SolverOptions.new heuristics
 
 -- This is the main function, called from the sudoku script.
 -- Initializes Puzzle from the given Filename and prints out solutions
@@ -18,7 +30,7 @@ main = do
   (filename:_) <- System.Environment.getArgs
   setup <- getSetup filename
   rnd <- Random.getStdGen
-  let solutions = Solver.randomSolutions (Puzzle.fromString setup) rnd
+  let solutions = Solver.randomSolutions options (Puzzle.fromString setup) rnd
   count <- processAndCount printSolution solutions
   putStrLn $ "There are " ++ show count ++ " solutions."
 

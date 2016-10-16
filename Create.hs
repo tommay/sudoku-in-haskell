@@ -39,6 +39,6 @@ doListNoGuessing layout = do
 createListNoGuessing rnd layout =
   filter
     (\ puzzle ->
-      let solution = head $ Solver.solutions puzzle
+      let solution = head $ Solver.fastSolutions puzzle
       in (Stats.guesses $ Solution.stats solution) == 0)
     $ Creater.createList rnd layout

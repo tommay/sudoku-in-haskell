@@ -31,7 +31,7 @@ doMin layout = do
 createListNoGuessing :: Random.StdGen -> [[Int]] -> [Puzzle]
 createListNoGuessing rnd layout =
   filter
-    ((== 0) . Stats.guesses . Solution.stats . head . Solver.solutions)
+    ((== 0) . Stats.guesses . Solution.stats . head . Solver.fastSolutions)
     $ Creater.createList rnd layout
 
 processAndMin :: Int -> [Puzzle] -> IO ()
