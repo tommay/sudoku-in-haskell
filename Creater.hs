@@ -44,6 +44,6 @@ createList rnd layout =
 randomSolvedPuzzle :: Random.StdGen -> Puzzle
 randomSolvedPuzzle rnd =
   let emptyPuzzle = Puzzle.empty
-      randomSolution = head $ Solver.fastRandomSolutions emptyPuzzle rnd
+      randomSolution = head $ Solver.fastRandomSolutions rnd emptyPuzzle
       randomPuzzle = Solution.puzzle randomSolution
   in randomPuzzle

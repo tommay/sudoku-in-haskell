@@ -31,7 +31,7 @@ main = do
   (filename:_) <- System.Environment.getArgs
   setup <- getSetup filename
   rnd <- Random.getStdGen
-  let solutions = Solver.randomSolutions options (Puzzle.fromString setup) rnd
+  let solutions = Solver.randomSolutions options rnd $ Puzzle.fromString setup
   count <- processAndCount printSolution solutions
   putStrLn $ "There are " ++ show count ++ " solutions."
 

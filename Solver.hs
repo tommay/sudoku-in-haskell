@@ -45,8 +45,8 @@ data Solver = Solver {
   stats :: Stats
 } deriving (Show)
 
-new :: SolverOptions -> Puzzle -> Maybe Random.StdGen -> Solver
-new options' puzzle maybeRnd =
+new :: SolverOptions -> Maybe Random.StdGen -> Puzzle -> Solver
+new options' maybeRnd puzzle =
   let (rnd1, rnd2) = maybeSplit maybeRnd
       emptySolver = Solver {
         options = options',
@@ -75,7 +75,7 @@ place this cellNumber digit =
 --
 solutions :: SolverOptions -> Puzzle -> [Solution]
 solutions options puzzle =
-  let solver = Solver.new options puzzle Nothing
+  let solver = Solver.new options Nothing puzzle
   in solutionsTop solver []
 
 fastSolutions :: Puzzle -> [Solution]
@@ -84,12 +84,12 @@ fastSolutions = solutions SolverOptions.fast
 -- This computes all the solutions but they're returned in a random
 -- order.
 --
-randomSolutions :: SolverOptions -> Puzzle -> Random.StdGen -> [Solution]
-randomSolutions options puzzle rnd =
-  let solver = Solver.new options puzzle $ Just rnd
+randomSolutions :: SolverOptions -> Random.StdGen -> Puzzle -> [Solution]
+randomSolutions options rnd puzzle =
+  let solver = Solver.new options (Just rnd) puzzle
   in solutionsTop solver []
 
-fastRandomSolutions :: Puzzle -> Random.StdGen -> [Solution]
+fastRandomSolutions :: Random.StdGen -> Puzzle -> [Solution]
 fastRandomSolutions = randomSolutions SolverOptions.fast
 
 solutionsTop :: Solver -> [Solution] -> [Solution]
