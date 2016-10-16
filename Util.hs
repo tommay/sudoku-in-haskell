@@ -14,7 +14,7 @@ shuffle rnd list =
   Shuffle.shuffle' list (length list) rnd
 
 myShuffle :: Random.StdGen -> [a] -> [a]
-myShuffle rnd [] = []
+myShuffle _ [] = []
 myShuffle rnd list =
   let len = length list
       (n, newRnd) = Random.randomR (0, len - 1) rnd

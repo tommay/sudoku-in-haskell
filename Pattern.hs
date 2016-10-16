@@ -10,11 +10,9 @@ import qualified Stats
 import qualified Data.List as List
 import Data.Map (Map)
 import qualified Data.Map as Map
-import qualified System.FilePath as FilePath
 import qualified Text.Regex as Regex
 import qualified System.Random as Random
 import qualified System.Environment
-import qualified Debug.Trace
 
 main = do
   (filename:_) <- System.Environment.getArgs
@@ -50,7 +48,7 @@ getPattern filename = do
 toLayout :: String -> [[Int]]
 toLayout string =
   let zipped = zip [0..] string
-      cells =  map fst $ filter (\ (n, char) -> char == '-') zipped
+      cells =  map fst $ filter (\ (_, char) -> char == '-') zipped
   in [cells]
 
 createListNoGuessing :: Random.StdGen -> [[Int]] -> [Puzzle]

@@ -1,14 +1,11 @@
 import           Placement (Placement (Placement))
 import qualified Puzzle
-import           Puzzle (Puzzle)
 import qualified Solution
 import           Solution (Solution)
 import qualified Solver
 import qualified Stats
-import           Stats (Stats)
 import           Step (Step (Step))
 
-import qualified System.FilePath as FilePath
 import qualified Text.Regex as Regex
 import qualified System.Environment
 import qualified System.Random as Random

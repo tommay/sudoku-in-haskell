@@ -3,8 +3,6 @@ module SolverUtil (
   isUnknownInSet,
 ) where
 
-import qualified Puzzle
-import           Puzzle (Puzzle)
 import qualified Unknown
 import           Unknown (Unknown)
 

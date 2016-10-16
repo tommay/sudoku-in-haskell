@@ -307,10 +307,10 @@ trickySetMatchesForDigit unknowns trickySet digit =
 
 findUnknownWhereDigitIsNeeded :: [Unknown] -> Digit -> [Int] -> [Unknown]
 findUnknownWhereDigitIsNeeded unknowns digit set =
-  let unknowns = filter (isDigitPossibleForUnknown digit)
+  let unknowns' = filter (isDigitPossibleForUnknown digit)
         $ filter (SolverUtil.isUnknownInSet set) unknowns
-  in case unknowns of
-    [_] -> unknowns
+  in case unknowns' of
+    [_] -> unknowns'
     _ -> []
 
 isDigitPossibleInSet :: [Unknown] -> Digit -> [Int] -> Bool

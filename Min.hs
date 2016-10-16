@@ -3,10 +3,8 @@ import qualified Layout
 import qualified Puzzle
 import           Puzzle (Puzzle)
 import qualified Solution
-import           Solution (Solution)
 import qualified Solver
 import qualified Stats
-import           Stats (Stats)
 
 import qualified System.IO as IO
 import qualified Data.List as List

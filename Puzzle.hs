@@ -16,7 +16,6 @@ import qualified Util
 
 import qualified Data.Char as Char
 import qualified Data.List as List
-import qualified Debug.Trace
 
 data Puzzle = Puzzle {
   placed :: [Placed]

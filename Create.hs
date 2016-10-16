@@ -5,10 +5,8 @@ import qualified System.Environment
 import qualified Creater
 import qualified Layout
 import qualified Puzzle
-import           Puzzle (Puzzle)
 import qualified Solver
 import qualified Solution
-import           Solution (Solution)
 import qualified Stats
 
 dothis = doOneNoGuessing

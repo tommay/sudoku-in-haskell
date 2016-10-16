@@ -56,8 +56,8 @@ getDigitsInSet puzzle set =
 
 placeDigitInSet :: [Unknown] -> ExclusionSet -> Digit -> [Next]
 placeDigitInSet unknowns set digit =
-  let unknowns = SolverUtil.unknownsInSet unknowns $ ExclusionSet.cells set
-  in case filter (elem digit . Unknown.possible) unknowns of
+  let unknowns' = SolverUtil.unknownsInSet unknowns $ ExclusionSet.cells set
+  in case filter (elem digit . Unknown.possible) unknowns' of
       [unknown] -> [Next.new ("Easy peasy " ++ ExclusionSet.name set)
                     id digit (Unknown.cellNumber unknown)]
       _ -> []

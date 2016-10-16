@@ -22,7 +22,6 @@ import qualified Data.List as List
 
 -- XXX Checking the eliminate set for newly forced Unknows isn't implemented.
 -- It's also not something I do.
-checkForced = False
 
 data TrickySet = TrickySet {
   name :: String,

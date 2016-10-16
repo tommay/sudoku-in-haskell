@@ -6,8 +6,6 @@ module Next (
 import           Digit (Digit)
 import           Placement (Placement (Placement))
 import           Stats (Stats)
-import qualified Unknown
-import           Unknown (Unknown)
 
 data Next = Next Placement String (Stats -> Stats)
 
