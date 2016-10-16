@@ -59,6 +59,6 @@ placeDigitInSet puzzle set digit =
   let unknowns = SolverUtil.unknownsInSet puzzle $ ExclusionSet.cells set
   in case filter (elem digit . Unknown.possible) unknowns of
       [unknown] -> [Next.new ("Easy peasy " ++ ExclusionSet.name set)
-                    id digit unknown]
+                    id digit (Unknown.cellNumber unknown)]
       _ -> []
 

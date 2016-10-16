@@ -156,6 +156,7 @@ solutionsGuess2 :: Solver -> Maybe Random.StdGen -> [Solution] -> [Solution]
 solutionsGuess2 this rnd results =
   let puzzle = Solver.puzzle this
       minUnknown = minByNumPossible $ maybeShuffle rnd $ Puzzle.unknown puzzle
+      cellNumber = Unknown.cellNumber minUnknown
       possible = Unknown.possible minUnknown
   in case possible of
     [] ->
@@ -163,7 +164,7 @@ solutionsGuess2 this rnd results =
       results
     [digit] ->
       -- One possibility.  The choice is forced, no guessing.
-      let next = Next.new "Forced guess" id digit minUnknown
+      let next = Next.new "Forced guess" id digit cellNumber
       in placeAndContinue this next results
     _ ->
       -- Multiple possibilities.  Try to apply a TrickySet to permanently
@@ -211,7 +212,7 @@ findMissingOneInSet puzzle set =
          -- may have made a wrong guess, which leaves no possibilities.
          case Unknown.possible unknown of
            [digit] -> [Next.new ("Missing one in " ++ name) incMissingOneInSet
-                       digit unknown]
+                       digit (Unknown.cellNumber unknown)]
            [] -> []
        _ ->
          -- Zero or multiple cells in the set are unknown.
@@ -257,7 +258,7 @@ findNeededDigitInSet puzzle unknowns name digit =
   case filter (isDigitPossibleForUnknown digit) unknowns of
     [unknown] -> [Next.new
                   (unwords ["Need a", show digit, "in", name])
-                  id digit unknown]
+                  id digit (Unknown.cellNumber unknown)]
     _ -> []
 
 findForced :: Puzzle -> [Next]
@@ -267,7 +268,7 @@ findForced puzzle =
 findForcedForUnknown :: Puzzle -> String -> Unknown -> [Next]
 findForcedForUnknown puzzle description unknown =
   case Unknown.possible unknown of
-    [digit] -> [Next.new description id digit unknown]
+    [digit] -> [Next.new description id digit (Unknown.cellNumber unknown)]
     _ -> []
 
 findTricky :: Puzzle -> [Next]
@@ -292,7 +293,7 @@ trickySetCheckNeeded puzzle tmpPuzzle trickySet digit =
           $ TrickySet.checkNeeded trickySet
   in map (Next.new
            (TrickySet.name trickySet)
-           id digit) unknownForEachNeededSet
+           id digit . Unknown.cellNumber) unknownForEachNeededSet
 
 trickySetMatchesForDigit :: Puzzle -> TrickySet -> Digit -> Bool
 trickySetMatchesForDigit puzzle trickySet digit =

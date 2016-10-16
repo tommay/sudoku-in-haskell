@@ -11,8 +11,8 @@ import           Unknown (Unknown)
 
 data Next = Next Placement String (Stats -> Stats)
 
-new :: String -> (Stats -> Stats) -> Digit -> Unknown -> Next
-new description statsFunc digit unknown =
-  Next (Placement (Unknown.cellNumber unknown) digit)
+new :: String -> (Stats -> Stats) -> Digit -> Int -> Next
+new description statsFunc digit cellNumber =
+  Next (Placement cellNumber digit)
        description
        statsFunc
