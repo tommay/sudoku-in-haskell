@@ -27,9 +27,4 @@ new heuristicList trickySets =
   }
 
 fast :: SolverOptions
-fast =
-  SolverOptions {
-    useHeuristics = False,
-    heuristics = [],
-    usePermanentTrickySets = False
-  }
+fast = new [] False
