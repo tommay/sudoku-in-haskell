@@ -4,6 +4,7 @@ module Solver (
   Solver.randomSolutions,
   Solver.allSolutions,
   Solver.allRandomSolutions,
+  Solver.isSolvableWith,
 ) where
 
 import           Digit (Digit)
@@ -383,9 +384,9 @@ addStep :: Solver -> Step -> Solver
 addStep this step =
   this{ steps = Solver.steps this ++ [step] }
 
------ Puzzle/Unknown functions
-
------
+isSolvableWith :: SolverOptions -> Puzzle -> Bool
+isSolvableWith options puzzle =
+  not $ null $ Solver.solutions options puzzle
 
 minByNumPossible :: [Unknown] -> Unknown
 minByNumPossible =
