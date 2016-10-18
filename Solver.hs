@@ -119,9 +119,9 @@ solutionsHeuristic this results =
         (next : _) ->
           placeAndContinue this{rnd = rnd2} next results
         [] ->
-          solutionsGuess this results
-    else -- Skip the heuristics and continue with solutionsGuess.
-      solutionsGuess this results
+          solutionsStuck this results
+    else -- Skip the heuristics and continue with solutionsStuck.
+      solutionsStuck this results
 
 heuristics :: Solver -> [Solver -> [Next]]
 heuristics this =
@@ -145,44 +145,50 @@ placeAndContinue this next results =
       newSolver2 = newSolver{ steps = newSteps, stats = newStats }
   in solutionsTop newSolver2 results
 
-solutionsGuess :: Solver -> [Solution] -> [Solution]
-solutionsGuess this results =
-  if SolverOptions.useGuessing $ options this
-    then solutionsGuess' this results
-    else results
-
-solutionsGuess' :: Solver -> [Solution] -> [Solution]
-solutionsGuess' this results =
+solutionsStuck :: Solver -> [Solution] -> [Solution]
+solutionsStuck this results =
   -- We get here because we can't place a digit using human-style
   -- heuristics, so we've either failed or we have to guess and
   -- recurse.  We can distinguish by examining the cell with the
   -- fewest possibilities remaining, which is also the best cell to
   -- make a guess for.
-  -- XXX May be faster to find minUnknown before even trying the heuristics
-  -- so we can fail faster.  We may even chug along with the heuristics
-  -- for a while before realizing we made a failing guess.
   let minUnknown = minByNumPossible $ Solver.unknowns this
       cellNumber = Unknown.cellNumber minUnknown
       possible = Unknown.possible minUnknown
+      options = Solver.options this
   in case possible of
     [] ->
       -- Failed.  No more solutions.
       results
     [digit] ->
       -- One possibility.  The choice is forced, no guessing.  But we
-      -- only use the force if we're not using heuristics, because if
-      -- we are then forcing is done by findForced.
-      if not $ SolverOptions.useHeuristics $ options this
+      -- only use the force if a) we're guessing, b) we're not using
+      -- heuristics, because if we are then forcing is done by
+      -- findForced.
+      if (SolverOptions.useGuessing options) &&
+         (not $ SolverOptions.useHeuristics options)
         then let next = Next.new "Forced guess" id digit cellNumber
              in placeAndContinue this next results
-        else results
+        else -- There is a forced guess but we're not configured to
+             -- use it.  See if we can apply a TrickySet to create
+             -- an opportunity.
+             case applyOneTrickySetIfAllowed this of
+               Just newSolver -> solutionsTop newSolver results
+               Nothing -> results
     _ ->
-      -- Multiple possibilities.  Guess each possibility, maybe in a
-      -- random order, and recurse.  We could use Random.split when
-      -- shuffling or recursing, but it's not really important for
-      -- this application.
-      let shuffledPossible = maybeShuffle (Solver.rnd this) possible
-      in doGuesses this cellNumber shuffledPossible results
+      -- Multiple possibilities.  Before we guess, see if it's possible
+      -- to permanently apply a TrickySet to create possibiities for
+      -- heurisstics.
+      case applyOneTrickySetIfAllowed this of
+        Just newSolver -> solutionsTop newSolver results
+        Nothing -> if SolverOptions.useGuessing options
+          -- Guess each possibility, maybe in a random order, and
+          -- recurse.  We could use Random.split when shuffling or
+          -- recursing, but it's not really important for this
+          -- application.
+          then let shuffledPossible = maybeShuffle (Solver.rnd this) possible
+               in doGuesses this cellNumber shuffledPossible results
+          else results
 
 -- For each digit in the list, use it as a guess for unknown
 -- and try to solve the resulting Puzzle.
@@ -338,34 +344,39 @@ isDigitPossibleForUnknown :: Digit -> Unknown -> Bool
 isDigitPossibleForUnknown digit unknown =
   digit `elem` Unknown.possible unknown
 
--- Eliminate all possibilities from all applicable TrickySets and return Just
--- Puzzle if the Puzzle was modified, otherwise Nothing.
---
-applyTrickySets :: Solver -> Maybe Solver
-applyTrickySets this =
-  let applicableTrickySets = findApplicableTrickySets $ Solver.unknowns this
-      (applied, newSolver) =
-        foldr (\ (digit, trickySet) accum@(_, oldSolver) ->
-                case applyTrickySet oldSolver digit trickySet of
-                  Nothing -> accum
-                  Just newSolver -> (True, newSolver))
-              (False, this)
-              applicableTrickySets
-  in if applied
-       then Just newSolver
-       else Nothing
+applyOneTrickySetIfAllowed :: Solver -> Maybe Solver
+applyOneTrickySetIfAllowed this =
+  if SolverOptions.usePermanentTrickySets $ options this
+    then applyOneTrickySet this
+    else Nothing
 
-applyTrickySet :: Solver -> Digit -> TrickySet -> Maybe Solver
+-- Try all applicable TrickyuSets in a random order until one makes a
+-- difference and return a new Solver with some possibilities
+-- eliminated, or Nothing.  This is vastly inefficient, but it's only
+-- used when grading puzzles for difficulty.
+--
+applyOneTrickySet :: Solver -> Maybe Solver
+applyOneTrickySet this =
+  let (rnd1, rnd2) = maybeSplit $ Solver.rnd this
+      applicableTrickySets = maybeShuffle rnd1
+        $ findApplicableTrickySets $ Solver.unknowns this
+      tryTrickySet (digit, trickySet) =
+        applyTrickySet this digit trickySet
+  in case concat $ map tryTrickySet applicableTrickySets of
+       (solver:_) -> Just solver{ rnd = rnd2 }
+       _ -> Nothing
+
+applyTrickySet :: Solver -> Digit -> TrickySet -> [Solver]
 applyTrickySet this digit trickySet =
   let oldUnknowns = Solver.unknowns this
       newUnknowns = eliminateWithTrickySet oldUnknowns digit trickySet
-  in if newUnknowns == oldUnknowns
-       then Nothing
-       else
+  in if newUnknowns /= oldUnknowns
+       then
          let newSolver = Solver.addStep this
                (Step (puzzle this) Nothing
                  ("Apply " ++ TrickySet.name trickySet))
-         in Just newSolver{ unknowns = newUnknowns }
+         in [newSolver{ unknowns = newUnknowns }]
+       else []
 
 findApplicableTrickySets :: [Unknown] -> [(Digit, TrickySet)]
 findApplicableTrickySets unknowns =
@@ -427,3 +438,5 @@ debug a b =
   if doDebug
     then trace a b
     else b
+
+spud text val = trace (text ++ ": " ++ (show val)) val
