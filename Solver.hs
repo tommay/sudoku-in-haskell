@@ -147,6 +147,12 @@ placeAndContinue this next results =
 
 solutionsGuess :: Solver -> [Solution] -> [Solution]
 solutionsGuess this results =
+  if SolverOptions.useGuessing $ options this
+    then solutionsGuess' this results
+    else results
+
+solutionsGuess' :: Solver -> [Solution] -> [Solution]
+solutionsGuess' this results =
   -- We get here because we can't place a digit using human-style
   -- heuristics, so we've either failed or we have to guess and
   -- recurse.  We can distinguish by examining the cell with the
@@ -175,10 +181,8 @@ solutionsGuess this results =
       -- random order, and recurse.  We could use Random.split when
       -- shuffling or recursing, but it's not really important for
       -- this application.
-      if SolverOptions.useGuessing $ options this
-        then let shuffledPossible = maybeShuffle (Solver.rnd this) possible
-             in doGuesses this cellNumber shuffledPossible results
-        else results
+      let shuffledPossible = maybeShuffle (Solver.rnd this) possible
+      in doGuesses this cellNumber shuffledPossible results
 
 -- For each digit in the list, use it as a guess for unknown
 -- and try to solve the resulting Puzzle.
