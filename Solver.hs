@@ -163,24 +163,22 @@ solutionsGuess this results =
       -- Failed.  No more solutions.
       results
     [digit] ->
-      -- One possibility.  The choice is forced, no guessing.
-      let next = Next.new "Forced guess" id digit cellNumber
-      in placeAndContinue this next results
+      -- One possibility.  The choice is forced, no guessing.  But we
+      -- only use the force if we're not using heuristics, because if
+      -- we are then forcing is done by findForced.
+      if not $ SolverOptions.useHeuristics $ options this
+        then let next = Next.new "Forced guess" id digit cellNumber
+             in placeAndContinue this next results
+        else results
     _ ->
-      -- Multiple possibilities.  Try to apply a TrickySet to permanently
-      -- remove some possibilities, and loop.
-      case if SolverOptions.usePermanentTrickySets $ options this
-             then applyTrickySets this
-             else Nothing of
-        Just newSolver -> solutionsTop newSolver results
-        Nothing ->
-          -- Guess each possibility, maybe in a random order,
-          -- and recurse.  We could use Random.split when shuffling or
-          -- recursing, but it's not really important for this application.
-          if SolverOptions.useGuessing $ options this
-            then let shuffledPossible = maybeShuffle (Solver.rnd this) possible
-                 in doGuesses this cellNumber shuffledPossible results
-            else results
+      -- Multiple possibilities.  Guess each possibility, maybe in a
+      -- random order, and recurse.  We could use Random.split when
+      -- shuffling or recursing, but it's not really important for
+      -- this application.
+      if SolverOptions.useGuessing $ options this
+        then let shuffledPossible = maybeShuffle (Solver.rnd this) possible
+             in doGuesses this cellNumber shuffledPossible results
+        else results
 
 -- For each digit in the list, use it as a guess for unknown
 -- and try to solve the resulting Puzzle.
