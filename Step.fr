@@ -1,9 +1,6 @@
-module Step (
-  Step (Step),
-) where
+module net.tommay.spudoku.Step where
 
-import Placement (Placement)
-import Puzzle (Puzzle)
+import net.tommay.spudoku.Placement (Placement)
+import net.tommay.spudoku.Puzzle (Puzzle)
 
 data Step = Step Puzzle (Maybe Placement) String
-  deriving (Show)

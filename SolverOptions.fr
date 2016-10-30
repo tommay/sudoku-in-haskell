@@ -1,20 +1,11 @@
-module SolverOptions (
-  SolverOptions,
-  Heuristic (..),
-  new,
-  SolverOptions.all,
-  useHeuristics,
-  heuristics,
-  usePermanentTrickySets,
-  useGuessing,
-) where
+module net.tommay.spudoku.SolverOptions where
 
-data SolverOptions = SolverOptions {
+abstract data SolverOptions = SolverOptions {
   useHeuristics :: Bool,
   heuristics :: [Heuristic],
   usePermanentTrickySets :: Bool,
   useGuessing :: Bool
-} deriving (Show)
+}
 
 -- EasyPeasy: An easy pattern to spot visually. where two rows or columns
 --   in a 3-stripe contain a digit and there is only one place in the
@@ -49,11 +40,10 @@ data SolverOptions = SolverOptions {
 
 data Heuristic =
   EasyPeasy | MissingOne | MissingTwo | Needed | Forced | Tricky
-  deriving (Show)
 
 new :: [Heuristic]-> Bool -> Bool -> SolverOptions
 new heuristicList trickySets guessing =
-  SolverOptions {
+  SolverOptions.SolverOptions {
     useHeuristics = not $ null heuristicList,
     heuristics = heuristicList,
     usePermanentTrickySets = trickySets,

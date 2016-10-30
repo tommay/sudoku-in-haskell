@@ -1,20 +1,15 @@
-module Placed (
-  Placed,
-  Placed.new,
-  Placed.cellNumber,
-  Placed.digit,
-) where  
+module net.tommay.spudoku.Placed where
 
-import Digit (Digit)
+import net.tommay.spudoku.Digit (Digit)
 
-data Placed = Placed {
+abstract data Placed = Placed {
   cellNumber :: Int,
   digit :: Digit
-} deriving (Show, Eq)
+}
 
 new :: Int -> Digit -> Placed
 new cellNumber digit =
-  Placed {
+  Placed.Placed {
     cellNumber = cellNumber,
     digit = digit
   }

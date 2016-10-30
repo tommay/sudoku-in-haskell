@@ -1,5 +1,3 @@
-module Digit (
-  Digit,
-) where
+module net.tommay.spudoku.Digit where
 
 type Digit = Int

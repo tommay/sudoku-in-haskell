@@ -1,20 +1,15 @@
-module Stats (
-  Stats,
-  Stats.new,
-  Stats.guess,
-  Stats.guesses,
-) where
+module net.tommay.spudoku.Stats where
 
-data Stats = Stats {
+abstract data Stats = Stats {
   guesses :: Int
-} deriving (Show)
+}
 
 new :: Stats
 new =
-  Stats {
+  Stats.Stats {
     guesses = 0
   }
 
 guess :: Stats -> Stats
 guess this =
-  this{ guesses = Stats.guesses this + 1 }
+  this.{ guesses = Stats.guesses this + 1 }

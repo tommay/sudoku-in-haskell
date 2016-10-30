@@ -1,16 +1,13 @@
-module Next (
-  Next (Next),
-  new,
-) where
+module net.tommay.spudoku.Next where
 
-import           Digit (Digit)
-import           Placement (Placement (Placement))
-import           Stats (Stats)
+import net.tommay.spudoku.Digit (Digit)
+import net.tommay.spudoku.Placement (Placement (Placement))
+import net.tommay.spudoku.Stats (Stats)
 
 data Next = Next Placement String (Stats -> Stats)
 
 new :: String -> (Stats -> Stats) -> Digit -> Int -> Next
 new description statsFunc digit cellNumber =
-  Next (Placement cellNumber digit)
+  Next.Next (Placement cellNumber digit)
        description
        statsFunc

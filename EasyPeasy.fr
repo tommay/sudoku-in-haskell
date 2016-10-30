@@ -1,21 +1,19 @@
-module EasyPeasy (
-  find,
-) where
+module net.tommay.spudoku.EasyPeasy where
 
-import           Digit (Digit)
-import qualified ExclusionSet
-import           ExclusionSet (ExclusionSet)
-import qualified Next
-import           Next (Next)
-import qualified Placed
-import qualified Puzzle as Puzzle
-import           Puzzle (Puzzle)
-import qualified SolverUtil
-import qualified Unknown
-import           Unknown (Unknown)
-import qualified Util
+import net.tommay.spudoku.Digit (Digit)
+import net.tommay.spudoku.ExclusionSet ()
+import net.tommay.spudoku.ExclusionSet (ExclusionSet)
+import net.tommay.spudoku.Next ()
+import net.tommay.spudoku.Next (Next)
+import net.tommay.spudoku.Placed (Placed)
+import net.tommay.spudoku.Puzzle ()
+import net.tommay.spudoku.Puzzle (Puzzle)
+import net.tommay.spudoku.SolverUtil ()
+import net.tommay.spudoku.Unknown ()
+import net.tommay.spudoku.Unknown (Unknown)
+import net.tommay.spudoku.Util ()
 
-import qualified Data.List as List
+import Data.List as List ()
 
 -- Easy peasies are found by using stripes of three rows or columns.
 -- The first item in the tuples is the set we're looking to place a
@@ -23,13 +21,13 @@ import qualified Data.List as List
 -- stripe.  Here we build all the possible stripes so they can be
 -- searched for easy peasies.
 --
-makeEasyPeasyStripes :: [(ExclusionSet, [ExclusionSet])]
-makeEasyPeasyStripes =
+private makeEasyPeasyStripes :: [(ExclusionSet, [ExclusionSet])]
+private makeEasyPeasyStripes =
   concat $ map makeEasyPeasyStripe
   $ Util.slices 3 (ExclusionSet.rows ++ ExclusionSet.columns)
 
-makeEasyPeasyStripe :: [ExclusionSet] -> [(ExclusionSet, [ExclusionSet])]
-makeEasyPeasyStripe slice =
+private makeEasyPeasyStripe :: [ExclusionSet] -> [(ExclusionSet, [ExclusionSet])]
+private makeEasyPeasyStripe slice =
   map (\ set -> (set, List.delete set slice)) slice
 
 -- Return a list of all possible easy peasy placements for the Puzzle.
@@ -41,21 +39,21 @@ find puzzle unknowns =
 -- Returns any easy peasies in the Puzzle and EasyPeasyStripe.  All
 -- digits are considered
 --
-findForEasyPeasyStripe :: Puzzle -> [Unknown] -> (ExclusionSet, [ExclusionSet]) -> [Next]
-findForEasyPeasyStripe puzzle unknowns (col0, [col1, col2]) =
+private findForEasyPeasyStripe :: Puzzle -> [Unknown] -> (ExclusionSet, [ExclusionSet]) -> [Next]
+private findForEasyPeasyStripe puzzle unknowns (col0, [col1, col2]) =
   let digitsInCol1 = getDigitsInSet puzzle col1
       digitsInCol2 = getDigitsInSet puzzle col2
-      easyPeasyDigits = (digitsInCol1 `List.intersect` digitsInCol2)
+      easyPeasyDigits = List.intersect digitsInCol1 digitsInCol2
   in concat $ map (placeDigitInSet unknowns col0) easyPeasyDigits
 
-getDigitsInSet :: Puzzle -> ExclusionSet -> [Digit]
-getDigitsInSet puzzle set =
+private getDigitsInSet :: Puzzle -> ExclusionSet -> [Digit]
+private getDigitsInSet puzzle set =
   map Placed.digit
   $ filter (\ p -> Placed.cellNumber p `elem` ExclusionSet.cells set)
   $ Puzzle.placed puzzle
 
-placeDigitInSet :: [Unknown] -> ExclusionSet -> Digit -> [Next]
-placeDigitInSet unknowns set digit =
+private placeDigitInSet :: [Unknown] -> ExclusionSet -> Digit -> [Next]
+private placeDigitInSet unknowns set digit =
   let unknowns' = SolverUtil.unknownsInSet unknowns $ ExclusionSet.cells set
   in case filter (elem digit . Unknown.possible) unknowns' of
       [unknown] -> [Next.new ("Easy peasy " ++ ExclusionSet.name set)

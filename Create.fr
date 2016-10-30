@@ -1,19 +1,19 @@
-import Data.List as List
-import qualified System.Random as Random
-import qualified System.Environment
+module net.tommay.spudoku.Create where
 
-import qualified Creater
-import qualified Layout
-import qualified Puzzle
-import           Puzzle (Puzzle)
-import qualified Solver
-import qualified Solution
-import qualified Stats
+import Data.List as List ()
+import System.Random as Random ()
+
+import net.tommay.spudoku.Creater ()
+import net.tommay.spudoku.Layout ()
+import net.tommay.spudoku.Puzzle ()
+import net.tommay.spudoku.Puzzle (Puzzle)
+import net.tommay.spudoku.Solver ()
+import net.tommay.spudoku.Solution ()
+import net.tommay.spudoku.Stats ()
 
 dothis = doOneNoGuessing
 
-main = do
-  args <- System.Environment.getArgs
+main args = do
   case args of
     [style] ->
       case Layout.getLayout style of

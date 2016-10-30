@@ -1,55 +1,45 @@
-module Solver (
-  Solver.new,
-  Solver.solutions,
-  Solver.randomSolutions,
-  Solver.allSolutions,
-  Solver.allRandomSolutions,
-  Solver.isSolvableWith,
-) where
+module net.tommay.spudoku.Solver where
 
-import           Digit (Digit)
-import qualified EasyPeasy
-import qualified ExclusionSet
-import           ExclusionSet (ExclusionSet (ExclusionSet))
-import qualified Next
-import           Next (Next (Next))
-import qualified Placed
-import           Placement (Placement (Placement))
-import qualified Puzzle
-import           Puzzle (Puzzle)
-import qualified Solution
-import           Solution (Solution)
-import qualified SolverOptions
-import           SolverOptions (SolverOptions)
-import           SolverOptions (Heuristic (..))
-import qualified SolverUtil
-import qualified Stats
-import           Stats (Stats)
-import           Step (Step (Step))
-import qualified TrickySet
-import           TrickySet (TrickySet)
-import qualified Unknown
-import           Unknown (Unknown)
-import qualified Util
+import net.tommay.spudoku.Digit (Digit)
+import net.tommay.spudoku.EasyPeasy ()
+import net.tommay.spudoku.ExclusionSet ()
+import net.tommay.spudoku.ExclusionSet (ExclusionSet (ExclusionSet))
+import net.tommay.spudoku.Next ()
+import net.tommay.spudoku.Next (Next (Next))
+import net.tommay.spudoku.Placed (Placed)
+import net.tommay.spudoku.Placement (Placement (Placement))
+import net.tommay.spudoku.Puzzle ()
+import net.tommay.spudoku.Puzzle (Puzzle)
+import net.tommay.spudoku.Solution ()
+import net.tommay.spudoku.Solution (Solution)
+import net.tommay.spudoku.SolverOptions ()
+import net.tommay.spudoku.SolverOptions (SolverOptions)
+import net.tommay.spudoku.SolverOptions (Heuristic)  -- (..)
+import net.tommay.spudoku.SolverUtil ()
+import net.tommay.spudoku.Stats ()
+import net.tommay.spudoku.Stats (Stats)
+import net.tommay.spudoku.Step (Step (Step))
+import net.tommay.spudoku.TrickySet ()
+import net.tommay.spudoku.TrickySet (TrickySet)
+import net.tommay.spudoku.Unknown ()
+import net.tommay.spudoku.Unknown (Unknown)
+import net.tommay.spudoku.Util ()
 
-import qualified System.Random as Random
-import Debug.Trace
+import System.Random as Random ()
 
-doDebug = False
-
-data Solver = Solver {
+abstract data Solver = Solver {
   options :: SolverOptions,
   puzzle :: Puzzle,
   rnd :: Maybe Random.StdGen,
   unknowns :: [Unknown],
   steps :: [Step],
   stats :: Stats
-} deriving (Show)
+}
 
 new :: SolverOptions -> Maybe Random.StdGen -> Puzzle -> Solver
 new options' maybeRnd puzzle =
   let (rnd1, rnd2) = maybeSplit maybeRnd
-      emptySolver = Solver {
+      emptySolver = Solver.Solver {
         options = options',
         puzzle = Puzzle.empty,
         rnd = rnd1,
@@ -62,13 +52,13 @@ new options' maybeRnd puzzle =
      emptySolver
      $ Puzzle.placed puzzle
 
-place :: Solver -> Int -> Digit -> Solver
-place this cellNumber digit =
-  let newPuzzle = Puzzle.place (puzzle this) cellNumber digit
+private place :: Solver -> Int -> Digit -> Solver
+private place this cellNumber digit =
+  let newPuzzle = Puzzle.place (Solver.puzzle this) cellNumber digit
       newUnknowns = map (Unknown.place cellNumber digit)
         $ filter ((/= cellNumber) . Unknown.cellNumber)
-        $ unknowns this
-  in this{ puzzle = newPuzzle, unknowns = newUnknowns }
+        $ Solver.unknowns this
+  in this.{ puzzle = newPuzzle, unknowns = newUnknowns }
 
 -- Try to solve the Puzzle, returning a list of Solutions.  This uses
 -- tail-recursive style, passing down a list of solutions discovered
@@ -92,9 +82,9 @@ randomSolutions options rnd puzzle =
 allRandomSolutions :: Random.StdGen -> Puzzle -> [Solution]
 allRandomSolutions = randomSolutions SolverOptions.all
 
-solutionsTop :: Solver -> [Solution] -> [Solution]
-solutionsTop this results =
-  case unknowns this of
+private solutionsTop :: Solver -> [Solution] -> [Solution]
+private solutionsTop this results =
+  case Solver.unknowns this of
     [] ->
       -- No more unknowns, solved!
       Solution.new
@@ -104,9 +94,9 @@ solutionsTop this results =
       : results
     _ -> solutionsHeuristic this results
 
-solutionsHeuristic :: Solver -> [Solution] -> [Solution]
-solutionsHeuristic this results =
-  if SolverOptions.useHeuristics $ options this
+private solutionsHeuristic :: Solver -> [Solution] -> [Solution]
+private solutionsHeuristic this results =
+  if SolverOptions.useHeuristics $ Solver.options this
     then -- Try the heuristic functions.
       let (rnd1, rnd2) = maybeSplit $ Solver.rnd this
           -- This uses rnd1 to shuffle each function's list, but that's ok
@@ -117,36 +107,37 @@ solutionsHeuristic this results =
             $ heuristics this
       in case nextList of
         (next : _) ->
-          placeAndContinue this{rnd = rnd2} next results
+          placeAndContinue this.{rnd = rnd2} next results
         [] ->
           solutionsStuck this results
     else -- Skip the heuristics and continue with solutionsStuck.
       solutionsStuck this results
 
-heuristics :: Solver -> [Solver -> [Next]]
-heuristics this =
+private heuristics :: Solver -> [Solver -> [Next]]
+private heuristics this =
   map (\ h -> case h of
         EasyPeasy -> findEasyPeasy
         MissingOne -> findMissingOne
         MissingTwo -> findMissingTwo
         Tricky -> findTricky
         Needed -> findNeeded
-        Forced -> findForced)
-  $ SolverOptions.heuristics $ options this
+        Forced -> findForced
+	)
+  $ SolverOptions.heuristics $ Solver.options this
 
-placeAndContinue :: Solver -> Next -> [Solution] -> [Solution]
-placeAndContinue this next results =
+private placeAndContinue :: Solver -> Next -> [Solution] -> [Solution]
+private placeAndContinue this next results =
   let Next placement description incStats = next
       Placement cellNumber digit = placement
       newSolver = place this cellNumber digit
-      step = Step (puzzle newSolver) (Just placement) description
+      step = Step (Solver.puzzle newSolver) (Just placement) description
       newSteps = (Solver.steps this) ++ [step]
       newStats = incStats $ Solver.stats this
-      newSolver2 = newSolver{ steps = newSteps, stats = newStats }
+      newSolver2 = newSolver.{ steps = newSteps, stats = newStats }
   in solutionsTop newSolver2 results
 
-solutionsStuck :: Solver -> [Solution] -> [Solution]
-solutionsStuck this results =
+private solutionsStuck :: Solver -> [Solution] -> [Solution]
+private solutionsStuck this results =
   -- We get here because we can't place a digit using human-style
   -- heuristics, so we've either failed or we have to guess and
   -- recurse.  We can distinguish by examining the cell with the
@@ -193,28 +184,28 @@ solutionsStuck this results =
 -- For each digit in the list, use it as a guess for unknown
 -- and try to solve the resulting Puzzle.
 --
-doGuesses :: Solver -> Int -> [Digit] -> [Solution] -> [Solution]
-doGuesses this cellNumber digits results =
+private doGuesses :: Solver -> Int -> [Digit] -> [Solution] -> [Solution]
+private doGuesses this cellNumber digits results =
   foldr (\ digit accum ->
           let next = Next.new "Guess" Stats.guess digit cellNumber
           in placeAndContinue this next accum)
     results
     digits
 
-findEasyPeasy :: Solver -> [Next]
-findEasyPeasy this =
+private findEasyPeasy :: Solver -> [Next]
+private findEasyPeasy this =
   EasyPeasy.find (Solver.puzzle this) (Solver.unknowns this)
 
 -- Try to place a digit where a set has only one unplaced cell.
 --
-findMissingOne :: Solver -> [Next]
-findMissingOne this =
+private findMissingOne :: Solver -> [Next]
+private findMissingOne this =
   concat $ map (findMissingOneInSet this) ExclusionSet.exclusionSets
 
-findMissingOneInSet :: Solver -> ExclusionSet -> [Next]
-findMissingOneInSet this set =
+private findMissingOneInSet :: Solver -> ExclusionSet -> [Next]
+private findMissingOneInSet this set =
   let ExclusionSet name cellNumbers = set
-  in case SolverUtil.unknownsInSet (unknowns this) cellNumbers of
+  in case SolverUtil.unknownsInSet (Solver.unknowns this) cellNumbers of
        [unknown] ->
          -- Exactly one cell in the set is unknown.  Place a digit in it.
          -- Note that since this is the only unknown position in the set
@@ -225,20 +216,20 @@ findMissingOneInSet this set =
          -- Zero or multiple cells in the set are unknown.
          []
 
-incMissingOneInSet :: Stats -> Stats
-incMissingOneInSet stats = stats  -- XXX
+private incMissingOneInSet :: Stats -> Stats
+private incMissingOneInSet stats = stats  -- XXX
 
 -- Try to place a digit where a set has two unplaced cells.  We only
 -- place one of the digits but the second will follow quickly.
 --
-findMissingTwo :: Solver -> [Next]
-findMissingTwo this =
+private findMissingTwo :: Solver -> [Next]
+private findMissingTwo this =
   concat $ map (findMissingTwoInSet this) ExclusionSet.exclusionSets
 
-findMissingTwoInSet :: Solver -> ExclusionSet -> [Next]
-findMissingTwoInSet this set =
+private findMissingTwoInSet :: Solver -> ExclusionSet -> [Next]
+private findMissingTwoInSet this set =
   let ExclusionSet name cellNumbers = set
-  in case SolverUtil.unknownsInSet (unknowns this) cellNumbers of
+  in case SolverUtil.unknownsInSet (Solver.unknowns this) cellNumbers of
        unknowns@[_, _] ->
          concat $
            map (findForcedForUnknown $ "Missing two in " ++ name) unknowns
@@ -248,36 +239,36 @@ findMissingTwoInSet this set =
 -- some digit (i.e., it needs it) and there is only one cell in the
 -- set where it can possibly go.
 --
-findNeeded :: Solver -> [Next]
-findNeeded this =
+private findNeeded :: Solver -> [Next]
+private findNeeded this =
   concat $ map (findNeededInSet this) ExclusionSet.exclusionSets
 
-findNeededInSet :: Solver -> ExclusionSet -> [Next]
-findNeededInSet this set =
+private findNeededInSet :: Solver -> ExclusionSet -> [Next]
+private findNeededInSet this set =
   let ExclusionSet name cellNumbers = set
       unknowns = SolverUtil.unknownsInSet (Solver.unknowns this) cellNumbers
   in concat $ map (findNeededDigitInSet unknowns name) [1..9]
 
-findNeededDigitInSet :: [Unknown] -> String -> Digit -> [Next]
-findNeededDigitInSet unknowns name digit =
+private findNeededDigitInSet :: [Unknown] -> String -> Digit -> [Next]
+private findNeededDigitInSet unknowns name digit =
   case filter (isDigitPossibleForUnknown digit) unknowns of
     [unknown] -> [Next.new
                   (unwords ["Need a", show digit, "in", name])
                   id digit (Unknown.cellNumber unknown)]
     _ -> []
 
-findForced :: Solver -> [Next]
-findForced this =
-  concat $ map (findForcedForUnknown "Forced") $ unknowns this
+private findForced :: Solver -> [Next]
+private findForced this =
+  concat $ map (findForcedForUnknown "Forced") $ Solver.unknowns this
 
-findForcedForUnknown :: String -> Unknown -> [Next]
-findForcedForUnknown description unknown =
+private findForcedForUnknown :: String -> Unknown -> [Next]
+private findForcedForUnknown description unknown =
   case Unknown.possible unknown of
     [digit] -> [Next.new description id digit (Unknown.cellNumber unknown)]
     _ -> []
 
-findTricky :: Solver -> [Next]
-findTricky this =
+private findTricky :: Solver -> [Next]
+private findTricky this =
   let unknowns = Solver.unknowns this
       applicableTrickySets = findApplicableTrickySets unknowns
   in concat $ map
@@ -291,8 +282,8 @@ findTricky this =
          in trickySetCheckNeeded tmpUnknowns trickySet digit)
        applicableTrickySets
 
-trickySetCheckNeeded :: [Unknown] -> TrickySet -> Digit -> [Next]
-trickySetCheckNeeded unknowns trickySet digit =
+private trickySetCheckNeeded :: [Unknown] -> TrickySet -> Digit -> [Next]
+private trickySetCheckNeeded unknowns trickySet digit =
   let unknownForEachNeededSet =
         concat $ map
           (findUnknownWhereDigitIsNeeded unknowns digit)
@@ -301,23 +292,23 @@ trickySetCheckNeeded unknowns trickySet digit =
            (TrickySet.name trickySet)
            id digit . Unknown.cellNumber) unknownForEachNeededSet
 
-trickySetMatchesForDigit :: [Unknown] -> TrickySet -> Digit -> Bool
-trickySetMatchesForDigit unknowns trickySet digit =
+private trickySetMatchesForDigit :: [Unknown] -> TrickySet -> Digit -> Bool
+private trickySetMatchesForDigit unknowns trickySet digit =
   let common = TrickySet.common trickySet
       rest = TrickySet.rest trickySet
   in (isDigitPossibleInSet unknowns digit common) &&
      (notIsDigitPossibleInSet unknowns digit rest)
 
-findUnknownWhereDigitIsNeeded :: [Unknown] -> Digit -> [Int] -> [Unknown]
-findUnknownWhereDigitIsNeeded unknowns digit set =
+private findUnknownWhereDigitIsNeeded :: [Unknown] -> Digit -> [Int] -> [Unknown]
+private findUnknownWhereDigitIsNeeded unknowns digit set =
   let unknowns' = filter (isDigitPossibleForUnknown digit)
         $ filter (SolverUtil.isUnknownInSet set) unknowns
   in case unknowns' of
     [_] -> unknowns'
     _ -> []
 
-isDigitPossibleInSet :: [Unknown] -> Digit -> [Int] -> Bool
-isDigitPossibleInSet unknowns digit set =
+private isDigitPossibleInSet :: [Unknown] -> Digit -> [Int] -> Bool
+private isDigitPossibleInSet unknowns digit set =
   let possibleUnknowns =
         -- Filters can be in either order but this order is way faster.
         filter (isDigitPossibleForUnknown digit)
@@ -330,8 +321,8 @@ isDigitPossibleInSet unknowns digit set =
 -- Making this new function makes things 4 times faster solving
 -- puzzle-1339.txt.
 --
-notIsDigitPossibleInSet :: [Unknown] -> Digit -> [Int] -> Bool
-notIsDigitPossibleInSet unknowns digit set =
+private notIsDigitPossibleInSet :: [Unknown] -> Digit -> [Int] -> Bool
+private notIsDigitPossibleInSet unknowns digit set =
   let possibleUnknowns =
         -- Filters can be in either order but this order is way faster.
         filter (isDigitPossibleForUnknown digit)
@@ -340,13 +331,13 @@ notIsDigitPossibleInSet unknowns digit set =
        [] -> True
        _ -> False
 
-isDigitPossibleForUnknown :: Digit -> Unknown -> Bool
-isDigitPossibleForUnknown digit unknown =
+private isDigitPossibleForUnknown :: Digit -> Unknown -> Bool
+private isDigitPossibleForUnknown digit unknown =
   digit `elem` Unknown.possible unknown
 
-applyOneTrickySetIfAllowed :: Solver -> Maybe Solver
-applyOneTrickySetIfAllowed this =
-  if SolverOptions.usePermanentTrickySets $ options this
+private applyOneTrickySetIfAllowed :: Solver -> Maybe Solver
+private applyOneTrickySetIfAllowed this =
+  if SolverOptions.usePermanentTrickySets $ Solver.options this
     then applyOneTrickySet this
     else Nothing
 
@@ -355,37 +346,37 @@ applyOneTrickySetIfAllowed this =
 -- eliminated, or Nothing.  This is vastly inefficient, but it's only
 -- used when grading puzzles for difficulty.
 --
-applyOneTrickySet :: Solver -> Maybe Solver
-applyOneTrickySet this =
+private applyOneTrickySet :: Solver -> Maybe Solver
+private applyOneTrickySet this =
   let (rnd1, rnd2) = maybeSplit $ Solver.rnd this
       applicableTrickySets = maybeShuffle rnd1
         $ findApplicableTrickySets $ Solver.unknowns this
       tryTrickySet (digit, trickySet) =
         applyTrickySet this digit trickySet
   in case concat $ map tryTrickySet applicableTrickySets of
-       (solver:_) -> Just solver{ rnd = rnd2 }
+       (solver:_) -> Just solver.{ rnd = rnd2 }
        _ -> Nothing
 
-applyTrickySet :: Solver -> Digit -> TrickySet -> [Solver]
-applyTrickySet this digit trickySet =
+private applyTrickySet :: Solver -> Digit -> TrickySet -> [Solver]
+private applyTrickySet this digit trickySet =
   let oldUnknowns = Solver.unknowns this
       newUnknowns = eliminateWithTrickySet oldUnknowns digit trickySet
   in if newUnknowns /= oldUnknowns
        then
          let newSolver = Solver.addStep this
-               (Step (puzzle this) Nothing
+               (Step (Solver.puzzle this) Nothing
                  ("Apply " ++ TrickySet.name trickySet))
-         in [newSolver{ unknowns = newUnknowns }]
+         in [newSolver.{ unknowns = newUnknowns }]
        else []
 
-findApplicableTrickySets :: [Unknown] -> [(Digit, TrickySet)]
-findApplicableTrickySets unknowns =
+private findApplicableTrickySets :: [Unknown] -> [(Digit, TrickySet)]
+private findApplicableTrickySets unknowns =
   let allTrickySets = TrickySet.trickySets ++ TrickySet.inverseTrickySets
   in [(digit, trickySet) | digit <- [1..9], trickySet <- allTrickySets,
       trickySetMatchesForDigit unknowns trickySet digit]
 
-eliminateWithTrickySet :: [Unknown] -> Digit -> TrickySet -> [Unknown]
-eliminateWithTrickySet unknowns digit trickySet =
+private eliminateWithTrickySet :: [Unknown] -> Digit -> TrickySet -> [Unknown]
+private eliminateWithTrickySet unknowns digit trickySet =
   let cellNumbers = TrickySet.eliminate trickySet
   in map (\ u ->
           if Unknown.cellNumber u `elem` cellNumbers
@@ -393,23 +384,23 @@ eliminateWithTrickySet unknowns digit trickySet =
              else u)
        unknowns
 
-addStep :: Solver -> Step -> Solver
-addStep this step =
-  this{ steps = Solver.steps this ++ [step] }
+private addStep :: Solver -> Step -> Solver
+private addStep this step =
+  this.{ steps = Solver.steps this ++ [step] }
 
 isSolvableWith :: SolverOptions -> Puzzle -> Bool
 isSolvableWith options puzzle =
   not $ null $ Solver.solutions options puzzle
 
-minByNumPossible :: [Unknown] -> Unknown
-minByNumPossible =
+private minByNumPossible :: [Unknown] -> Unknown
+private minByNumPossible =
   minBy (length . Unknown.possible)
 
-minBy :: Ord b => (a -> b) -> [a] -> a
-minBy func list =
+private minBy :: Ord b => (a -> b) -> [a] -> a
+private minBy func list =
   let enhanced = map (\ a -> (func a, a)) list
   -- foldl1 is a smidge faster than foldr1.
-  in snd $ foldl1 (\ a@(na, _) b@(nb, _) ->
+  in snd $ foldl1 (\ (a@(na, _)) (b@(nb, _)) ->
        -- The results are of course the same we select a or b when
        -- na == nb, but testing na <= nb makes things much slower,
        -- probably because it chooses elements deeper in the list
@@ -419,24 +410,14 @@ minBy func list =
          else b)
        enhanced
 
-maybeSplit :: Maybe Random.StdGen -> (Maybe Random.StdGen, Maybe Random.StdGen)
-maybeSplit Nothing =
+private maybeSplit :: Maybe Random.StdGen -> (Maybe Random.StdGen, Maybe Random.StdGen)
+private maybeSplit Nothing =
   (Nothing, Nothing)
-maybeSplit (Just rnd) =
+private maybeSplit (Just rnd) =
   let (rnd1, rnd2) = Random.split rnd
   in (Just rnd1, Just rnd2)
 
-maybeShuffle :: Maybe Random.StdGen -> [a] -> [a]
-maybeShuffle Nothing list = list
-maybeShuffle (Just rnd) list =
+private maybeShuffle :: Maybe Random.StdGen -> [a] -> [a]
+private maybeShuffle Nothing list = list
+private maybeShuffle (Just rnd) list =
   Util.shuffle rnd list
-
--- Debug function that outputs only if doDebug is True.
---
-debug :: String -> b -> b
-debug a b =
-  if doDebug
-    then trace a b
-    else b
-
-spud text val = trace (text ++ ": " ++ (show val)) val

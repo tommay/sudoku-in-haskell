@@ -1,10 +1,7 @@
-module SolverUtil (
-  unknownsInSet,
-  isUnknownInSet,
-) where
+module net.tommay.spudoku.SolverUtil where
 
-import qualified Unknown
-import           Unknown (Unknown)
+import net.tommay.spudoku.Unknown ()
+import net.tommay.spudoku.Unknown (Unknown)
 
 unknownsInSet :: [Unknown] -> [Int] -> [Unknown]
 unknownsInSet unknowns set =

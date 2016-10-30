@@ -1,7 +1,5 @@
-module Placement (
-  Placement (Placement),
-) where
+module net.tommay.spudoku.Placement where
 
-import Digit (Digit)
+import net.tommay.spudoku.Digit (Digit)
 
-data Placement = Placement Int Digit deriving (Show)
+data Placement = Placement Int Digit
