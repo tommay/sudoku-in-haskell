@@ -1,5 +1,7 @@
 module net.tommay.spudoku.SolverOptions where
 
+import frege.Prelude hiding (all)
+
 abstract data SolverOptions = SolverOptions {
   useHeuristics :: Bool,
   heuristics :: [Heuristic],
