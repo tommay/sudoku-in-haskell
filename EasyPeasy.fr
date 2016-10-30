@@ -39,7 +39,7 @@ private findForEasyPeasyStripe :: Puzzle -> [Unknown] -> (ExclusionSet, [Exclusi
 private findForEasyPeasyStripe puzzle unknowns (col0, [col1, col2]) =
   let digitsInCol1 = getDigitsInSet puzzle col1
       digitsInCol2 = getDigitsInSet puzzle col2
-      easyPeasyDigits = List.intersect digitsInCol1 digitsInCol2
+      easyPeasyDigits = digitsInCol1 List.`intersect` digitsInCol2
   in concat $ map (placeDigitInSet unknowns col0) easyPeasyDigits
 
 private getDigitsInSet :: Puzzle -> ExclusionSet -> [Digit]

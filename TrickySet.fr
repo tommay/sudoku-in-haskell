@@ -68,7 +68,7 @@ private createTrickySetsFrom inverse square row getSetsIncluding =
   let (\\) = (List.\\)
       ExclusionSet squareName squareCells = square
       ExclusionSet rowName rowCells = row
-      common = List.intersect squareCells rowCells
+      common = squareCells List.`intersect` rowCells
       restOfRow = rowCells \\ common
       restOfSquare = squareCells \\ common
   in case common of
