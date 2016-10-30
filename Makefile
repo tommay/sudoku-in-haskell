@@ -1,19 +1,19 @@
-ALL = Solve Create Pattern Color Uncolor Min
+ALL = Solve Create Pattern # Color Uncolor Min
 
 PACKAGE = net/tommay/spudoku
-
-Pattern: build/$(PACKAGE)/Pattern.class
-Create: build/$(PACKAGE)/Create.class
-Solve: build/$(PACKAGE)/Solve.class
 
 all: $(ALL)
 
 $(ALL): FORCE
 FORCE:
 
+Solve: build/$(PACKAGE)/Solve.class
+Create: build/$(PACKAGE)/Create.class
+Pattern: build/$(PACKAGE)/Pattern.class
+
 build/$(PACKAGE)/%.class: $(PACKAGE)/%.fr
 	[ -d build ] || mkdir build
 	java -Xss1m -jar fregec.jar -d build -make $<
 
 clean:
-	rm -f *.hi *.o $(ALL)
+	rm -fr build
