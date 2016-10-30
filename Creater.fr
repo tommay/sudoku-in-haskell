@@ -1,15 +1,12 @@
-module Creater (
-  create,
-  createList
-) where
+module net.tommay.spudoku.Creater where
 
-import qualified Puzzle
-import           Puzzle (Puzzle)
-import qualified Solution
-import qualified Solver
-import qualified Util
+import net.tommay.spudoku.Puzzle ()
+import net.tommay.spudoku.Puzzle (Puzzle)
+import net.tommay.spudoku.Solution (Solution)
+import net.tommay.spudoku.Solver ()
+import net.tommay.spudoku.Util ()
 
-import qualified System.Random as Random
+import System.Random as Random ()
 
 create :: Random.StdGen -> [[Int]] -> Puzzle
 create rnd layout =
@@ -18,8 +15,8 @@ create rnd layout =
       layout' = Util.shuffle rnd2 layout
   in create' puzzle layout'
 
-create' :: Puzzle -> [[Int]] -> Puzzle
-create' puzzle cellNumberLists =
+private create' :: Puzzle -> [[Int]] -> Puzzle
+private create' puzzle cellNumberLists =
   foldr
     (\ list accum ->
       -- We know accum has only one solution.
@@ -31,7 +28,8 @@ create' puzzle cellNumberLists =
           newPuzzle
         _ ->
           -- Ooops, removed too much, stick with the original.
-          accum)
+          accum
+    )
     puzzle
     cellNumberLists
 
@@ -41,8 +39,8 @@ createList rnd layout =
       puzzle = create rnd1 layout
   in puzzle : (createList rnd2 layout)
 
-randomSolvedPuzzle :: Random.StdGen -> Puzzle
-randomSolvedPuzzle rnd =
+private randomSolvedPuzzle :: Random.StdGen -> Puzzle
+private randomSolvedPuzzle rnd =
   let emptyPuzzle = Puzzle.empty
       randomSolution = head $ Solver.allRandomSolutions rnd emptyPuzzle
       randomPuzzle = Solution.puzzle randomSolution

@@ -8,8 +8,8 @@ import net.tommay.spudoku.Layout ()
 import net.tommay.spudoku.Puzzle ()
 import net.tommay.spudoku.Puzzle (Puzzle)
 import net.tommay.spudoku.Solver ()
-import net.tommay.spudoku.Solution ()
-import net.tommay.spudoku.Stats ()
+import net.tommay.spudoku.Solution (Solution)
+import net.tommay.spudoku.Stats (Stats)
 
 dothis = doOneNoGuessing
 

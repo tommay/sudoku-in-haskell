@@ -2,6 +2,7 @@ ALL = Solve Create Pattern Color Uncolor Min
 
 PACKAGE = net/tommay/spudoku
 
+Create: build/$(PACKAGE)/Create.class
 Solve: build/$(PACKAGE)/Solve.class
 
 all: $(ALL)
