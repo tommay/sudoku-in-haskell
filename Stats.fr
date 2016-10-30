@@ -1,7 +1,7 @@
 module net.tommay.spudoku.Stats where
 
 abstract data Stats = Stats {
-  guesses :: Int
+  ! guesses :: Int
 }
 
 new :: Stats
