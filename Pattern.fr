@@ -1,21 +1,23 @@
-import qualified Creater
-import           Digit (Digit)
-import qualified Placed
-import qualified Puzzle
-import           Puzzle (Puzzle)
-import qualified Solution
-import qualified Solver
-import qualified Stats
+module net.tommay.spudoku.Pattern where
 
-import qualified Data.List as List
-import Data.Map (Map)
-import qualified Data.Map as Map
-import qualified Text.Regex as Regex
-import qualified System.Random as Random
-import qualified System.Environment
+import net.tommay.spudoku.Creater ()
+import net.tommay.spudoku.Digit (Digit)
+import net.tommay.spudoku.Placed (Placed)
+import net.tommay.spudoku.Puzzle ()
+import net.tommay.spudoku.Puzzle (Puzzle)
+import net.tommay.spudoku.Solution (Solution)
+import net.tommay.spudoku.Solver ()
+import net.tommay.spudoku.Stats (Stats)
 
-main = do
-  (filename:_) <- System.Environment.getArgs
+import frege.java.util.Regex as Regex ()
+import Data.List as List ()
+import Data.HashMap as Map (HashMap)
+type Map = HashMap
+import System.Random as Random ()
+
+type FilePath = String
+
+main (filename:_) = do
   layout <- getLayout filename
   let size = 81 - (length $ head layout)
   rnd <- Random.getStdGen
@@ -23,8 +25,8 @@ main = do
         $ filter ((== size) . Puzzle.size)
         $ createListNoGuessing rnd layout
   putStrLn $ Puzzle.toPuzzleString puzzle
-  putStrLn $ unlines $ map (flip replicate $ '*') $ List.sort
-    $ Map.elems $ count puzzle
+  putStrLn $ unlines $ map packed $ map (flip replicate $ '*') $ List.sort
+    $ Map.values $ count puzzle
 
 getLayout :: FilePath -> IO [[Int]]
 getLayout filename = do
@@ -39,15 +41,15 @@ getPattern :: FilePath -> IO String
 getPattern filename = do
   raw <- readFile filename
   let
-    noComments = Regex.subRegex (Regex.mkRegex "#.*") raw ""
-    setup = Regex.subRegex (Regex.mkRegex "\\s+") noComments ""
+    noComments = Regex.substituteFirst raw '#.*' ""
+    setup = Regex.substituteAll noComments '\s+' ""
   return setup
 
 -- Converts a pattern string to a list of cells to create.
 --
 toLayout :: String -> [[Int]]
 toLayout string =
-  let zipped = zip [0..] string
+  let zipped = zip [0..] $ unpacked string
       cells =  map fst $ filter (\ (_, char) -> char == '-') zipped
   in [cells]
 
