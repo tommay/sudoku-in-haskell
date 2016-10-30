@@ -1,6 +1,5 @@
 module net.tommay.spudoku.TrickySet where
 
-import net.tommay.spudoku.ExclusionSet ()
 import net.tommay.spudoku.ExclusionSet (ExclusionSet (ExclusionSet))
 
 import Data.List as List ()

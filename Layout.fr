@@ -1,6 +1,5 @@
 module net.tommay.spudoku.Layout where
 
-import Data.Char as Char ()
 import Data.HashMap as Map (HashMap)
 type Map = HashMap
 

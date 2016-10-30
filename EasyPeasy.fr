@@ -1,15 +1,11 @@
 module net.tommay.spudoku.EasyPeasy where
 
 import net.tommay.spudoku.Digit (Digit)
-import net.tommay.spudoku.ExclusionSet ()
 import net.tommay.spudoku.ExclusionSet (ExclusionSet)
-import net.tommay.spudoku.Next ()
 import net.tommay.spudoku.Next (Next)
 import net.tommay.spudoku.Placed (Placed)
-import net.tommay.spudoku.Puzzle ()
 import net.tommay.spudoku.Puzzle (Puzzle)
 import net.tommay.spudoku.SolverUtil ()
-import net.tommay.spudoku.Unknown ()
 import net.tommay.spudoku.Unknown (Unknown)
 import net.tommay.spudoku.Util ()
 
