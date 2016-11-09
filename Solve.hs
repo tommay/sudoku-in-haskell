@@ -11,6 +11,7 @@ import           Step (Step (Step))
 import qualified Text.Regex as Regex
 import qualified System.Environment
 import qualified System.Random as Random
+import qualified Control.Monad as Monad
 
 heuristics = [
   EasyPeasy,
@@ -21,7 +22,8 @@ heuristics = [
   Tricky
   ]
 
-options = SolverOptions.new heuristics False True
+--options = SolverOptions.new heuristics False True
+options = SolverOptions.all
 
 -- This is the main function, called from the sudoku script.
 -- Initializes Puzzle from the given Filename and prints out solutions
@@ -35,15 +37,16 @@ main = do
   count <- processAndCount printSolution solutions
   putStrLn $ "There are " ++ show count ++ " solutions."
 
+--Foldable t, Monad m) => (b -> a -> m b) -> b -> t a -> m b
+
 processAndCount :: (a -> IO ()) -> [a] -> IO Int
 processAndCount func list =
-  processAndCount' func 0 list
-  where
-    processAndCount' _ n [] =
-      return n
-    processAndCount' func n (head:tail) = do
-      func head
-      processAndCount' func (n + 1) tail
+  Monad.foldM
+    (\ accum element -> do
+      func element
+      return $ accum + 1)
+    0
+    list
 
 printSolution :: Solution -> IO ()
 printSolution solution =
