@@ -58,7 +58,9 @@ private place this cellNumber digit =
 -- consed onto a list of solutions discovered higher in the stack and
 -- passed down.  But for some reason the blows Frege out of memory so
 -- use a more "foldr" style where prepended to the list of subsequent
--- solutions (see doGuesses).
+-- solutions (see doGuesses).  This version will still blow out memory
+-- but at least it allows Create to work.  Frege is not doing something
+-- right.
 --
 solutions :: SolverOptions -> Puzzle -> [Solution]
 solutions options puzzle =
