@@ -53,14 +53,17 @@ private place this cellNumber digit =
         $ Solver.unknowns this
   in this.{ puzzle = newPuzzle, unknowns = newUnknowns }
 
--- Try to solve the Puzzle, returning a list of Solutions.  This uses
--- tail-recursive style, passing down a list of solutions discovered
--- higher in the call stack.
+-- Try to solve the Puzzle, returning a list of Solutions.  The
+-- Haskell version uses tail-recursive style where each Solution is
+-- consed onto a list of solutions discovered higher in the stack and
+-- passed down.  But for some reason the blows Frege out of memory so
+-- use a more "foldr" style where prepended to the list of subsequent
+-- solutions (see doGuesses).
 --
 solutions :: SolverOptions -> Puzzle -> [Solution]
 solutions options puzzle =
   let solver = Solver.new options Nothing puzzle
-  in solutionsTop solver []
+  in solutionsTop solver
 
 allSolutions :: Puzzle -> [Solution]
 allSolutions = solutions SolverOptions.all
@@ -68,27 +71,26 @@ allSolutions = solutions SolverOptions.all
 randomSolutions :: SolverOptions -> Random.StdGen -> Puzzle -> [Solution]
 randomSolutions options rnd puzzle =
   let solver = Solver.new options (Just rnd) puzzle
-  in solutionsTop solver []
+  in solutionsTop solver
 
 -- Compute all the solutions and return them in a random order.
 --
 allRandomSolutions :: Random.StdGen -> Puzzle -> [Solution]
 allRandomSolutions = randomSolutions SolverOptions.all
 
-private solutionsTop :: Solver -> [Solution] -> [Solution]
-private solutionsTop this results =
+private solutionsTop :: Solver -> [Solution]
+private solutionsTop this =
   case Solver.unknowns this of
     [] ->
       -- No more unknowns, solved!
-      Solution.new
+      [Solution.new
         (Solver.puzzle this)
         (Solver.steps this)
-        (Solver.stats this)
-      : results
-    _ -> solutionsHeuristic this results
+        (Solver.stats this)]
+    _ -> solutionsHeuristic this
 
-private solutionsHeuristic :: Solver -> [Solution] -> [Solution]
-private solutionsHeuristic this results =
+private solutionsHeuristic :: Solver -> [Solution]
+private solutionsHeuristic this =
   if SolverOptions.useHeuristics $ Solver.options this
     then -- Try the heuristic functions.
       let (rnd1, rnd2) = maybeSplit $ Solver.rnd this
@@ -100,11 +102,11 @@ private solutionsHeuristic this results =
             $ heuristics this
       in case nextList of
         (next : _) ->
-          placeAndContinue this.{rnd = rnd2} next results
+          placeAndContinue this.{rnd = rnd2} next
         [] ->
-          solutionsStuck this results
+          solutionsStuck this
     else -- Skip the heuristics and continue with solutionsStuck.
-      solutionsStuck this results
+      solutionsStuck this
 
 private heuristics :: Solver -> [Solver -> [Next]]
 private heuristics this =
@@ -118,8 +120,8 @@ private heuristics this =
 	)
   $ SolverOptions.heuristics $ Solver.options this
 
-private placeAndContinue :: Solver -> Next -> [Solution] -> [Solution]
-private placeAndContinue this next results =
+private placeAndContinue :: Solver -> Next -> [Solution]
+private placeAndContinue this next =
   let Next placement description incStats = next
       Placement cellNumber digit = placement
       newSolver = place this cellNumber digit
@@ -127,10 +129,10 @@ private placeAndContinue this next results =
       newSteps = (Solver.steps this) ++ [step]
       newStats = incStats $ Solver.stats this
       newSolver2 = newSolver.{ steps = newSteps, stats = newStats }
-  in solutionsTop newSolver2 results
+  in solutionsTop newSolver2
 
-private solutionsStuck :: Solver -> [Solution] -> [Solution]
-private solutionsStuck this results =
+private solutionsStuck :: Solver -> [Solution]
+private solutionsStuck this =
   -- We get here because we can't place a digit using human-style
   -- heuristics, so we've either failed or we have to guess and
   -- recurse.  We can distinguish by examining the cell with the
@@ -142,8 +144,8 @@ private solutionsStuck this results =
       options = Solver.options this
   in case possible of
     [] ->
-      -- Failed.  No more solutions.
-      results
+      -- Failed.  No solutions.
+      []
     [digit] ->
       -- One possibility.  The choice is forced, no guessing.  But we
       -- only use the force if a) we're guessing, b) we're not using
@@ -152,37 +154,38 @@ private solutionsStuck this results =
       if (SolverOptions.useGuessing options) &&
          (not $ SolverOptions.useHeuristics options)
         then let next = Next.new "Forced guess" id digit cellNumber
-             in placeAndContinue this next results
+             in placeAndContinue this next
         else -- There is a forced guess but we're not configured to
              -- use it.  See if we can apply a TrickySet to create
              -- an opportunity.
              case applyOneTrickySetIfAllowed this of
-               Just newSolver -> solutionsTop newSolver results
-               Nothing -> results
+               Just newSolver -> solutionsTop newSolver
+               Nothing -> []
     _ ->
       -- Multiple possibilities.  Before we guess, see if it's possible
       -- to permanently apply a TrickySet to create possibiities for
       -- heurisstics.
       case applyOneTrickySetIfAllowed this of
-        Just newSolver -> solutionsTop newSolver results
+        Just newSolver -> solutionsTop newSolver
         Nothing -> if SolverOptions.useGuessing options
           -- Guess each possibility, maybe in a random order, and
           -- recurse.  We could use Random.split when shuffling or
           -- recursing, but it's not really important for this
           -- application.
           then let shuffledPossible = maybeShuffle (Solver.rnd this) possible
-               in doGuesses this cellNumber shuffledPossible results
-          else results
+               in doGuesses this cellNumber shuffledPossible
+          else []
 
 -- For each digit in the list, use it as a guess for unknown
 -- and try to solve the resulting Puzzle.
+-- XXX How to do this with : instead of ++?
 --
-private doGuesses :: Solver -> Int -> [Digit] -> [Solution] -> [Solution]
-private doGuesses this cellNumber digits results =
+private doGuesses :: Solver -> Int -> [Digit] -> [Solution]
+private doGuesses this cellNumber digits =
   foldr (\ digit accum ->
           let next = Next.new "Guess" Stats.guess digit cellNumber
-          in placeAndContinue this next accum)
-    results
+          in placeAndContinue this next ++ accum)
+    []
     digits
 
 private findEasyPeasy :: Solver -> [Next]
