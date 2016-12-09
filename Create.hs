@@ -7,10 +7,12 @@ import qualified Layout
 import qualified Puzzle
 import           Puzzle (Puzzle)
 import qualified Solver
+import qualified SolverOptions
 import qualified Solution
 import qualified Stats
 
-dothis = doOneNoGuessing
+dothis = doList
+solver = Solver.solutions SolverOptions.noGuessing
 
 main = do
   args <- System.Environment.getArgs
@@ -27,18 +29,9 @@ showLayouts = do
 
 doOne layout = do
   rnd <- Random.getStdGen
-  putStr $ Puzzle.toPuzzleString $ Creater.create rnd layout
+  putStr $ Puzzle.toPuzzleString $ Creater.create rnd layout solver
 
-doOneNoGuessing layout = do
+doList layout = do
   rnd <- Random.getStdGen
-  putStr $ Puzzle.toPuzzleString $ head $ createListNoGuessing rnd layout
-
-doListNoGuessing layout = do
-  rnd <- Random.getStdGen
-  mapM_ putStrLn $ map Puzzle.toPuzzleString $ createListNoGuessing rnd layout
-
-createListNoGuessing :: Random.StdGen -> [[Int]] -> [Puzzle]
-createListNoGuessing rnd layout =
-  filter
-    ((== 0) . Stats.guesses . Solution.stats . head . Solver.allSolutions)
-    $ Creater.createList rnd layout
+  mapM_ putStrLn $ map Puzzle.toPuzzleString $
+    Creater.createList rnd layout solver

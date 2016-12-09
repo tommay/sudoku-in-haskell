@@ -3,6 +3,7 @@ module SolverOptions (
   Heuristic (..),
   new,
   SolverOptions.all,
+  noGuessing,
   useHeuristics,
   heuristics,
   usePermanentTrickySets,
@@ -62,3 +63,9 @@ new heuristicList trickySets guessing =
 
 all :: SolverOptions
 all = new [] False True
+
+-- Try Forced first because it's fast.  EasyPeasy, MissingOne, and MissingTwo
+-- are redundant with Forced.
+--
+noGuessing :: SolverOptions
+noGuessing = new [Forced, Needed, Tricky] False False

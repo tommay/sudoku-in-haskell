@@ -6,26 +6,27 @@ module Creater (
 import qualified Puzzle
 import           Puzzle (Puzzle)
 import qualified Solution
+import           Solution (Solution)
 import qualified Solver
 import qualified Util
 
 import qualified System.Random as Random
 
-create :: Random.StdGen -> [[Int]] -> Puzzle
-create rnd layout =
+create :: Random.StdGen -> [[Int]] -> (Puzzle -> [Solution]) -> Puzzle
+create rnd layout solver =
   let (rnd1, rnd2) = Random.split rnd
       puzzle = randomSolvedPuzzle rnd1
       layout' = Util.shuffle rnd2 layout
-  in create' puzzle layout'
+  in create' puzzle layout' solver
 
-create' :: Puzzle -> [[Int]] -> Puzzle
-create' puzzle cellNumberLists =
+create' :: Puzzle -> [[Int]] -> (Puzzle -> [Solution])  -> Puzzle
+create' puzzle cellNumberLists solver =
   foldr
     (\ list accum ->
       -- We know accum has only one solution.
       -- Remove more stuff and check if that's still true.
       let newPuzzle = Puzzle.remove accum list
-      in case Solver.allSolutions newPuzzle of
+      in case solver newPuzzle of
         [_] ->
           -- newPuzzle has only one solution, go with it.
           newPuzzle
@@ -35,11 +36,11 @@ create' puzzle cellNumberLists =
     puzzle
     cellNumberLists
 
-createList :: Random.StdGen -> [[Int]] -> [Puzzle]
-createList rnd layout =
+createList :: Random.StdGen -> [[Int]] -> (Puzzle -> [Solution]) -> [Puzzle]
+createList rnd layout solvable =
   let (rnd1, rnd2) = Random.split rnd
-      puzzle = create rnd1 layout
-  in puzzle : (createList rnd2 layout)
+      puzzle = create rnd1 layout solvable
+  in puzzle : (createList rnd2 layout solvable)
 
 randomSolvedPuzzle :: Random.StdGen -> Puzzle
 randomSolvedPuzzle rnd =

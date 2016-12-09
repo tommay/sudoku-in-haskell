@@ -1,5 +1,4 @@
 module Solver (
-  Solver.new,
   Solver.solutions,
   Solver.randomSolutions,
   Solver.allSolutions,

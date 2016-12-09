@@ -5,6 +5,7 @@ import qualified Puzzle
 import           Puzzle (Puzzle)
 import qualified Solution
 import qualified Solver
+import qualified SolverOptions
 import qualified Stats
 
 import qualified Data.List as List
@@ -21,7 +22,8 @@ main = do
   rnd <- Random.getStdGen
   let puzzle = head
         $ filter ((== size) . Puzzle.size)
-        $ createListNoGuessing rnd layout
+        $ Creater.createList rnd layout
+        $ Solver.solutions SolverOptions.noGuessing
   putStrLn $ Puzzle.toPuzzleString puzzle
   putStrLn $ unlines $ map (flip replicate $ '*') $ List.sort
     $ Map.elems $ count puzzle
@@ -50,12 +52,6 @@ toLayout string =
   let zipped = zip [0..] string
       cells =  map fst $ filter (\ (_, char) -> char == '-') zipped
   in [cells]
-
-createListNoGuessing :: Random.StdGen -> [[Int]] -> [Puzzle]
-createListNoGuessing rnd layout =
-  filter
-    ((== 0) . Stats.guesses . Solution.stats . head . Solver.allSolutions)
-    $ Creater.createList rnd layout
 
 count :: Puzzle -> Map Digit Int
 count puzzle =
