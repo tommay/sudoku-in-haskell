@@ -3,7 +3,6 @@ module net.tommay.spudoku.EasyPeasy where
 import net.tommay.spudoku.Digit (Digit)
 import net.tommay.spudoku.ExclusionSet (ExclusionSet)
 import net.tommay.spudoku.Next (Next)
-import net.tommay.spudoku.Placed (Placed)
 import net.tommay.spudoku.Puzzle (Puzzle)
 import net.tommay.spudoku.SolverUtil ()
 import net.tommay.spudoku.Unknown (Unknown)
@@ -44,9 +43,9 @@ private findForEasyPeasyStripe puzzle unknowns (col0, [col1, col2]) =
 
 private getDigitsInSet :: Puzzle -> ExclusionSet -> [Digit]
 private getDigitsInSet puzzle set =
-  map Placed.digit
-  $ filter (\ p -> Placed.cellNumber p `elem` ExclusionSet.cells set)
-  $ Puzzle.placed puzzle
+  map snd
+  $ filter (\ (cellNumber, digit) -> cellNumber `elem` ExclusionSet.cells set)
+  $ Puzzle.each puzzle
 
 private placeDigitInSet :: [Unknown] -> ExclusionSet -> Digit -> [Next]
 private placeDigitInSet unknowns set digit =

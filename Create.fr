@@ -27,7 +27,8 @@ showLayouts = do
 doTimes n layout = do
   let rnd = Random.mkStdGen 0
   mapM_ putStrLn $ map Puzzle.toPuzzleString $ take n $
-    createListNoGuessing rnd layout
+--    createListNoGuessing rnd layout
+    Creater.createList rnd layout
 
 doOne layout = do
   rnd <- Random.getStdGen

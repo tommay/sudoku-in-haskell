@@ -3,15 +3,17 @@ module net.tommay.spudoku.Puzzle where
 import frege.Prelude hiding (empty)
 
 import net.tommay.spudoku.Digit (Digit)
-import net.tommay.spudoku.Placed ()
-import net.tommay.spudoku.Placed (Placed)
 import net.tommay.spudoku.Util ()
 
 import Data.Char as Char ()
 import Data.List as List ()
+import Data.HashMap as Map (HashMap)
+type Map = HashMap
+
+-- cellNumber -> Digit
 
 abstract data Puzzle = Puzzle {
-  placed :: [Placed]
+  placed :: Map Int Digit
 }
 
 -- Returns a new Puzzle with nothing placed.
@@ -19,26 +21,30 @@ abstract data Puzzle = Puzzle {
 empty :: Puzzle
 empty =
   Puzzle.Puzzle {
-    placed = []
+    placed = Map.empty
   }
+
+each :: Puzzle -> [(Int, Digit)]
+each this =
+  Map.each this.placed
 
 place :: Puzzle -> Int -> Digit -> Puzzle
 place this cellNumber digit =
   this.{
-    placed = Placed.new cellNumber digit : this.placed
+    placed = Map.insert cellNumber digit this.placed
   }
 
 remove :: Puzzle -> [Int] -> Puzzle
 remove this cellNumbers =
-  let remaining = filter (not . (`elem` cellNumbers) . Placed.cellNumber)
-        this.placed
+  let notInCellNumbers key _ = not $ key `elem` cellNumbers
+      remaining = Map.filterWithKey notInCellNumbers this.placed
   in this.{ placed = remaining }
 
 -- Returns the number of placed digits.
 --
 size :: Puzzle -> Int
 size this =
-  length $ Puzzle.placed this
+  Map.size this.placed
 
 -- Returns a new Puzzle with each Cell initialized according to
 -- Setup, which is a string of 81 digits or dashes.
@@ -70,11 +76,10 @@ private toDigits setup =
 -- placed cells and one for unplaced cells, then sorts them together and
 -- extracts the Chars in order.
 --
-private toString:: Puzzle -> [Char]
+private toString :: Puzzle -> [Char]
 private toString this =
-  let p = map (\ x -> (Placed.cellNumber x, Char.intToDigit $ Placed.digit x))
-            this.placed
-      unknownNumbers = (List.\\) [0..80] $ map Placed.cellNumber this.placed
+  let p = map (\ (k, v) -> (k, Char.intToDigit v)) $ each this
+      unknownNumbers = (List.\\) [0..80] $ Map.keys this.placed
       u = zip unknownNumbers $ repeat '-'
   in map snd $ List.sort $ p ++ u
 

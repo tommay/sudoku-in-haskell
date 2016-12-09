@@ -2,7 +2,6 @@ module net.tommay.spudoku.Pattern where
 
 import net.tommay.spudoku.Creater ()
 import net.tommay.spudoku.Digit (Digit)
-import net.tommay.spudoku.Placed (Placed)
 import net.tommay.spudoku.Puzzle (Puzzle)
 import net.tommay.spudoku.Solution (Solution)
 import net.tommay.spudoku.Solver ()
@@ -60,7 +59,7 @@ createListNoGuessing rnd layout =
 
 count :: Puzzle -> Map Digit Int
 count puzzle =
-  foldr (\ digit ->
+  foldr (\ (cellNumber, digit) ->
           Map.insertWith (+) digit 1)
         Map.empty
-        $ map Placed.digit $ Puzzle.placed puzzle
+        $ Puzzle.each puzzle
