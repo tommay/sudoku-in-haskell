@@ -2,21 +2,23 @@ module Unknown (
   Unknown,
   Unknown.new,
   Unknown.cellNumber,
-  Unknown.possible,
   Unknown.place,
+  Unknown.numPossible,
+  Unknown.isDigitPossible,
   Unknown.removeDigitFromPossible,
+  Unknown.getPossible
 ) where  
 
 import Digit (Digit)
 
-import qualified Data.List as List
+import qualified Data.Bits as Bits
 
 data Unknown = Unknown {
   cellNumber :: Int,
   row :: Int,
   col :: Int,
   square :: Int,
-  possible :: [Digit]
+  possible :: Int
 } deriving (Show)
 
 -- Check for equality by testing cellNumber and possible.  The other fields
@@ -39,9 +41,10 @@ new cellNumber =
     row = row,
     col = col,
     square = square,
-    possible = [1..9]
+    possible = 0x1FF
   }
 
+-- XXX Check that the bit is set first?
 place :: Int -> Digit -> Unknown -> Unknown
 place cellNumber digit this =
   let other = Unknown.new cellNumber
@@ -49,9 +52,29 @@ place cellNumber digit this =
        then removeDigitFromPossible digit this
        else this
 
+numPossible :: Unknown -> Int
+numPossible this =
+  Bits.popCount $ possible this
+
+isDigitPossible :: Digit -> Unknown -> Bool
+isDigitPossible digit this =
+  Bits.testBit (possible this) (digit - 1)
+
 removeDigitFromPossible :: Digit -> Unknown -> Unknown
 removeDigitFromPossible digit this =
-  this { possible = List.delete digit $ possible this }
+  this { possible = Bits.clearBit (possible this) (digit - 1) }
+
+getPossible :: Unknown -> [Digit]
+getPossible this =
+  getPossibleList (possible this) 1
+
+getPossibleList :: Int -> Digit -> [Digit]
+getPossibleList 0 _ =
+  []
+getPossibleList possible digit =
+  if Bits.testBit possible 0
+    then digit : getPossibleList (Bits.shiftR possible 1) (digit + 1)
+    else getPossibleList (Bits.shiftR possible 1) (digit + 1)
 
 -- Returns true if this and Other are in the same row, column, or
 -- square, else false.
