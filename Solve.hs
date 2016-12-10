@@ -5,7 +5,6 @@ import           Solution (Solution)
 import qualified Solver
 import qualified SolverOptions
 import           SolverOptions (Heuristic (..))
-import qualified Stats
 import           Step (Step (Step))
 
 import qualified Text.Regex as Regex
@@ -55,7 +54,7 @@ printSolution solution =
       let steps = Solution.steps solution
       mapM_ putStrLn $ map showStep steps
       putStrLn $ unlines
-        ["Guesses: " ++ (show $ Stats.guesses $ Solution.stats solution),
+        ["Guesses: " ++ "xxx",
          Puzzle.toPuzzleString $ Solution.puzzle solution]
     else return ()
 

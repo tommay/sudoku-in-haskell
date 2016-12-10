@@ -9,7 +9,6 @@ import           Puzzle (Puzzle)
 import qualified Solver
 import qualified SolverOptions
 import qualified Solution
-import qualified Stats
 
 dothis = doList
 solver = Solver.solutions SolverOptions.noGuessing

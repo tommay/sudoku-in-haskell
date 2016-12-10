@@ -4,7 +4,7 @@ import qualified Puzzle
 import           Puzzle (Puzzle)
 import qualified Solution
 import qualified Solver
-import qualified Stats
+import qualified SolverOptions
 
 import qualified System.IO as IO
 import qualified Data.List as List
@@ -26,13 +26,8 @@ showLayouts = do
 
 doMin layout = do
   rnd <- Random.getStdGen
-  processAndMin 82 $ createListNoGuessing rnd layout
-
-createListNoGuessing :: Random.StdGen -> [[Int]] -> [Puzzle]
-createListNoGuessing rnd layout =
-  filter
-    ((== 0) . Stats.guesses . Solution.stats . head . Solver.allSolutions)
-    $ Creater.createList rnd layout Solver.allSolutions
+  processAndMin 82 $ Creater.createList rnd layout $
+    Solver.solutions SolverOptions.noGuessing
 
 processAndMin :: Int -> [Puzzle] -> IO ()
 processAndMin min (puzzle:rest) = do

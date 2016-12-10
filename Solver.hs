@@ -22,8 +22,6 @@ import qualified SolverOptions
 import           SolverOptions (SolverOptions)
 import           SolverOptions (Heuristic (..))
 import qualified SolverUtil
-import qualified Stats
-import           Stats (Stats)
 import           Step (Step (Step))
 import qualified TrickySet
 import           TrickySet (TrickySet)
@@ -41,8 +39,7 @@ data Solver = Solver {
   puzzle :: Puzzle,
   rnd :: Maybe Random.StdGen,
   unknowns :: [Unknown],
-  steps :: [Step],
-  stats :: Stats
+  steps :: [Step]
 } deriving (Show)
 
 new :: SolverOptions -> Maybe Random.StdGen -> Puzzle -> Solver
@@ -53,8 +50,7 @@ new options' maybeRnd puzzle =
         puzzle = Puzzle.empty,
         rnd = rnd1,
         unknowns = maybeShuffle rnd2 [Unknown.new n | n <- [0..80]],
-        steps = [Step puzzle Nothing "Initial puzzle"],
-        stats = Stats.new
+        steps = [Step puzzle Nothing "Initial puzzle"]
       }
   in foldr (\placed accum ->
        place accum (Placed.cellNumber placed) (Placed.digit placed))
@@ -99,7 +95,6 @@ solutionsTop this results =
       Solution.new
         (Solver.puzzle this)
         (Solver.steps this)
-        (Solver.stats this)
       : results
     _ -> solutionsHeuristic this results
 
@@ -135,13 +130,12 @@ heuristics this =
 
 placeAndContinue :: Solver -> Next -> [Solution] -> [Solution]
 placeAndContinue this next results =
-  let Next placement description incStats = next
+  let Next placement description = next
       Placement cellNumber digit = placement
       newSolver = place this cellNumber digit
       step = Step (puzzle newSolver) (Just placement) description
       newSteps = (Solver.steps this) ++ [step]
-      newStats = incStats $ Solver.stats this
-      newSolver2 = newSolver{ steps = newSteps, stats = newStats }
+      newSolver2 = newSolver{ steps = newSteps }
   in solutionsTop newSolver2 results
 
 solutionsStuck :: Solver -> [Solution] -> [Solution]
@@ -166,7 +160,7 @@ solutionsStuck this results =
       -- findForced.
       if (SolverOptions.useGuessing options) &&
          (not $ SolverOptions.useHeuristics options)
-        then let next = Next.new "Forced guess" id digit cellNumber
+        then let next = Next.new "Forced guess" digit cellNumber
              in placeAndContinue this next results
         else -- There is a forced guess but we're not configured to
              -- use it.  See if we can apply a TrickySet to create
@@ -195,7 +189,7 @@ solutionsStuck this results =
 doGuesses :: Solver -> Int -> [Digit] -> [Solution] -> [Solution]
 doGuesses this cellNumber digits results =
   foldr (\ digit accum ->
-          let next = Next.new "Guess" Stats.guess digit cellNumber
+          let next = Next.new "Guess" digit cellNumber
           in placeAndContinue this next accum)
     results
     digits
@@ -223,9 +217,6 @@ findMissingOneInSet this set =
        _ ->
          -- Zero or multiple cells in the set are unknown.
          []
-
-incMissingOneInSet :: Stats -> Stats
-incMissingOneInSet stats = stats  -- XXX
 
 -- Try to place a digit where a set has two unplaced cells.  We only
 -- place one of the digits but the second will follow quickly.
@@ -262,7 +253,7 @@ findNeededDigitInSet unknowns name digit =
   case filter (isDigitPossibleForUnknown digit) unknowns of
     [unknown] -> [Next.new
                   (unwords ["Need a", show digit, "in", name])
-                  id digit (Unknown.cellNumber unknown)]
+                  digit (Unknown.cellNumber unknown)]
     _ -> []
 
 findForced :: Solver -> [Next]
@@ -272,7 +263,7 @@ findForced this =
 findForcedForUnknown :: String -> Unknown -> [Next]
 findForcedForUnknown description unknown =
   case Unknown.possible unknown of
-    [digit] -> [Next.new description id digit (Unknown.cellNumber unknown)]
+    [digit] -> [Next.new description digit (Unknown.cellNumber unknown)]
     _ -> []
 
 findTricky :: Solver -> [Next]
@@ -298,7 +289,7 @@ trickySetCheckNeeded unknowns trickySet digit =
           $ TrickySet.checkNeeded trickySet
   in map (Next.new
            (TrickySet.name trickySet)
-           id digit . Unknown.cellNumber) unknownForEachNeededSet
+           digit . Unknown.cellNumber) unknownForEachNeededSet
 
 trickySetMatchesForDigit :: [Unknown] -> TrickySet -> Digit -> Bool
 trickySetMatchesForDigit unknowns trickySet digit =

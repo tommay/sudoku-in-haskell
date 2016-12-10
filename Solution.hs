@@ -2,20 +2,17 @@ module Solution (
   Solution,
   new,
   puzzle,
-  steps,
-  stats,
+  steps
 ) where
 
 import Puzzle (Puzzle)
-import Stats (Stats)
 import Step (Step)
 
 data Solution = Solution {
   puzzle :: Puzzle,
-  steps :: [Step],
-  stats :: Stats
+  steps :: [Step]
 } deriving (Show)
 
-new :: Puzzle -> [Step] -> Stats -> Solution
-new puzzle steps stats =
-  Solution { puzzle = puzzle, steps = steps, stats = stats }
+new :: Puzzle -> [Step] -> Solution
+new puzzle steps =
+  Solution { puzzle = puzzle, steps = steps }

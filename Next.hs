@@ -5,12 +5,9 @@ module Next (
 
 import           Digit (Digit)
 import           Placement (Placement (Placement))
-import           Stats (Stats)
 
-data Next = Next Placement String (Stats -> Stats)
+data Next = Next Placement String
 
-new :: String -> (Stats -> Stats) -> Digit -> Int -> Next
-new description statsFunc digit cellNumber =
-  Next (Placement cellNumber digit)
-       description
-       statsFunc
+new :: String -> Digit -> Int -> Next
+new description digit cellNumber =
+  Next (Placement cellNumber digit) description

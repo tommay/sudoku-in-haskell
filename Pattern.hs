@@ -6,7 +6,6 @@ import           Puzzle (Puzzle)
 import qualified Solution
 import qualified Solver
 import qualified SolverOptions
-import qualified Stats
 
 import qualified Data.List as List
 import Data.Map (Map)
