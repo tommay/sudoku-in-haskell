@@ -12,7 +12,6 @@ import qualified ExclusionSet
 import           ExclusionSet (ExclusionSet (ExclusionSet))
 import qualified Next
 import           Next (Next (Next))
-import qualified Placed
 import           Placement (Placement (Placement))
 import qualified Puzzle
 import           Puzzle (Puzzle)
@@ -52,10 +51,10 @@ new options' maybeRnd puzzle =
         unknowns = maybeShuffle rnd2 [Unknown.new n | n <- [0..80]],
         steps = [Step puzzle Nothing "Initial puzzle"]
       }
-  in foldr (\placed accum ->
-       place accum (Placed.cellNumber placed) (Placed.digit placed))
+  in foldr (\ (cellNumber, digit) accum ->
+       place accum cellNumber digit)
      emptySolver
-     $ Puzzle.placed puzzle
+     $ Puzzle.each puzzle
 
 place :: Solver -> Int -> Digit -> Solver
 place this cellNumber digit =

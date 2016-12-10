@@ -31,7 +31,7 @@ doMin layout = do
 
 processAndMin :: Int -> [Puzzle] -> IO ()
 processAndMin min (puzzle:rest) = do
-  let count = length $ Puzzle.placed puzzle
+  let count = Puzzle.size puzzle
   if count <= min
     then do
       putStrLn $ "count: " ++ show count ++ "\n" ++

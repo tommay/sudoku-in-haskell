@@ -1,8 +1,8 @@
 module Puzzle (
   Puzzle,
   Puzzle.empty,
-  Puzzle.placed,
   Puzzle.size,
+  Puzzle.each,
   Puzzle.fromString,
   Puzzle.place,
   Puzzle.remove,
@@ -10,15 +10,17 @@ module Puzzle (
 ) where  
 
 import           Digit (Digit)
-import qualified Placed
-import           Placed (Placed)
 import qualified Util
 
 import qualified Data.Char as Char
 import qualified Data.List as List
+import           Data.Map (Map)
+import qualified Data.Map as Map
+
+-- cellNumber -> Digit
 
 data Puzzle = Puzzle {
-  placed :: [Placed]
+  placed :: Map Int Digit
 } deriving (Show)
 
 -- Returns a new Puzzle with nothing placed.
@@ -26,26 +28,30 @@ data Puzzle = Puzzle {
 empty :: Puzzle
 empty =
   Puzzle {
-    placed = []
+    placed = Map.empty
   }
+
+each :: Puzzle -> [(Int, Digit)]
+each this =
+  Map.assocs $ placed this
 
 place :: Puzzle -> Int -> Digit -> Puzzle
 place this cellNumber digit =
   this {
-    placed = Placed.new cellNumber digit : placed this
+    placed = Map.insert cellNumber digit $ placed this
   }
 
 remove :: Puzzle -> [Int] -> Puzzle
 remove this cellNumbers =
-  let remaining = filter (not . (`elem` cellNumbers) . Placed.cellNumber)
-        $ placed this
-  in this{ placed = remaining }
+  let notInCellNumbers key _ = not $ key `elem` cellNumbers
+      remaining = Map.filterWithKey notInCellNumbers $ placed this
+  in this { placed = remaining }
 
 -- Returns the number of placed digits.
 --
 size :: Puzzle -> Int
 size this =
-  length $ Puzzle.placed this
+  Map.size $ placed this
 
 -- Returns a new Puzzle with each Cell initialized according to
 -- Setup, which is a string of 81 digits or dashes.
@@ -78,9 +84,8 @@ toDigits setup =
 --
 toString:: Puzzle -> String
 toString this =
-  let p = map (\ x -> (Placed.cellNumber x, Char.intToDigit $ Placed.digit x))
-            $ placed this
-      unknownNumbers = (List.\\) [0..80] $ map Placed.cellNumber $ placed this
+  let p = map (\ (k, v) -> (k, Char.intToDigit v)) $ each this
+      unknownNumbers = (List.\\) [0..80] $ Map.keys $ placed this
       u = zip unknownNumbers $ repeat '-'
   in map snd $ List.sort $ p ++ u
 

@@ -7,7 +7,6 @@ import qualified ExclusionSet
 import           ExclusionSet (ExclusionSet)
 import qualified Next
 import           Next (Next)
-import qualified Placed
 import qualified Puzzle as Puzzle
 import           Puzzle (Puzzle)
 import qualified SolverUtil
@@ -50,9 +49,9 @@ findForEasyPeasyStripe puzzle unknowns (col0, [col1, col2]) =
 
 getDigitsInSet :: Puzzle -> ExclusionSet -> [Digit]
 getDigitsInSet puzzle set =
-  map Placed.digit
-  $ filter (\ p -> Placed.cellNumber p `elem` ExclusionSet.cells set)
-  $ Puzzle.placed puzzle
+  map snd
+  $ filter (\ (cellNumber, digit) -> cellNumber `elem` ExclusionSet.cells set)
+  $ Puzzle.each puzzle
 
 placeDigitInSet :: [Unknown] -> ExclusionSet -> Digit -> [Next]
 placeDigitInSet unknowns set digit =

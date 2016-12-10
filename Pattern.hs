@@ -1,6 +1,5 @@
 import qualified Creater
 import           Digit (Digit)
-import qualified Placed
 import qualified Puzzle
 import           Puzzle (Puzzle)
 import qualified Solution
@@ -54,7 +53,7 @@ toLayout string =
 
 count :: Puzzle -> Map Digit Int
 count puzzle =
-  foldr (\ digit ->
+  foldr (\ (cellNumber, digit) ->
           Map.insertWith (+) digit 1)
         Map.empty
-        $ map Placed.digit $ Puzzle.placed puzzle
+        $ Puzzle.each puzzle
