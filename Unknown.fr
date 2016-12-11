@@ -82,4 +82,6 @@ getPossibleList possible digit =
 private isExcludedBy :: Unknown -> Unknown -> Bool
 private isExcludedBy this other =
   (Unknown.cellNumber this /= Unknown.cellNumber other) &&
-    any (\ f -> f this == f other) [Unknown.row, Unknown.col, Unknown.square]
+    (Unknown.row this == Unknown.row other ||
+     Unknown.col this == Unknown.col other ||
+     Unknown.square this == Unknown.square other)
