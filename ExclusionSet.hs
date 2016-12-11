@@ -29,7 +29,7 @@ rows = map row [0..8]
 
 row :: Int -> ExclusionSet
 row n =
-  ExclusionSet ("row " ++ show n) [n*9 + col | col <- [0..8]]
+  ExclusionSet.ExclusionSet ("row " ++ show n) [n*9 + col | col <- [0..8]]
 
 -- An ExclusionSet for each column.
 --
@@ -38,7 +38,7 @@ columns = map column [0..8]
 
 column :: Int -> ExclusionSet
 column n =
-  ExclusionSet ("column " ++ show n) [row*9 + n | row <- [0..8]]
+  ExclusionSet.ExclusionSet ("column " ++ show n) [row*9 + n | row <- [0..8]]
 
 -- An ExclusionSet for each square.
 --
@@ -51,4 +51,4 @@ square n =
       row = n `div` 3 * 3
       col = n `mod` 3 * 3
       cellNumbers = [(row + n `div` 3)*9 + (col + n `mod` 3) | n <- [0..8]]
-  in ExclusionSet ("square " ++ show n) cellNumbers
+  in ExclusionSet.ExclusionSet ("square " ++ show n) cellNumbers

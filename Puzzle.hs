@@ -27,31 +27,31 @@ data Puzzle = Puzzle {
 --
 empty :: Puzzle
 empty =
-  Puzzle {
+  Puzzle.Puzzle {
     placed = Map.empty
   }
 
 each :: Puzzle -> [(Int, Digit)]
 each this =
-  Map.assocs $ placed this
+  Map.assocs $ Puzzle.placed this
 
 place :: Puzzle -> Int -> Digit -> Puzzle
 place this cellNumber digit =
   this {
-    placed = Map.insert cellNumber digit $ placed this
+    placed = Map.insert cellNumber digit $ Puzzle.placed this
   }
 
 remove :: Puzzle -> [Int] -> Puzzle
 remove this cellNumbers =
   let notInCellNumbers key _ = not $ key `elem` cellNumbers
-      remaining = Map.filterWithKey notInCellNumbers $ placed this
+      remaining = Map.filterWithKey notInCellNumbers $ Puzzle.placed this
   in this { placed = remaining }
 
 -- Returns the number of placed digits.
 --
 size :: Puzzle -> Int
 size this =
-  Map.size $ placed this
+  Map.size $ Puzzle.placed this
 
 -- Returns a new Puzzle with each Cell initialized according to
 -- Setup, which is a string of 81 digits or dashes.
@@ -61,9 +61,9 @@ fromString setup =
   let digits = toDigits setup
       zipped = zip [0..80] digits
   in foldr (\ (cellNumber, digit) this ->
-            case digit of
-              Nothing -> this
-              Just digit -> Puzzle.place this cellNumber digit)
+             case digit of
+               Nothing -> this
+               Just digit -> Puzzle.place this cellNumber digit)
        empty
        zipped
 
@@ -85,7 +85,7 @@ toDigits setup =
 toString:: Puzzle -> String
 toString this =
   let p = map (\ (k, v) -> (k, Char.intToDigit v)) $ each this
-      unknownNumbers = (List.\\) [0..80] $ Map.keys $ placed this
+      unknownNumbers = (List.\\) [0..80] $ Map.keys $ Puzzle.placed this
       u = zip unknownNumbers $ repeat '-'
   in map snd $ List.sort $ p ++ u
 

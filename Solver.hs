@@ -44,7 +44,7 @@ data Solver = Solver {
 new :: SolverOptions -> Maybe Random.StdGen -> Puzzle -> Solver
 new options' maybeRnd puzzle =
   let (rnd1, rnd2) = maybeSplit maybeRnd
-      emptySolver = Solver {
+      emptySolver = Solver.Solver {
         options = options',
         puzzle = Puzzle.empty,
         rnd = rnd1,
@@ -58,10 +58,10 @@ new options' maybeRnd puzzle =
 
 place :: Solver -> Int -> Digit -> Solver
 place this cellNumber digit =
-  let newPuzzle = Puzzle.place (puzzle this) cellNumber digit
+  let newPuzzle = Puzzle.place (Solver.puzzle this) cellNumber digit
       newUnknowns = map (Unknown.place cellNumber digit)
         $ filter ((/= cellNumber) . Unknown.cellNumber)
-        $ unknowns this
+        $ Solver.unknowns this
   in this{ puzzle = newPuzzle, unknowns = newUnknowns }
 
 -- Try to solve the Puzzle, returning a list of Solutions.  This uses
@@ -88,7 +88,7 @@ allRandomSolutions = randomSolutions SolverOptions.all
 
 solutionsTop :: Solver -> [Solution] -> [Solution]
 solutionsTop this results =
-  case unknowns this of
+  case Solver.unknowns this of
     [] ->
       -- No more unknowns, solved!
       Solution.new
@@ -99,7 +99,7 @@ solutionsTop this results =
 
 solutionsHeuristic :: Solver -> [Solution] -> [Solution]
 solutionsHeuristic this results =
-  if SolverOptions.useHeuristics $ options this
+  if SolverOptions.useHeuristics $ Solver.options this
     then -- Try the heuristic functions.
       let (rnd1, rnd2) = maybeSplit $ Solver.rnd this
           -- This uses rnd1 to shuffle each function's list, but that's ok
@@ -125,14 +125,14 @@ heuristics this =
         Tricky -> findTricky
         Needed -> findNeeded
         Forced -> findForced)
-  $ SolverOptions.heuristics $ options this
+  $ SolverOptions.heuristics $ Solver.options this
 
 placeAndContinue :: Solver -> Next -> [Solution] -> [Solution]
 placeAndContinue this next results =
   let Next placement description = next
       Placement cellNumber digit = placement
       newSolver = place this cellNumber digit
-      step = Step (puzzle newSolver) (Just placement) description
+      step = Step (Solver.puzzle newSolver) (Just placement) description
       newSteps = (Solver.steps this) ++ [step]
       newSolver2 = newSolver{ steps = newSteps }
   in solutionsTop newSolver2 results
@@ -206,7 +206,7 @@ findMissingOne this =
 findMissingOneInSet :: Solver -> ExclusionSet -> [Next]
 findMissingOneInSet this set =
   let ExclusionSet name cellNumbers = set
-  in case SolverUtil.unknownsInSet (unknowns this) cellNumbers of
+  in case SolverUtil.unknownsInSet (Solver.unknowns this) cellNumbers of
        [unknown] ->
          -- Exactly one cell in the set is unknown.  Place a digit in it.
          -- Note that since this is the only unknown position in the set
@@ -227,7 +227,7 @@ findMissingTwo this =
 findMissingTwoInSet :: Solver -> ExclusionSet -> [Next]
 findMissingTwoInSet this set =
   let ExclusionSet name cellNumbers = set
-  in case SolverUtil.unknownsInSet (unknowns this) cellNumbers of
+  in case SolverUtil.unknownsInSet (Solver.unknowns this) cellNumbers of
        unknowns@[_, _] ->
          concat $
            map (findForcedForUnknown $ "Missing two in " ++ name) unknowns
@@ -257,7 +257,7 @@ findNeededDigitInSet unknowns name digit =
 
 findForced :: Solver -> [Next]
 findForced this =
-  concat $ map (findForcedForUnknown "Forced") $ unknowns this
+  concat $ map (findForcedForUnknown "Forced") $ Solver.unknowns this
 
 findForcedForUnknown :: String -> Unknown -> [Next]
 findForcedForUnknown description unknown =
@@ -333,7 +333,7 @@ notIsDigitPossibleInSet unknowns digit set =
 
 applyOneTrickySetIfAllowed :: Solver -> Maybe Solver
 applyOneTrickySetIfAllowed this =
-  if SolverOptions.usePermanentTrickySets $ options this
+  if SolverOptions.usePermanentTrickySets $ Solver.options this
     then applyOneTrickySet this
     else Nothing
 
@@ -360,7 +360,7 @@ applyTrickySet this digit trickySet =
   in if newUnknowns /= oldUnknowns
        then
          let newSolver = Solver.addStep this
-               (Step (puzzle this) Nothing
+               (Step (Solver.puzzle this) Nothing
                  ("Apply " ++ TrickySet.name trickySet))
          in [newSolver{ unknowns = newUnknowns }]
        else []

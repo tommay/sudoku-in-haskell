@@ -85,14 +85,14 @@ createTrickySetsFrom inverse square row getSetsIncluding =
        [] -> []
        _ -> if not inverse
          then [
-           TrickySet {
+           TrickySet.TrickySet {
              name = unwords ["TrickySet", squareName, rowName],
              common = common, rest = restOfSquare, eliminate = restOfRow,
              checkNeeded = getSquaresIncluding restOfRow
            }
          ]
          else [
-           TrickySet {
+           TrickySet.TrickySet {
              name = unwords ["Inverse TrickySet", squareName, rowName],
              common = common, rest = restOfRow, eliminate = restOfSquare,
              checkNeeded = getSetsIncluding restOfSquare

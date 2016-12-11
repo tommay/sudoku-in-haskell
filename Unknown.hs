@@ -26,7 +26,8 @@ data Unknown = Unknown {
 --
 instance Eq Unknown where
   this == that = 
-    (cellNumber this == cellNumber that) && (possible this == possible that)
+    (Unknown.cellNumber this == Unknown.cellNumber that) &&
+    (Unknown.possible this == Unknown.possible that)
 
 -- Returns a new Unknown at position cellNumber.  Determine the
 -- Unknown's row, column, and square, set all digits possible.
@@ -44,29 +45,33 @@ new cellNumber =
     possible = 0x1FF
   }
 
--- XXX Check that the bit is set first?
 place :: Int -> Digit -> Unknown -> Unknown
 place cellNumber digit this =
-  let other = Unknown.new cellNumber
-  in if isExcludedBy this other
-       then removeDigitFromPossible digit this
-       else this
+  -- Before bothering to test isExcludedBy, check whether the digit
+  -- has already been reoved.  This is just an optimization but makes
+  -- a big difference in Frege.
+  if Unknown.isDigitPossible digit this
+    then let other = Unknown.new cellNumber
+         in if isExcludedBy this other
+           then removeDigitFromPossible digit this
+           else this
+    else this
 
 numPossible :: Unknown -> Int
 numPossible this =
-  Bits.popCount $ possible this
+  Bits.popCount $ Unknown.possible this
 
 isDigitPossible :: Digit -> Unknown -> Bool
 isDigitPossible digit this =
-  Bits.testBit (possible this) (digit - 1)
+  Bits.testBit (Unknown.possible this) (digit - 1)
 
 removeDigitFromPossible :: Digit -> Unknown -> Unknown
 removeDigitFromPossible digit this =
-  this { possible = Bits.clearBit (possible this) (digit - 1) }
+  this { possible = Bits.clearBit (Unknown.possible this) (digit - 1) }
 
 getPossible :: Unknown -> [Digit]
 getPossible this =
-  getPossibleList (possible this) 1
+  getPossibleList (Unknown.possible this) 1
 
 getPossibleList :: Int -> Digit -> [Digit]
 getPossibleList 0 _ =
