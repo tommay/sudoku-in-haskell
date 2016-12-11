@@ -134,9 +134,9 @@ private solutionsStuck this =
   -- recurse.  We can distinguish by examining the cell with the
   -- fewest possibilities remaining, which is also the best cell to
   -- make a guess for.
-  let minUnknown = minByNumPossible $ Solver.unknowns this
+  let minUnknown = minBy Unknown.numPossible $ Solver.unknowns this
       cellNumber = Unknown.cellNumber minUnknown
-      possible = Unknown.possible minUnknown
+      possible = Unknown.getPossible minUnknown
       options = Solver.options this
   in case possible of
     [] ->
@@ -240,7 +240,7 @@ private findNeededInSet this set =
 
 private findNeededDigitInSet :: [Unknown] -> String -> Digit -> [Next]
 private findNeededDigitInSet unknowns name digit =
-  case filter (isDigitPossibleForUnknown digit) unknowns of
+  case filter (Unknown.isDigitPossible digit) unknowns of
     [unknown] -> [Next.new
                   (unwords ["Need a", show digit, "in", name])
                   digit (Unknown.cellNumber unknown)]
@@ -252,7 +252,7 @@ private findForced this =
 
 private findForcedForUnknown :: String -> Unknown -> [Next]
 private findForcedForUnknown description unknown =
-  case Unknown.possible unknown of
+  case Unknown.getPossible unknown of
     [digit] -> [Next.new description digit (Unknown.cellNumber unknown)]
     _ -> []
 
@@ -290,7 +290,7 @@ private trickySetMatchesForDigit unknowns trickySet digit =
 
 private findUnknownWhereDigitIsNeeded :: [Unknown] -> Digit -> [Int] -> [Unknown]
 private findUnknownWhereDigitIsNeeded unknowns digit set =
-  let unknowns' = filter (isDigitPossibleForUnknown digit)
+  let unknowns' = filter (Unknown.isDigitPossible digit)
         $ filter (SolverUtil.isUnknownInSet set) unknowns
   in case unknowns' of
     [_] -> unknowns'
@@ -300,7 +300,7 @@ private isDigitPossibleInSet :: [Unknown] -> Digit -> [Int] -> Bool
 private isDigitPossibleInSet unknowns digit set =
   let possibleUnknowns =
         -- Filters can be in either order but this order is way faster.
-        filter (isDigitPossibleForUnknown digit)
+        filter (Unknown.isDigitPossible digit)
         $ filter (SolverUtil.isUnknownInSet set) unknowns
   in case possibleUnknowns of
        [] -> False
@@ -314,15 +314,11 @@ private notIsDigitPossibleInSet :: [Unknown] -> Digit -> [Int] -> Bool
 private notIsDigitPossibleInSet unknowns digit set =
   let possibleUnknowns =
         -- Filters can be in either order but this order is way faster.
-        filter (isDigitPossibleForUnknown digit)
+        filter (Unknown.isDigitPossible digit)
         $ filter (SolverUtil.isUnknownInSet set) unknowns
   in case possibleUnknowns of
        [] -> True
        _ -> False
-
-private isDigitPossibleForUnknown :: Digit -> Unknown -> Bool
-private isDigitPossibleForUnknown digit unknown =
-  digit `elem` Unknown.possible unknown
 
 private applyOneTrickySetIfAllowed :: Solver -> Maybe Solver
 private applyOneTrickySetIfAllowed this =
@@ -380,10 +376,6 @@ private addStep this step =
 isSolvableWith :: SolverOptions -> Puzzle -> Bool
 isSolvableWith options puzzle =
   not $ null $ Solver.solutions options puzzle
-
-private minByNumPossible :: [Unknown] -> Unknown
-private minByNumPossible =
-  minBy (length . Unknown.possible)
 
 private minBy :: Ord b => (a -> b) -> [a] -> a
 private minBy func list =
