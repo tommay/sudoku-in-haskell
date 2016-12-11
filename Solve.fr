@@ -6,7 +6,6 @@ import net.tommay.spudoku.Solution (Solution)
 import net.tommay.spudoku.Solver ()
 import net.tommay.spudoku.SolverOptions ()
 import net.tommay.spudoku.SolverOptions (Heuristic)   -- and (..)
-import net.tommay.spudoku.Stats (Stats)
 import net.tommay.spudoku.Step (Step (Step))
 
 import frege.java.util.Regex as Regex ()
@@ -53,7 +52,7 @@ printSolution solution =
       let steps = Solution.steps solution
       mapM_ putStrLn $ map showStep steps
       putStrLn $ unlines
-        ["Guesses: " ++ (show $ Stats.guesses $ Solution.stats solution),
+        ["Guesses: " ++ "xxx",
          Puzzle.toPuzzleString $ Solution.puzzle solution]
     else return ()
 

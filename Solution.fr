@@ -1,15 +1,13 @@
 module net.tommay.spudoku.Solution where
 
 import net.tommay.spudoku.Puzzle (Puzzle)
-import net.tommay.spudoku.Stats (Stats)
 import net.tommay.spudoku.Step (Step)
 
 abstract data Solution = Solution {
   puzzle :: Puzzle,
-  steps :: [Step],
-  stats :: Stats
+  steps :: [Step]
 }
 
-new :: Puzzle -> [Step] -> Stats -> Solution
-new puzzle steps stats =
-  Solution.Solution { puzzle = puzzle, steps = steps, stats = stats }
+new :: Puzzle -> [Step] -> Solution
+new puzzle steps =
+  Solution.Solution { puzzle = puzzle, steps = steps }

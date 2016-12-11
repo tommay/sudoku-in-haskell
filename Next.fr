@@ -2,12 +2,9 @@ module net.tommay.spudoku.Next where
 
 import net.tommay.spudoku.Digit (Digit)
 import net.tommay.spudoku.Placement (Placement (Placement))
-import net.tommay.spudoku.Stats (Stats)
 
-data Next = Next Placement String (Stats -> Stats)
+data Next = Next Placement String
 
-new :: String -> (Stats -> Stats) -> Digit -> Int -> Next
-new description statsFunc digit cellNumber =
-  Next.Next (Placement cellNumber digit)
-       description
-       statsFunc
+new :: String -> Digit -> Int -> Next
+new description digit cellNumber =
+  Next.Next (Placement cellNumber digit) description
