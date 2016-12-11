@@ -6,11 +6,14 @@ import System.Random as Random ()
 import net.tommay.spudoku.Creater ()
 import net.tommay.spudoku.Layout ()
 import net.tommay.spudoku.Puzzle (Puzzle)
-import net.tommay.spudoku.Solver ()
 import net.tommay.spudoku.Solution (Solution)
+import net.tommay.spudoku.Solver ()
+import net.tommay.spudoku.SolverOptions ()
 import net.tommay.spudoku.Stats (Stats)
 
 dothis = doTimes 10
+--solver = Solver.solutions SolverOptions.noGuessing
+solver = Solver.solutions SolverOptions.all
 
 main args = do
   case args of
@@ -27,23 +30,13 @@ showLayouts = do
 doTimes n layout = do
   let rnd = Random.mkStdGen 0
   mapM_ putStrLn $ map Puzzle.toPuzzleString $ take n $
---    createListNoGuessing rnd layout
-    Creater.createList rnd layout
+    Creater.createList rnd layout solver
 
 doOne layout = do
   rnd <- Random.getStdGen
-  putStr $ Puzzle.toPuzzleString $ Creater.create rnd layout
+  putStr $ Puzzle.toPuzzleString $ Creater.create rnd layout solver
 
-doOneNoGuessing layout = do
+doList layout = do
   rnd <- Random.getStdGen
-  putStr $ Puzzle.toPuzzleString $ head $ createListNoGuessing rnd layout
-
-doListNoGuessing layout = do
-  rnd <- Random.getStdGen
-  mapM_ putStrLn $ map Puzzle.toPuzzleString $ createListNoGuessing rnd layout
-
-createListNoGuessing :: Random.StdGen -> [[Int]] -> [Puzzle]
-createListNoGuessing rnd layout =
-  filter
-    ((== 0) . Stats.guesses . Solution.stats . head . Solver.allSolutions)
-    $ Creater.createList rnd layout
+  mapM_ putStrLn $ map Puzzle.toPuzzleString $
+    Creater.createList rnd layout solver

@@ -32,7 +32,7 @@ createListNoGuessing :: Random.StdGen -> [[Int]] -> [Puzzle]
 createListNoGuessing rnd layout =
   filter
     ((== 0) . Stats.guesses . Solution.stats . head . Solver.allSolutions)
-    $ Creater.createList rnd layout
+    $ Creater.createList rnd layout Solver.allSolutions
 
 processAndMin :: Int -> [Puzzle] -> IO ()
 processAndMin min (puzzle:rest) = do

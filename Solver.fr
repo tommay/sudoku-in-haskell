@@ -28,8 +28,8 @@ abstract data Solver = Solver {
   stats :: Stats
 }
 
-new :: SolverOptions -> Maybe Random.StdGen -> Puzzle -> Solver
-new options' maybeRnd puzzle =
+private new :: SolverOptions -> Maybe Random.StdGen -> Puzzle -> Solver
+private new options' maybeRnd puzzle =
   let (rnd1, rnd2) = maybeSplit maybeRnd
       emptySolver = Solver.Solver {
         options = options',
