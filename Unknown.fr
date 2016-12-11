@@ -38,13 +38,17 @@ new cellNumber =
     possible = 0x1FF
   }
 
--- XXX Check that the bit is set first?
 place :: Int -> Digit -> Unknown -> Unknown
 place cellNumber digit this =
-  let other = Unknown.new cellNumber
-  in if isExcludedBy this other
-       then removeDigitFromPossible digit this
-       else this
+  -- Before bothering to test isExcludedBy, check whether the digit
+  -- has already been reoved.  This is just an optimization but makes
+  -- a big difference in Frege.
+  if Unknown.isDigitPossible digit this
+    then let other = Unknown.new cellNumber
+         in if isExcludedBy this other
+           then removeDigitFromPossible digit this
+           else this
+    else this
 
 numPossible :: Unknown -> Int
 numPossible this =
