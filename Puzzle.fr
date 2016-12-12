@@ -36,8 +36,10 @@ place this cellNumber digit =
 
 remove :: Puzzle -> [Int] -> Puzzle
 remove this cellNumbers =
-  let notInCellNumbers key _ = not $ key `elem` cellNumbers
-      remaining = Map.filterWithKey notInCellNumbers this.placed
+  let remaining = foldr
+        (\ cellNumber map -> Map.delete cellNumber map)
+        (Puzzle.placed this)
+        cellNumbers
   in this.{ placed = remaining }
 
 -- Returns the number of placed digits.
