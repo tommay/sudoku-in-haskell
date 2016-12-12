@@ -12,12 +12,13 @@ import net.tommay.spudoku.SolverOptions ()
 
 import System.Random as Random ()
 
-create :: Int -> String -> String
+create :: Int -> String -> (String, String)
 create randomSeed layoutName =
   let rnd = Random.mkStdGen randomSeed
   in case Layout.getLayout layoutName of
-        Nothing -> ""
+        Nothing -> ("", "")
         Just layout ->
-          let puzzle = Creater.create rnd layout $
+          let (puzzle, solution) = Creater.createWithSolution rnd layout $
                 Solver.solutions SolverOptions.all
-          in packed $ Puzzle.toString puzzle
+              toString = packed . Puzzle.toString
+          in (toString puzzle, toString solution)
