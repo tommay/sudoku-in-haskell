@@ -78,8 +78,8 @@ private toDigits setup =
 -- placed cells and one for unplaced cells, then sorts them together and
 -- extracts the Chars in order.
 --
-private toString :: Puzzle -> [Char]
-private toString this =
+toString :: Puzzle -> [Char]
+toString this =
   let p = map (\ (k, v) -> (k, Char.intToDigit v)) $ each this
       unknownNumbers = (List.\\) [0..80] $ Map.keys $ Puzzle.placed this
       u = zip unknownNumbers $ repeat '-'
