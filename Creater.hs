@@ -12,12 +12,20 @@ import qualified Util
 
 import qualified System.Random as Random
 
+-- Returns (puzzle, solvedPuzzle)
+--
+createWithSolution :: Random.StdGen -> [[Int]] -> (Puzzle -> [Solution]) ->
+  (Puzzle, Puzzle)
+createWithSolution rnd layout solver =
+  let (rnd1, rnd2) = Random.split rnd
+      solvedPuzzle = randomSolvedPuzzle rnd1
+      layout' = Util.shuffle rnd2 layout
+      puzzle = create' solvedPuzzle layout' solver
+  in (puzzle, solvedPuzzle)
+
 create :: Random.StdGen -> [[Int]] -> (Puzzle -> [Solution]) -> Puzzle
 create rnd layout solver =
-  let (rnd1, rnd2) = Random.split rnd
-      puzzle = randomSolvedPuzzle rnd1
-      layout' = Util.shuffle rnd2 layout
-  in create' puzzle layout' solver
+  fst $ createWithSolution rnd layout solver
 
 create' :: Puzzle -> [[Int]] -> (Puzzle -> [Solution])  -> Puzzle
 create' puzzle cellNumberLists solver =
