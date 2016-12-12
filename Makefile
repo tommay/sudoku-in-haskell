@@ -13,7 +13,7 @@ Pattern: build/$(PACKAGE)/Pattern.class
 
 build/$(PACKAGE)/%.class: $(PACKAGE)/%.fr
 	[ -d build ] || mkdir build
-	java -Xss1m -jar fregec.jar -d build -make $<
+	java -Xss1m -jar fregec.jar -O -d build -make $<
 
 clean:
 	rm -fr build
