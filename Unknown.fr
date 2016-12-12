@@ -6,11 +6,11 @@ import Data.Bits as Bits ()
 
 
 data Unknown = Unknown {
-  cellNumber :: Int,
-  row :: Int,
-  col :: Int,
-  square :: Int,
-  possible :: Int
+  !cellNumber :: Int,
+  !row :: Int,
+  !col :: Int,
+  !square :: Int,
+  !possible :: Int
 }
 
 -- Check for equality by testing cellNumber and possible.  The other fields
