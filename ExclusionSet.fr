@@ -1,8 +1,8 @@
 module net.tommay.spudoku.ExclusionSet where
 
 data ExclusionSet = ExclusionSet {
-  name :: String,
-  cells :: [Int]
+  !name :: String,
+  !cells :: [Int]
 }
 
 derive Eq ExclusionSet
