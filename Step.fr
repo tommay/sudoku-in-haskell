@@ -1,6 +1,6 @@
-module net.tommay.spudoku.Step where
+module net.tommay.sudoku.Step where
 
-import net.tommay.spudoku.Placement (Placement)
-import net.tommay.spudoku.Puzzle (Puzzle)
+import net.tommay.sudoku.Placement (Placement)
+import net.tommay.sudoku.Puzzle (Puzzle)
 
 data Step = Step Puzzle (Maybe Placement) String

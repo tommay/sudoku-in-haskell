@@ -1,12 +1,12 @@
-module net.tommay.spudoku.EasyPeasy where
+module net.tommay.sudoku.EasyPeasy where
 
-import net.tommay.spudoku.Digit (Digit)
-import net.tommay.spudoku.ExclusionSet (ExclusionSet)
-import net.tommay.spudoku.Next (Next)
-import net.tommay.spudoku.Puzzle (Puzzle)
-import net.tommay.spudoku.SolverUtil ()
-import net.tommay.spudoku.Unknown (Unknown)
-import net.tommay.spudoku.Util ()
+import net.tommay.sudoku.Digit (Digit)
+import net.tommay.sudoku.ExclusionSet (ExclusionSet)
+import net.tommay.sudoku.Next (Next)
+import net.tommay.sudoku.Puzzle (Puzzle)
+import net.tommay.sudoku.SolverUtil ()
+import net.tommay.sudoku.Unknown (Unknown)
+import net.tommay.sudoku.Util ()
 
 import Data.List as List ()
 

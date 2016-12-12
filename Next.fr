@@ -1,7 +1,7 @@
-module net.tommay.spudoku.Next where
+module net.tommay.sudoku.Next where
 
-import net.tommay.spudoku.Digit (Digit)
-import net.tommay.spudoku.Placement (Placement (Placement))
+import net.tommay.sudoku.Digit (Digit)
+import net.tommay.sudoku.Placement (Placement (Placement))
 
 data Next = Next Placement String
 

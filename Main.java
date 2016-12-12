@@ -1,6 +1,6 @@
-package net.tommay.spudoku;
+package net.tommay.sudoku;
 
-import net.tommay.spudoku.CreaterForJava;
+import net.tommay.sudoku.CreaterForJava;
 
 import frege.prelude.PreludeBase.TTuple2;
 import frege.runtime.Delayed;

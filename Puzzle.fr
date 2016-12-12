@@ -1,9 +1,9 @@
-module net.tommay.spudoku.Puzzle where
+module net.tommay.sudoku.Puzzle where
 
 import frege.Prelude hiding (empty)
 
-import net.tommay.spudoku.Digit (Digit)
-import net.tommay.spudoku.Util ()
+import net.tommay.sudoku.Digit (Digit)
+import net.tommay.sudoku.Util ()
 
 import Data.Char as Char ()
 import Data.List as List ()

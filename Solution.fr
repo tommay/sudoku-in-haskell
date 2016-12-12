@@ -1,7 +1,7 @@
-module net.tommay.spudoku.Solution where
+module net.tommay.sudoku.Solution where
 
-import net.tommay.spudoku.Puzzle (Puzzle)
-import net.tommay.spudoku.Step (Step)
+import net.tommay.sudoku.Puzzle (Puzzle)
+import net.tommay.sudoku.Step (Step)
 
 abstract data Solution = Solution {
   puzzle :: Puzzle,

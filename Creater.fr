@@ -1,9 +1,9 @@
-module net.tommay.spudoku.Creater where
+module net.tommay.sudoku.Creater where
 
-import net.tommay.spudoku.Puzzle (Puzzle)
-import net.tommay.spudoku.Solution (Solution)
-import net.tommay.spudoku.Solver ()
-import net.tommay.spudoku.Util ()
+import net.tommay.sudoku.Puzzle (Puzzle)
+import net.tommay.sudoku.Solution (Solution)
+import net.tommay.sudoku.Solver ()
+import net.tommay.sudoku.Util ()
 
 import System.Random as Random ()
 

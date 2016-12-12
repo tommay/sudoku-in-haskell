@@ -1,6 +1,6 @@
 ALL = Solve Create Pattern # Color Uncolor Min
 
-PACKAGE = net/tommay/spudoku
+PACKAGE = net/tommay/sudoku
 
 all: $(ALL)
 

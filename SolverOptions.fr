@@ -1,4 +1,4 @@
-module net.tommay.spudoku.SolverOptions where
+module net.tommay.sudoku.SolverOptions where
 
 import frege.Prelude hiding (all)
 

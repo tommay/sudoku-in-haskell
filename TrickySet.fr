@@ -1,6 +1,6 @@
-module net.tommay.spudoku.TrickySet where
+module net.tommay.sudoku.TrickySet where
 
-import net.tommay.spudoku.ExclusionSet (ExclusionSet (ExclusionSet))
+import net.tommay.sudoku.ExclusionSet (ExclusionSet (ExclusionSet))
 
 import Data.List as List ()
 

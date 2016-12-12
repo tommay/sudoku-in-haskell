@@ -1,4 +1,4 @@
-module net.tommay.spudoku.Layout where
+module net.tommay.sudoku.Layout where
 
 import Data.HashMap as Map (HashMap)
 type Map = HashMap

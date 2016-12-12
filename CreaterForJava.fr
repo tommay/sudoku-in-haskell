@@ -1,14 +1,14 @@
-module net.tommay.spudoku.CreaterForJava where
+module net.tommay.sudoku.CreaterForJava where
 
 -- Provide a "create" function intended to be called from Java that
 -- does all the heavy lifting like StdGen creation and Layout lookup
 -- in Frege so it can interface with Java scalars.
 
-import net.tommay.spudoku.Creater ()
-import net.tommay.spudoku.Layout ()
-import net.tommay.spudoku.Puzzle ()
-import net.tommay.spudoku.Solver ()
-import net.tommay.spudoku.SolverOptions ()
+import net.tommay.sudoku.Creater ()
+import net.tommay.sudoku.Layout ()
+import net.tommay.sudoku.Puzzle ()
+import net.tommay.sudoku.Solver ()
+import net.tommay.sudoku.SolverOptions ()
 
 import System.Random as Random ()
 

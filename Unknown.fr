@@ -1,6 +1,6 @@
-module net.tommay.spudoku.Unknown where
+module net.tommay.sudoku.Unknown where
 
-import net.tommay.spudoku.Digit (Digit)
+import net.tommay.sudoku.Digit (Digit)
 
 import Data.Bits as Bits ()
 

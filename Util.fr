@@ -1,4 +1,4 @@
-module net.tommay.spudoku.Util where
+module net.tommay.sudoku.Util where
 
 import System.Random as Random ()
 

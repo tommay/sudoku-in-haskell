@@ -1,4 +1,4 @@
-module net.tommay.spudoku.ExclusionSet where
+module net.tommay.sudoku.ExclusionSet where
 
 data ExclusionSet = ExclusionSet {
   !name :: String,
