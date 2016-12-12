@@ -6,5 +6,5 @@ import net.tommay.spudoku.Placement (Placement (Placement))
 data Next = Next Placement String
 
 new :: String -> Digit -> Int -> Next
-new description digit cellNumber =
+new description !digit !cellNumber =
   Next.Next (Placement cellNumber digit) description
