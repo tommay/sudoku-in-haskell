@@ -1,7 +1,6 @@
 module Solver (
   Solver.solutions,
   Solver.randomSolutions,
-  Solver.allSolutions,
   Solver.allRandomSolutions,
   Solver.isSolvableWith,
 ) where
@@ -72,9 +71,6 @@ solutions :: SolverOptions -> Puzzle -> [Solution]
 solutions options puzzle =
   let solver = Solver.new options Nothing puzzle
   in solutionsTop solver []
-
-allSolutions :: Puzzle -> [Solution]
-allSolutions = solutions SolverOptions.all
 
 randomSolutions :: SolverOptions -> Random.StdGen -> Puzzle -> [Solution]
 randomSolutions options rnd puzzle =
