@@ -26,12 +26,12 @@ empty =
 
 each :: Puzzle -> [(Int, Digit)]
 each this =
-  Map.each this.placed
+  Map.each $ Puzzle.placed this
 
 place :: Puzzle -> Int -> Digit -> Puzzle
 place this cellNumber digit =
   this.{
-    placed = Map.insert cellNumber digit this.placed
+    placed = Map.insert cellNumber digit $ Puzzle.placed this
   }
 
 remove :: Puzzle -> [Int] -> Puzzle
@@ -44,7 +44,7 @@ remove this cellNumbers =
 --
 size :: Puzzle -> Int
 size this =
-  Map.size this.placed
+  Map.size $ Puzzle.placed this
 
 -- Returns a new Puzzle with each Cell initialized according to
 -- Setup, which is a string of 81 digits or dashes.
@@ -79,7 +79,7 @@ private toDigits setup =
 private toString :: Puzzle -> [Char]
 private toString this =
   let p = map (\ (k, v) -> (k, Char.intToDigit v)) $ each this
-      unknownNumbers = (List.\\) [0..80] $ Map.keys this.placed
+      unknownNumbers = (List.\\) [0..80] $ Map.keys $ Puzzle.placed this
       u = zip unknownNumbers $ repeat '-'
   in map snd $ List.sort $ p ++ u
 

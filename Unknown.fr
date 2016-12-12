@@ -18,8 +18,8 @@ data Unknown = Unknown {
 --
 instance Eq Unknown where
   this == that = 
-    (this.cellNumber == that.cellNumber) &&
-    (this.possible == that.possible)
+    (Unknown.cellNumber this == Unknown.cellNumber that) &&
+    (Unknown.possible this == Unknown.possible that)
   hashCode this = (this.cellNumber * 23) + this.possible.hashCode
 
 -- Returns a new Unknown at position cellNumber.  Determine the
