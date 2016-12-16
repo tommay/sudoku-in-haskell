@@ -24,7 +24,7 @@ main args = do
 
 showLayouts = do
   putStrLn $
-    "Valid layouts:\n" ++ (List.intercalate " " Layout.getLayoutStrings)
+    "Valid layouts:\n" --xxx ++ (List.intercalate " " Layout.getLayoutStrings)
 
 doTimes n layout = do
   let rnd = Random.mkStdGen 0

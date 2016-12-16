@@ -18,7 +18,7 @@ CreaterForJava: build/$(PACKAGE)/CreaterForJava.class
 
 build/$(PACKAGE)/%.class: $(PACKAGE)/%.fr
 	[ -d build ] || mkdir build
-	java -Xss1m -jar fregec.jar -O -d build -make $<
+	java -Xss1m -jar fregec.jar -O -inline -d build -target 1.7 -make $<
 
 clean:
 	rm -fr build
