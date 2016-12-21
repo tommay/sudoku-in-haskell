@@ -201,7 +201,7 @@ findMissingOne this =
 
 findMissingOneInSet :: Solver -> ExclusionSet -> [Next]
 findMissingOneInSet this set =
-  let ExclusionSet name cellNumbers = set
+  let ExclusionSet name cellNumbers _ = set
   in case SolverUtil.unknownsInSet (Solver.unknowns this) cellNumbers of
        [unknown] ->
          -- Exactly one cell in the set is unknown.  Place a digit in it.
@@ -222,7 +222,7 @@ findMissingTwo this =
 
 findMissingTwoInSet :: Solver -> ExclusionSet -> [Next]
 findMissingTwoInSet this set =
-  let ExclusionSet name cellNumbers = set
+  let ExclusionSet name cellNumbers _ = set
   in case SolverUtil.unknownsInSet (Solver.unknowns this) cellNumbers of
        unknowns@[_, _] ->
          concat $
@@ -239,7 +239,7 @@ findNeeded this =
 
 findNeededInSet :: Solver -> ExclusionSet -> [Next]
 findNeededInSet this set =
-  let ExclusionSet name cellNumbers = set
+  let ExclusionSet name cellNumbers _ = set
       unknowns = SolverUtil.unknownsInSet (Solver.unknowns this) cellNumbers
   in concat $ map (findNeededDigitInSet unknowns name) [1..9]
 

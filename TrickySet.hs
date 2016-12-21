@@ -76,8 +76,8 @@ createTrickySets inverse =
 createTrickySetsFrom :: Bool -> ExclusionSet -> ExclusionSet -> ([Int] -> [[Int]]) -> [TrickySet]
 createTrickySetsFrom inverse square row getSetsIncluding =
   let (\\) = (List.\\)
-      ExclusionSet squareName squareCells = square
-      ExclusionSet rowName rowCells = row
+      ExclusionSet squareName squareCells _ = square
+      ExclusionSet rowName rowCells _ = row
       common = squareCells `List.intersect` rowCells
       restOfRow = rowCells \\ common
       restOfSquare = squareCells \\ common

@@ -10,9 +10,13 @@ module ExclusionSet (
   cells,
 ) where
 
+import           Data.Set (Set)
+import qualified Data.Set as Set
+
 data ExclusionSet = ExclusionSet {
   name :: String,
-  cells :: [Int]
+  cells :: [Int],
+  cellSet :: Set Int
 } deriving (Show, Eq)
 
 -- An ExclusionSet is a list of all the cell numbers in a row, column,
@@ -22,6 +26,10 @@ exclusionSets :: [ExclusionSet]
 exclusionSets =
   rows ++ columns ++ squares
 
+make :: String -> [Int] -> ExclusionSet
+make name list =
+  ExclusionSet.ExclusionSet name list $ Set.fromList list
+
 -- An ExclusionSet for each row.
 --
 rows :: [ExclusionSet]
@@ -29,7 +37,7 @@ rows = map row [0..8]
 
 row :: Int -> ExclusionSet
 row n =
-  ExclusionSet.ExclusionSet ("row " ++ show n) [n*9 + col | col <- [0..8]]
+  make ("row " ++ show n) [n*9 + col | col <- [0..8]]
 
 -- An ExclusionSet for each column.
 --
@@ -38,7 +46,7 @@ columns = map column [0..8]
 
 column :: Int -> ExclusionSet
 column n =
-  ExclusionSet.ExclusionSet ("column " ++ show n) [row*9 + n | row <- [0..8]]
+  make ("column " ++ show n) [row*9 + n | row <- [0..8]]
 
 -- An ExclusionSet for each square.
 --
@@ -51,4 +59,4 @@ square n =
       row = n `div` 3 * 3
       col = n `mod` 3 * 3
       cellNumbers = [(row + n `div` 3)*9 + (col + n `mod` 3) | n <- [0..8]]
-  in ExclusionSet.ExclusionSet ("square " ++ show n) cellNumbers
+  in make ("square " ++ show n) cellNumbers
