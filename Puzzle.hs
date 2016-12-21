@@ -7,6 +7,7 @@ module Puzzle (
   Puzzle.fromString,
   Puzzle.place,
   Puzzle.remove,
+  Puzzle.placedAt,
   Puzzle.toPuzzleString,
 ) where  
 
@@ -47,7 +48,7 @@ allUnknownCellNumbers = Set.fromList [0..80]
 
 unknownCellNumbers :: Puzzle -> [Int]
 unknownCellNumbers this =
-  Set.toList $ foldr Set.delete allUnknownNumbers $ Puzzle.cellNumbers this
+  Set.toList $ foldr Set.delete allUnknownCellNumbers $ Puzzle.cellNumbers this
 
 place :: Puzzle -> Int -> Digit -> Puzzle
 place this cellNumber digit =
@@ -60,6 +61,10 @@ remove this cellNumbers =
   let notInCellNumbers key _ = not $ key `elem` cellNumbers
       remaining = Map.filterWithKey notInCellNumbers $ Puzzle.placed this
   in this { placed = remaining }
+
+placedAt :: Puzzle -> Int -> Maybe Digit
+placedAt this cellNumber =
+  Map.lookup cellNumber $ Puzzle.placed this
 
 -- Returns the number of placed digits.
 --

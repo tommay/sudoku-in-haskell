@@ -43,17 +43,25 @@ data Solver = Solver {
 new :: SolverOptions -> Maybe Random.StdGen -> Puzzle -> Solver
 new options' maybeRnd puzzle =
   let (rnd1, rnd2) = maybeSplit maybeRnd
-      emptySolver = Solver.Solver {
-        options = options',
-        puzzle = Puzzle.empty,
-        rnd = rnd1,
-        unknowns = maybeShuffle rnd2 [Unknown.new n | n <- [0..80]],
-        steps = [Step puzzle Nothing "Initial puzzle"]
-      }
-  in foldr (\ (cellNumber, digit) accum ->
-       place accum cellNumber digit)
-     emptySolver
-     $ Puzzle.each puzzle
+      newUnknowns = maybeShuffle rnd2 $
+        map (calculateUnknown puzzle) $
+        Puzzle.unknownCellNumbers puzzle
+  in Solver.Solver {
+       options = options',
+       puzzle = puzzle,
+       rnd = rnd1,
+       unknowns = newUnknowns,
+       steps = [Step puzzle Nothing "Initial puzzle"]
+     }
+
+calculateUnknown :: Puzzle -> Int -> Unknown
+calculateUnknown puzzle cellNumber =
+  foldr (\ cellNumber accumUnknown ->
+          case Puzzle.placedAt puzzle cellNumber of
+            Nothing -> accumUnknown
+            Just digit -> Unknown.removeDigitFromPossible digit accumUnknown)
+  (Unknown.new cellNumber)
+  $ ExclusionSet.getExcludedCellList cellNumber
 
 place :: Solver -> Int -> Digit -> Solver
 place this cellNumber digit =
