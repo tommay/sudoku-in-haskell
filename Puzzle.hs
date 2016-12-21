@@ -3,6 +3,7 @@ module Puzzle (
   Puzzle.empty,
   Puzzle.size,
   Puzzle.each,
+  Puzzle.unknownCellNumbers,
   Puzzle.fromString,
   Puzzle.place,
   Puzzle.remove,
@@ -16,6 +17,8 @@ import qualified Data.Char as Char
 import qualified Data.List as List
 import           Data.Map (Map)
 import qualified Data.Map as Map
+import           Data.Set (Set)
+import qualified Data.Set as Set
 
 -- cellNumber -> Digit
 
@@ -34,6 +37,17 @@ empty =
 each :: Puzzle -> [(Int, Digit)]
 each this =
   Map.assocs $ Puzzle.placed this
+
+cellNumbers :: Puzzle -> [Int]
+cellNumbers this =
+  Map.keys $ Puzzle.placed this
+
+allUnknownCellNumbers :: Set Int
+allUnknownCellNumbers = Set.fromList [0..80]
+
+unknownCellNumbers :: Puzzle -> [Int]
+unknownCellNumbers this =
+  Set.toList $ foldr Set.delete allUnknownNumbers $ Puzzle.cellNumbers this
 
 place :: Puzzle -> Int -> Digit -> Puzzle
 place this cellNumber digit =
@@ -85,8 +99,7 @@ toDigits setup =
 toString:: Puzzle -> String
 toString this =
   let p = map (\ (k, v) -> (k, Char.intToDigit v)) $ each this
-      unknownNumbers = (List.\\) [0..80] $ Map.keys $ Puzzle.placed this
-      u = zip unknownNumbers $ repeat '-'
+      u = zip (unknownCellNumbers this) $ repeat '-'
   in map snd $ List.sort $ p ++ u
 
 -- Returns a string that prints out as a grid of digits.
