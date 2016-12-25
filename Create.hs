@@ -31,6 +31,6 @@ doOne layout = do
   putStr $ Puzzle.toPuzzleString $ Creater.create rnd layout makeSolver
 
 doList layout = do
-  rnd <- Random.getStdGen
+  let rnd = Random.mkStdGen 1
   mapM_ putStrLn $ map Puzzle.toPuzzleString $
     Creater.createList rnd layout makeSolver

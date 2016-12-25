@@ -22,21 +22,22 @@ createWithSolution rnd layout makeSolver =
       solvedPuzzle = randomSolvedPuzzle rnd1
       solver = makeSolver solvedPuzzle
       layout' = Util.shuffle rnd2 layout
-      puzzle = create' layout' solver
+      puzzle = create' layout' solver makeSolver
   in (puzzle, solvedPuzzle)
 
 create :: Random.StdGen -> [[Int]] -> (Puzzle -> Solver) -> Puzzle
 create rnd layout makeSolver =
   fst $ createWithSolution rnd layout makeSolver
 
-create' :: [[Int]] -> Solver -> Puzzle
-create' cellNumberLists solver =
+create' :: [[Int]] -> Solver -> (Puzzle -> Solver) -> Puzzle
+create' cellNumberLists solver makeSolver =
   Solver.puzzle $ foldr
     (\ list accumSolver ->
       -- We know accumSolver's puzzle has only one solution.
       -- Remove more stuff and check if that's still true.
       let newSolver = Solver.remove accumSolver list
-      in case Solver.solve newSolver of
+          xSolver = makeSolver $ Solver.puzzle solver
+      in case Solver.solve xSolver of
         [_] ->
           -- newSolver's puzzle has only one solution, go with it.
           newSolver
