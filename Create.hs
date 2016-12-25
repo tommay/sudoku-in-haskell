@@ -11,7 +11,7 @@ import qualified SolverOptions
 import qualified Solution
 
 dothis = doList
-solver = Solver.solutions SolverOptions.noGuessing
+makeSolver = Solver.new SolverOptions.noGuessing Nothing
 
 main = do
   args <- System.Environment.getArgs
@@ -28,9 +28,9 @@ showLayouts = do
 
 doOne layout = do
   rnd <- Random.getStdGen
-  putStr $ Puzzle.toPuzzleString $ Creater.create rnd layout solver
+  putStr $ Puzzle.toPuzzleString $ Creater.create rnd layout makeSolver
 
 doList layout = do
   rnd <- Random.getStdGen
   mapM_ putStrLn $ map Puzzle.toPuzzleString $
-    Creater.createList rnd layout solver
+    Creater.createList rnd layout makeSolver

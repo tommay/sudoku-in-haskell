@@ -8,43 +8,45 @@ import           Puzzle (Puzzle)
 import qualified Solution
 import           Solution (Solution)
 import qualified Solver
+import           Solver (Solver)
 import qualified Util
 
 import qualified System.Random as Random
 
 -- Returns (puzzle, solvedPuzzle)
 --
-createWithSolution :: Random.StdGen -> [[Int]] -> (Puzzle -> [Solution]) ->
+createWithSolution :: Random.StdGen -> [[Int]] -> (Puzzle -> Solver) ->
   (Puzzle, Puzzle)
-createWithSolution rnd layout solver =
+createWithSolution rnd layout makeSolver =
   let (rnd1, rnd2) = Random.split rnd
       solvedPuzzle = randomSolvedPuzzle rnd1
+      solver = makeSolver solvedPuzzle
       layout' = Util.shuffle rnd2 layout
-      puzzle = create' solvedPuzzle layout' solver
+      puzzle = create' layout' solver
   in (puzzle, solvedPuzzle)
 
-create :: Random.StdGen -> [[Int]] -> (Puzzle -> [Solution]) -> Puzzle
-create rnd layout solver =
-  fst $ createWithSolution rnd layout solver
+create :: Random.StdGen -> [[Int]] -> (Puzzle -> Solver) -> Puzzle
+create rnd layout makeSolver =
+  fst $ createWithSolution rnd layout makeSolver
 
-create' :: Puzzle -> [[Int]] -> (Puzzle -> [Solution])  -> Puzzle
-create' puzzle cellNumberLists solver =
-  foldr
-    (\ list accum ->
-      -- We know accum has only one solution.
+create' :: [[Int]] -> Solver -> Puzzle
+create' cellNumberLists solver =
+  Solver.puzzle $ foldr
+    (\ list accumSolver ->
+      -- We know accumSolver's puzzle has only one solution.
       -- Remove more stuff and check if that's still true.
-      let newPuzzle = Puzzle.remove accum list
-      in case solver newPuzzle of
+      let newSolver = Solver.remove accumSolver list
+      in case Solver.solve newSolver of
         [_] ->
-          -- newPuzzle has only one solution, go with it.
-          newPuzzle
+          -- newSolver's puzzle has only one solution, go with it.
+          newSolver
         _ ->
           -- Ooops, removed too much, stick with the original.
-          accum)
-    puzzle
+          accumSolver)
+    solver
     cellNumberLists
 
-createList :: Random.StdGen -> [[Int]] -> (Puzzle -> [Solution]) -> [Puzzle]
+createList :: Random.StdGen -> [[Int]] -> (Puzzle -> Solver) -> [Puzzle]
 createList rnd layout solvable =
   let (rnd1, rnd2) = Random.split rnd
       puzzle = create rnd1 layout solvable

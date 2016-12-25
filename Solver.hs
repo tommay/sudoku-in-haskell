@@ -1,5 +1,9 @@
 module Solver (
-  Solver.solutions,
+  Solver,
+  Solver.new,
+  Solver.remove,
+  Solver.solve,
+  Solver.puzzle,
   Solver.randomSolutions,
   Solver.allRandomSolutions,
   Solver.isSolvableWith,
@@ -26,6 +30,9 @@ import           TrickySet (TrickySet)
 import qualified Unknown
 import           Unknown (Unknown)
 import qualified Util
+
+import           Data.Set (Set)
+import qualified Data.Set as Set
 
 import qualified System.Random as Random
 import Debug.Trace
@@ -63,6 +70,10 @@ calculateUnknown puzzle cellNumber =
   (Unknown.new cellNumber)
   $ ExclusionSet.getExcludedCellList cellNumber
 
+-- This is for solving a Puzzle.  We place one cell at a time, remove
+-- the cell from unknowns, and adjust any Unknown in the cell's
+-- exclusion set.
+--
 place :: Solver -> Int -> Digit -> Solver
 place this cellNumber digit =
   let newPuzzle = Puzzle.place (Solver.puzzle this) cellNumber digit
@@ -71,14 +82,36 @@ place this cellNumber digit =
         $ Solver.unknowns this
   in this{ puzzle = newPuzzle, unknowns = newUnknowns }
 
--- Try to solve the Puzzle, returning a list of Solutions.  This uses
+-- This is for creating a Puzzle.  We remove a set of cells from the
+-- puzzle, recalculate the affected unknowns, and add the cells to
+-- unknowns.
+--
+remove :: Solver -> [Int] -> Solver
+remove this cellNumbers =
+  let puzzle = Solver.puzzle this
+      newPuzzle = Puzzle.remove puzzle cellNumbers
+      unknowns = Solver.unknowns this
+      newUnknowns = recalculateUnknowns puzzle cellNumbers unknowns ++
+        map (calculateUnknown puzzle) cellNumbers
+  in this{ puzzle = newPuzzle, unknowns = newUnknowns }
+
+recalculateUnknowns :: Puzzle -> [Int] -> [Unknown] -> [Unknown]
+recalculateUnknowns puzzle cellNumbers unknowns =
+  let affectedCellNumbers =
+        Set.unions $ map ExclusionSet.getExcludedCellSet cellNumbers
+  in map (\ unknown ->
+           let cellNumber = Unknown.cellNumber unknown
+           in if Set.member cellNumber affectedCellNumbers
+             then calculateUnknown puzzle cellNumber
+             else unknown) unknowns
+
+-- Run the Solver, returning a list of Solutions.  This uses
 -- tail-recursive style, passing down a list of solutions discovered
 -- higher in the call stack.
 --
-solutions :: SolverOptions -> Puzzle -> [Solution]
-solutions options puzzle =
-  let solver = Solver.new options Nothing puzzle
-  in solutionsTop solver []
+solve :: Solver -> [Solution]
+solve this =
+  solutionsTop this []
 
 randomSolutions :: SolverOptions -> Random.StdGen -> Puzzle -> [Solution]
 randomSolutions options rnd puzzle =
@@ -390,7 +423,7 @@ addStep this step =
 
 isSolvableWith :: SolverOptions -> Puzzle -> Bool
 isSolvableWith options puzzle =
-  not $ null $ Solver.solutions options puzzle
+  not $ null $ Solver.solve $ Solver.new options Nothing puzzle
 
 minBy :: Ord b => (a -> b) -> [a] -> a
 minBy func list =
