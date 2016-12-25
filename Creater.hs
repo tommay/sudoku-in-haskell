@@ -36,7 +36,7 @@ create' cellNumberLists solver makeSolver =
       -- We know accumSolver's puzzle has only one solution.
       -- Remove more stuff and check if that's still true.
       let newSolver = Solver.remove accumSolver list
-          xSolver = makeSolver $ Solver.puzzle solver
+          xSolver = makeSolver $ Solver.puzzle newSolver
       in case Solver.solve xSolver of
         [_] ->
           -- newSolver's puzzle has only one solution, go with it.

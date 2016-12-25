@@ -10,7 +10,7 @@ import qualified Solver
 import qualified SolverOptions
 import qualified Solution
 
-dothis = doList
+dothis = doOne
 makeSolver = Solver.new SolverOptions.noGuessing Nothing
 
 main = do
@@ -27,7 +27,7 @@ showLayouts = do
     "Valid layouts:\n" ++ (List.intercalate " " Layout.getLayoutStrings)
 
 doOne layout = do
-  rnd <- Random.getStdGen
+  let rnd = Random.mkStdGen 1
   putStr $ Puzzle.toPuzzleString $ Creater.create rnd layout makeSolver
 
 doList layout = do
