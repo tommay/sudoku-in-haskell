@@ -90,13 +90,11 @@ remove :: Solver -> [Int] -> Solver
 remove this cellNumbers =
   let puzzle = Solver.puzzle this
       newPuzzle = Puzzle.remove puzzle cellNumbers
-      unknowns = Solver.unknowns this
-      newUnknowns = recalculateUnknowns puzzle cellNumbers unknowns ++
-        map (calculateUnknown puzzle) cellNumbers
+      newUnknowns = map (calculateUnknown newPuzzle) cellNumbers
   in this{ puzzle = newPuzzle, unknowns = newUnknowns }
 
-recalculateUnknowns :: Puzzle -> [Int] -> [Unknown] -> [Unknown]
-recalculateUnknowns puzzle cellNumbers unknowns =
+xxxrecalculateUnknowns :: Puzzle -> [Int] -> [Unknown] -> [Unknown]
+xxxrecalculateUnknowns puzzle cellNumbers unknowns =
   let affectedCellNumbers =
         Set.unions $ map ExclusionSet.getExcludedCellSet cellNumbers
   in map (\ unknown ->
