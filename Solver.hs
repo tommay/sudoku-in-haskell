@@ -158,14 +158,14 @@ solutionsStuck this results =
         then let next = Next.new "Forced guess" digit cellNumber
              in placeAndContinue this next results
         else -- There is a forced guess but we're not configured to
-             -- use it.  See if we can apply a TrickySet to create
-             -- an opportunity.
+             -- use it.  See if we can permanently apply a TrickySet
+             -- to create an opportunity.
              case applyOneTrickySetIfAllowed this of
                Just newSolver -> solutionsTop newSolver results
                Nothing -> results
     _ ->
       -- Multiple possibilities.  Before we guess, see if it's possible
-      -- to permanently apply a TrickySet to create possibiities for
+      -- to permanently apply a TrickySet to create possibilities for
       -- heuristics.
       case applyOneTrickySetIfAllowed this of
         Just newSolver -> solutionsTop newSolver results
