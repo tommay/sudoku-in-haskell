@@ -17,8 +17,10 @@ heuristics = [
   MissingOne,
   MissingTwo,
   Needed,
-  Forced,
-  Tricky
+  Tricky,
+  -- If we're using guessing, Forced is required otherwise forced
+  -- guesses aren't taken.
+  Forced
   ]
 
 --options = SolverOptions.new heuristics False True
