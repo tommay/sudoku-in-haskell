@@ -13,18 +13,14 @@ import qualified System.Random as Random
 import qualified Control.Monad as Monad
 
 heuristics = [
-  EasyPeasy,
-  MissingOne,
-  MissingTwo,
-  Needed,
   Tricky,
   -- If we're using guessing, Forced is required otherwise forced
   -- guesses aren't taken.
   Forced
   ]
 
---options = SolverOptions.new heuristics False True
-options = SolverOptions.all
+options = SolverOptions.new heuristics False True
+--options = SolverOptions.all
 
 -- This is the main function, called from the sudoku script.
 -- Initializes Puzzle from the given Filename and prints out solutions
@@ -33,7 +29,7 @@ options = SolverOptions.all
 main = do
   (filename:_) <- System.Environment.getArgs
   setup <- getSetup filename
-  rnd <- Random.getStdGen
+  let rnd = Random.mkStdGen 1
   let solutions = Solver.randomSolutions options rnd $ Puzzle.fromString setup
   count <- processAndCount printSolution solutions
   putStrLn $ "There are " ++ show count ++ " solutions."
