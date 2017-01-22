@@ -27,6 +27,8 @@ import qualified Unknown
 import           Unknown (Unknown)
 import qualified Util
 
+import qualified Data.Bits as Bits
+import qualified Data.List as List
 import qualified System.Random as Random
 import Debug.Trace
 
@@ -105,7 +107,7 @@ solutionsHeuristic this results =
             $ map (\ f -> f this)
             $ heuristics this
       in case nextList of
-        (next : _) ->
+        next : _ ->
           placeAndContinue this{rnd = rnd2} next results
         [] ->
           solutionsStuck this results
@@ -193,7 +195,7 @@ findEasyPeasy :: Solver -> [Next]
 findEasyPeasy this =
   EasyPeasy.find (Solver.puzzle this) (Solver.unknowns this)
 
--- Try to place a digit where a set has only one unplaced cell.
+-- Try to place a digit where a set has only one Unknown.
 --
 findMissingOne :: Solver -> [Next]
 findMissingOne this =
@@ -237,14 +239,21 @@ findNeeded :: Solver -> [Next]
 findNeeded this =
   concat $ map (findNeededInSet this) ExclusionSet.exclusionSets
 
+-- Rather than check all digits, it's actually a bit faster to take the
+-- trouble to get possibleDigitList.
+--
 findNeededInSet :: Solver -> ExclusionSet -> [Next]
 findNeededInSet this set =
-  let ExclusionSet name cellNumbers = set
-      unknowns = SolverUtil.unknownsInSet (Solver.unknowns this) cellNumbers
-  in concat $ map (findNeededDigitInSet unknowns name) [1..9]
+  let ExclusionSet name cells = set
+      us = SolverUtil.unknownsInSet (Solver.unknowns this) cells
+      possibleInSet = List.foldl'
+        (\ accum u -> accum Bits..|. Unknown.possible u) 0 us
+      possibleDigitList = Unknown.getPossibleList possibleInSet
+  in concat $
+       map (findNeededDigitInUnknowns us name) possibleDigitList
 
-findNeededDigitInSet :: [Unknown] -> String -> Digit -> [Next]
-findNeededDigitInSet unknowns name digit =
+findNeededDigitInUnknowns :: [Unknown] -> String -> Digit -> [Next]
+findNeededDigitInUnknowns unknowns name digit =
   case filter (Unknown.isDigitPossible digit) unknowns of
     [unknown] -> [Next.new
                   (unwords ["Need a", show digit, "in", name])
@@ -346,7 +355,7 @@ applyOneTrickySet this =
       tryTrickySet (digit, trickySet) =
         applyTrickySet this digit trickySet
   in case concat $ map tryTrickySet applicableTrickySets of
-       (solver:_) -> Just solver{ rnd = rnd2 }
+       solver : _ -> Just solver{ rnd = rnd2 }
        _ -> Nothing
 
 applyTrickySet :: Solver -> Digit -> TrickySet -> [Solver]
