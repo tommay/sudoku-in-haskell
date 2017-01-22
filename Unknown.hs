@@ -2,11 +2,13 @@ module Unknown (
   Unknown,
   Unknown.new,
   Unknown.cellNumber,
+  Unknown.possible,
   Unknown.place,
   Unknown.numPossible,
   Unknown.isDigitPossible,
   Unknown.removeDigitFromPossible,
-  Unknown.getPossible
+  Unknown.getPossible,
+  Unknown.getPossibleList,
 ) where  
 
 import Digit (Digit)
@@ -71,15 +73,20 @@ removeDigitFromPossible digit this =
 
 getPossible :: Unknown -> [Digit]
 getPossible this =
-  getPossibleList (Unknown.possible this) 1
+  getPossibleList $ Unknown.possible this
 
-getPossibleList :: Int -> Digit -> [Digit]
-getPossibleList 0 _ =
+getPossibleList :: Int -> [Digit]
+getPossibleList possible =
+  getPossibleList' possible 1
+
+getPossibleList' :: Int -> Digit -> [Digit]
+getPossibleList' 0 _ =
   []
-getPossibleList possible digit =
-  if Bits.testBit possible 0
-    then digit : getPossibleList (Bits.shiftR possible 1) (digit + 1)
-    else getPossibleList (Bits.shiftR possible 1) (digit + 1)
+getPossibleList' possible digit =
+  let rest = getPossibleList' (Bits.shiftR possible 1) (digit + 1)
+  in if Bits.testBit possible 0
+       then digit : rest
+       else rest
 
 -- Returns true if this and Other are in the same row, column, or
 -- square, else false.
