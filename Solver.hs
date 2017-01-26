@@ -266,9 +266,10 @@ findForced this =
 
 findForcedForUnknown :: String -> Unknown -> [Next]
 findForcedForUnknown description unknown =
-  case Unknown.getPossible unknown of
-    [digit] -> [Next.new description digit (Unknown.cellNumber unknown)]
-    _ -> []
+  if Unknown.numPossible unknown == 1
+    then let digit = head $ Unknown.getPossible unknown
+         in [Next.new description digit (Unknown.cellNumber unknown)]
+    else []
 
 findTricky :: Solver -> [Next]
 findTricky this =
