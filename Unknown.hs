@@ -14,8 +14,6 @@ module Unknown (
 import Digit (Digit)
 
 import qualified Data.Bits as Bits
-import qualified Data.Vector as Vector
-import           Data.Vector (Vector)
 
 data Unknown = Unknown {
   cellNumber :: Int,
@@ -73,27 +71,19 @@ removeDigitFromPossible :: Digit -> Unknown -> Unknown
 removeDigitFromPossible digit this =
   this { possible = Bits.clearBit (Unknown.possible this) (digit - 1) }
 
-possibleLists :: Vector [Int]
-possibleLists =
-  Vector.generate 512 makePossibleList
-
 getPossible :: Unknown -> [Digit]
 getPossible this =
   getPossibleList $ Unknown.possible this
 
 getPossibleList :: Int -> [Digit]
 getPossibleList possible =
-  possibleLists Vector.! possible
+  getPossibleList' possible 1
 
-makePossibleList :: Int -> [Digit]
-makePossibleList possible =
-  makePossibleList' possible 1
-
-makePossibleList' :: Int -> Digit -> [Digit]
-makePossibleList' 0 _ =
+getPossibleList' :: Int -> Digit -> [Digit]
+getPossibleList' 0 _ =
   []
-makePossibleList' possible digit =
-  let rest = makePossibleList' (Bits.shiftR possible 1) (digit + 1)
+getPossibleList' possible digit =
+  let rest = getPossibleList' (Bits.shiftR possible 1) (digit + 1)
   in if Bits.testBit possible 0
        then digit : rest
        else rest
