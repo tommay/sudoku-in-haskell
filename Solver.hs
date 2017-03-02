@@ -299,6 +299,27 @@ findTricky this =
          in trickySetCheckNeeded tmpUnknowns trickySet digit)
        applicableTrickySets
 
+-- 1. Return all the (Dight, TrickySet) pairs where Digit is possible
+--    in TrickySet.common but not in TrickySet.rest.
+--
+findApplicableTrickySets :: [Unknown] -> [(Digit, TrickySet)]
+findApplicableTrickySets unknowns =
+  let allTrickySets = TrickySet.trickySets ++ TrickySet.inverseTrickySets
+  in [(digit, trickySet) | digit <- [1..9], trickySet <- allTrickySets,
+      trickySetMatchesForDigit unknowns trickySet digit]
+
+-- 2. Return a new set of Unknowns where Digit has been removed from
+--    TrickySet.eliminate.
+--
+eliminateWithTrickySet :: [Unknown] -> Digit -> TrickySet -> [Unknown]
+eliminateWithTrickySet unknowns digit trickySet =
+  let cellNumbers = TrickySet.eliminate trickySet
+  in map (\ u ->
+          if Unknown.cellNumber u `elem` cellNumbers
+             then Unknown.removeDigitFromPossible digit u
+             else u)
+       unknowns
+
 -- 3. Given the set of Unknowns with the TrickySet/Digit eliminated,
 --    look through the checkNeeded sets to see if any of them now have
 --    exactly one Unknown where the digit is possible, and if so then
@@ -388,29 +409,6 @@ applyTrickySet this digit trickySet =
                  ("Apply " ++ TrickySet.name trickySet))
          in [newSolver{ unknowns = newUnknowns }]
        else []
-
--- 1. Return all the (Dight, TrickySet) pairs where Digit is possible
---    in TrickySet.common but not in TrickySet.rest.
---
---ok
-findApplicableTrickySets :: [Unknown] -> [(Digit, TrickySet)]
-findApplicableTrickySets unknowns =
-  let allTrickySets = TrickySet.trickySets ++ TrickySet.inverseTrickySets
-  in [(digit, trickySet) | digit <- [1..9], trickySet <- allTrickySets,
-      trickySetMatchesForDigit unknowns trickySet digit]
-
--- 2. Return a new set of Unknowns where Digit has been removed from
---    TrickySet.eliminate.
---
---ok
-eliminateWithTrickySet :: [Unknown] -> Digit -> TrickySet -> [Unknown]
-eliminateWithTrickySet unknowns digit trickySet =
-  let cellNumbers = TrickySet.eliminate trickySet
-  in map (\ u ->
-          if Unknown.cellNumber u `elem` cellNumbers
-             then Unknown.removeDigitFromPossible digit u
-             else u)
-       unknowns
 
 addStep :: Solver -> Step -> Solver
 addStep this step =
