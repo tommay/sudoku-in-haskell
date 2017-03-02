@@ -249,14 +249,15 @@ findNeededInSet this set =
       possibleInSet = List.foldl'
         (\ accum u -> accum Bits..|. Unknown.possible u) 0 us
       possibleDigitList = Unknown.getPossibleList possibleInSet
+      makeDescription digit = unwords ["Need a", show digit, "in", name]
   in concat $
-       map (findNeededDigitInUnknowns us name) possibleDigitList
+       map (findNeededDigitInUnknowns us makeDescription) possibleDigitList
 
-findNeededDigitInUnknowns :: [Unknown] -> String -> Digit -> [Next]
-findNeededDigitInUnknowns unknowns name digit =
+findNeededDigitInUnknowns :: [Unknown] -> (Digit -> String) -> Digit -> [Next]
+findNeededDigitInUnknowns unknowns makeDescription digit =
   case filter (Unknown.isDigitPossible digit) unknowns of
     [unknown] -> [Next.new
-                  (unwords ["Need a", show digit, "in", name])
+                  (makeDescription digit)
                   digit (Unknown.cellNumber unknown)]
     _ -> []
 
