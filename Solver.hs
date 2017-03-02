@@ -272,21 +272,38 @@ findForcedForUnknown description unknown =
          in [Next.new description digit (Unknown.cellNumber unknown)]
     else []
 
+-- Return a list of all possible TrickySet placements for the Puzzle.
+--
+-- 1. Find (Digit, TrickySet) pairs where Digit is possible
+--    in common but not rest.
+-- 2. Remove the Digit from the Unknowns in eliminate.
+-- 3. If there is only one Unknown in any checkNeeded list where Digit
+--    is possible then we have found a placement.
+-- 
+-- We could also check for new forced digits in the eliminate
+-- positions.  We could remove the digit from the possibilities
+-- permanently, but that's not something a person would remember
+-- unless they're using paper.  So just remove locally while we see if
+-- that creates a new placement.
+--
 findTricky :: Solver -> [Next]
 findTricky this =
   let unknowns = Solver.unknowns this
+      -- 1:
       applicableTrickySets = findApplicableTrickySets unknowns
   in concat $ map
        (\ (digit, trickySet) ->
-         -- XXX we could also check for new forced digits in the
-         -- eliminate positions.  We could remove the digit from the
-         -- possibilities permanently, but that's not something a
-         -- person would remember unless they're using paper.  So just
-         -- remove while we see if that creates a new placement.
+         -- 2:
          let tmpUnknowns = eliminateWithTrickySet unknowns digit trickySet
+         -- 3:
          in trickySetCheckNeeded tmpUnknowns trickySet digit)
        applicableTrickySets
 
+-- 3. Given the set of Unknowns with the TrickySet/Digit eliminated,
+--    look through the checkNeeded sets to see if any of them now have
+--    exactly one Unknown where the digit is possible, and if so then
+--    include the Unknown in the result.
+--
 trickySetCheckNeeded :: [Unknown] -> TrickySet -> Digit -> [Next]
 trickySetCheckNeeded unknowns trickySet digit =
   let unknownForEachNeededSet =
@@ -372,12 +389,20 @@ applyTrickySet this digit trickySet =
          in [newSolver{ unknowns = newUnknowns }]
        else []
 
+-- 1. Return all the (Dight, TrickySet) pairs where Digit is possible
+--    in TrickySet.common but not in TrickySet.rest.
+--
+--ok
 findApplicableTrickySets :: [Unknown] -> [(Digit, TrickySet)]
 findApplicableTrickySets unknowns =
   let allTrickySets = TrickySet.trickySets ++ TrickySet.inverseTrickySets
   in [(digit, trickySet) | digit <- [1..9], trickySet <- allTrickySets,
       trickySetMatchesForDigit unknowns trickySet digit]
 
+-- 2. Return a new set of Unknowns where Digit has been removed from
+--    TrickySet.eliminate.
+--
+--ok
 eliminateWithTrickySet :: [Unknown] -> Digit -> TrickySet -> [Unknown]
 eliminateWithTrickySet unknowns digit trickySet =
   let cellNumbers = TrickySet.eliminate trickySet
