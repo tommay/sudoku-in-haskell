@@ -296,7 +296,7 @@ findTricky this =
          -- 2:
          let tmpUnknowns = eliminateWithTrickySet unknowns digit trickySet
          -- 3:
-         in trickySetCheckNeeded tmpUnknowns trickySet digit)
+         in findNeededDigitInTrickySet tmpUnknowns digit trickySet)
        applicableTrickySets
 
 -- 1. Return all the (Dight, TrickySet) pairs where Digit is possible
@@ -325,8 +325,8 @@ eliminateWithTrickySet unknowns digit trickySet =
 --    exactly one Unknown where the digit is possible, and if so then
 --    include the Unknown in the result.
 --
-trickySetCheckNeeded :: [Unknown] -> TrickySet -> Digit -> [Next]
-trickySetCheckNeeded unknowns trickySet digit =
+findNeededDigitInTrickySet :: [Unknown] -> Digit -> TrickySet -> [Next]
+findNeededDigitInTrickySet unknowns digit trickySet =
   let unknownForEachNeededSet =
         concat $ map
           (findUnknownWhereDigitIsNeeded unknowns digit)
@@ -339,6 +339,7 @@ trickySetMatchesForDigit :: [Unknown] -> TrickySet -> Digit -> Bool
 trickySetMatchesForDigit unknowns trickySet digit =
   let common = TrickySet.common trickySet
       rest = TrickySet.rest trickySet
+  -- XXX would it be better to filter by digit first?
   in (isDigitPossibleInSet unknowns digit common) &&
      (notIsDigitPossibleInSet unknowns digit rest)
 
@@ -351,12 +352,13 @@ findUnknownWhereDigitIsNeeded unknowns digit set =
     _ -> []
 
 isDigitPossibleInSet :: [Unknown] -> Digit -> [Int] -> Bool
-isDigitPossibleInSet unknowns digit set =
+isDigitPossibleInSet unknowns digit cellNumbers =
   let possibleUnknowns =
+        -- XXX these are the same filters as above.  DRY.
         -- Filters can be in either order but this order is way faster.
         -- XXX is that still true now that possible it a bitmap?
         filter (Unknown.isDigitPossible digit)
-        $ filter (SolverUtil.isUnknownInSet set) unknowns
+        $ filter (SolverUtil.isUnknownInSet cellNumbers) unknowns
   in case possibleUnknowns of
        [] -> False
        _ -> True
@@ -366,12 +368,12 @@ isDigitPossibleInSet unknowns digit set =
 -- puzzle-1339.txt.
 --
 notIsDigitPossibleInSet :: [Unknown] -> Digit -> [Int] -> Bool
-notIsDigitPossibleInSet unknowns digit set =
+notIsDigitPossibleInSet unknowns digit cellNumbers =
   let possibleUnknowns =
         -- Filters can be in either order but this order is way faster.
         -- XXX is that still true now that possible it a bitmap?
         filter (Unknown.isDigitPossible digit)
-        $ filter (SolverUtil.isUnknownInSet set) unknowns
+        $ filter (SolverUtil.isUnknownInSet cellNumbers) unknowns
   in case possibleUnknowns of
        [] -> True
        _ -> False
