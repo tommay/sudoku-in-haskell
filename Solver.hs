@@ -293,10 +293,8 @@ findTricky this =
       applicableTrickySets = findApplicableTrickySets unknowns
   in concat $ map
        (\ (digit, trickySet) ->
-         -- 2:
-         let tmpUnknowns = eliminateWithTrickySet unknowns digit trickySet
          -- 3:
-         in findNeededDigitInTrickySet tmpUnknowns digit trickySet)
+         findNeededDigitInTrickySet unknowns digit trickySet)
        applicableTrickySets
 
 -- 1. Return all the (Dight, TrickySet) pairs where Digit is possible

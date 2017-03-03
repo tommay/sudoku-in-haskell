@@ -88,14 +88,16 @@ createTrickySetsFrom inverse square row getSetsIncluding =
            TrickySet.TrickySet {
              name = unwords ["TrickySet", squareName, rowName],
              common = common, rest = restOfSquare, eliminate = restOfRow,
-             checkNeeded = getSquaresIncluding restOfRow
+             checkNeeded = map (filter (not . (`elem` restOfRow)))
+               $ getSquaresIncluding restOfRow
            }
          ]
          else [
            TrickySet.TrickySet {
              name = unwords ["Inverse TrickySet", squareName, rowName],
              common = common, rest = restOfRow, eliminate = restOfSquare,
-             checkNeeded = getSetsIncluding restOfSquare
+             checkNeeded = map (filter (not . (`elem` restOfSquare)))
+               $ getSetsIncluding restOfSquare
            }
          ]
 
