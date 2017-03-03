@@ -354,11 +354,10 @@ findUnknownWhereDigitIsNeeded unknowns digit set =
 isDigitPossibleInSet :: [Unknown] -> Digit -> [Int] -> Bool
 isDigitPossibleInSet unknowns digit cellNumbers =
   let possibleUnknowns =
-        -- XXX these are the same filters as above.  DRY.
+        -- XXX these are the same filters as below.  DRY.
         -- Filters can be in either order but this order is way faster.
-        -- XXX is that still true now that possible it a bitmap?
-        filter (Unknown.isDigitPossible digit)
-        $ filter (SolverUtil.isUnknownInSet cellNumbers) unknowns
+        filter (SolverUtil.isUnknownInSet cellNumbers) 
+        $ filter (Unknown.isDigitPossible digit)unknowns
   in case possibleUnknowns of
        [] -> False
        _ -> True
@@ -371,9 +370,8 @@ notIsDigitPossibleInSet :: [Unknown] -> Digit -> [Int] -> Bool
 notIsDigitPossibleInSet unknowns digit cellNumbers =
   let possibleUnknowns =
         -- Filters can be in either order but this order is way faster.
-        -- XXX is that still true now that possible it a bitmap?
-        filter (Unknown.isDigitPossible digit)
-        $ filter (SolverUtil.isUnknownInSet cellNumbers) unknowns
+        filter (SolverUtil.isUnknownInSet cellNumbers) 
+        $ filter (Unknown.isDigitPossible digit)unknowns
   in case possibleUnknowns of
        [] -> True
        _ -> False
