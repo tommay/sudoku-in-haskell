@@ -339,14 +339,13 @@ trickySetMatchesForDigit :: [Unknown] -> TrickySet -> Digit -> Bool
 trickySetMatchesForDigit unknowns trickySet digit =
   let common = TrickySet.common trickySet
       rest = TrickySet.rest trickySet
-  -- XXX would it be better to filter by digit first?
   in (isDigitPossibleInSet unknowns digit common) &&
      (notIsDigitPossibleInSet unknowns digit rest)
 
 findUnknownWhereDigitIsNeeded :: [Unknown] -> Digit -> [Int] -> [Unknown]
 findUnknownWhereDigitIsNeeded unknowns digit set =
-  let unknowns' = filter (Unknown.isDigitPossible digit)
-        $ filter (SolverUtil.isUnknownInSet set) unknowns
+  let unknowns' = filter (SolverUtil.isUnknownInSet set)
+        $ filter (Unknown.isDigitPossible digit) unknowns
   in case unknowns' of
     [_] -> unknowns'
     _ -> []
@@ -354,7 +353,7 @@ findUnknownWhereDigitIsNeeded unknowns digit set =
 isDigitPossibleInSet :: [Unknown] -> Digit -> [Int] -> Bool
 isDigitPossibleInSet unknowns digit cellNumbers =
   let possibleUnknowns =
-        -- XXX these are the same filters as below.  DRY.
+        -- XXX these are the same filters as above.  DRY.
         -- Filters can be in either order but this order is way faster.
         filter (SolverUtil.isUnknownInSet cellNumbers) 
         $ filter (Unknown.isDigitPossible digit)unknowns

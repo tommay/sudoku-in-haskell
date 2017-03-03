@@ -20,7 +20,7 @@ import qualified Data.List as List
 --
 -- XXX checkCoincidentRowsColumnsForNeeded = False
 
--- XXX Checking the eliminate set for newly forced Unknows isn't implemented.
+-- XXX Checking the eliminate set for newly forced Unknowns isn't implemented.
 -- It's also not something I do.
 
 data TrickySet = TrickySet {
