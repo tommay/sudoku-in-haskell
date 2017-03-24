@@ -65,9 +65,9 @@ createTrickySets inverse =
       getRows = getCellSetsIncluding rows
       getColumns = getCellSetsIncluding columns
   in concat $
-       [createTrickySetsFrom inverse square row getColumns
+       [createTrickySetsFrom inverse square row getRows
          | square <- squares, row <- rows] ++
-       [createTrickySetsFrom inverse square col getRows
+       [createTrickySetsFrom inverse square col getColumns
          | square <- squares, col <- columns]
 
 -- XXX Instead of creating two TrickySets with an identical common set, we
