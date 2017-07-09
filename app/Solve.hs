@@ -34,7 +34,7 @@ main = do
   count <- processAndCount printSolution solutions
   putStrLn $ "There are " ++ show count ++ " solutions."
 
---Foldable t, Monad m) => (b -> a -> m b) -> b -> t a -> m b
+-- Foldable t, Monad m => (b -> a -> m b) -> b -> t a -> m b
 
 processAndCount :: (a -> IO ()) -> [a] -> IO Int
 processAndCount func list =

@@ -1,0 +1,56 @@
+name:                sudoku
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/githubuser/sudoku#readme
+license:             MIT
+license-file:        LICENSE.md
+author:              Tom May
+maintainer:          tom@tommay.net
+copyright:           2017 F Thomas May
+category:            Whatevs
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Creater Layout Placement Puzzle Solution
+                       Solver SolverOptions Step
+  other-modules:       Digit
+                       EasyPeasy
+                       ExclusionSet
+                       Next
+                       SolverUtil
+                       TrickySet
+                       Unknown
+                       Util
+  build-depends:       base >= 4.7 && < 5, containers, random, random-shuffle
+  default-language:    Haskell2010
+  ghc-options:         -O2
+
+executable solve-exe
+  hs-source-dirs:      app
+  main-is:             Solve.hs
+  ghc-options:         -O2 -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base, sudoku, random, regex-compat
+  default-language:    Haskell2010
+
+executable create-exe
+  hs-source-dirs:      app
+  main-is:             Create.hs
+  ghc-options:         -O2 -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base, sudoku, random, regex-compat
+  default-language:    Haskell2010
+
+test-suite sudoku-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base, sudoku
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/sudoku
