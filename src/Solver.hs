@@ -430,11 +430,9 @@ minBy func list =
        enhanced
 
 maybeSplit :: Maybe Random.StdGen -> (Maybe Random.StdGen, Maybe Random.StdGen)
-maybeSplit Nothing =
-  (Nothing, Nothing)
-maybeSplit (Just rnd) =
-  let (rnd1, rnd2) = Random.split rnd
-  in (Just rnd1, Just rnd2)
+maybeSplit maybeRnd = case Random.split <$> maybeRnd of
+  Nothing -> (Nothing, Nothing)
+  Just (rnd1, rnd2) -> (Just rnd1, Just rnd2)
 
 maybeShuffle :: Maybe Random.StdGen -> [a] -> [a]
 maybeShuffle Nothing list = list
